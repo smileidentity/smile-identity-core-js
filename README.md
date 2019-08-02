@@ -93,12 +93,12 @@ You can also view your response asynchronously at the callback that you have set
 If an error occurs, the Web Api package will throw an error. Be sure to catch any error that occurs as in this example:
 ```
 const connection = new webApi(partner_id, default_callback, api_key, sid_server);
-  const response = connection.submit_job(partner_params, image_details, id_info, options);
-  response.then((result) => {
-    // evaluate result if options.return_job_status was true
-  }).catch((error) => {
-    // figure out what went wrong
-  });
+const response = connection.submit_job(partner_params, image_details, id_info, options);
+response.then((result) => {
+  // evaluate result if options.return_job_status was true
+}).catch((error) => {
+  // figure out what went wrong
+});
 ```
 
 ## Development
@@ -111,4 +111,4 @@ Please note that you should tag the release when doing a push to rubygems.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/smileidentity/smile-identity-core
+Bug reports and pull requests are welcome on GitHub at https://github.com/smileidentity/smile-identity-core-js
