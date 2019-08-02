@@ -25,7 +25,7 @@ Install it to your system as:
 ```
 $ connection = new Signature(partner_id, api_key);
 
-$ sec_key = connection.generate_sec_key(timestamp)/
+$ sec_key = connection.generate_sec_key(timestamp);
 // where timestamp is optional
 
 ```
@@ -103,11 +103,9 @@ response.then((result) => {
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `npm install` to install dependencies. Then, run `npm test` to run the tests. 
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-Please note that you should tag the release when doing a push to rubygems.
+To release a new version, update the version number in `package.json`, and then run `git tag -a <new version number>`, which will create a git tag for the version, push git commits and tags, and push the changes to github for review.
 
 ## Contributing
 
