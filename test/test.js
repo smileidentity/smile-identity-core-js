@@ -1,6 +1,11 @@
 var assert = require('assert');
-const webApi = require("../../smile-identity-core");
+const WebApi = require("./../index.js");
+const Signature = require("./../src/signature");
+const crypto = require('crypto');
 
+const keypair = require('keypair');
+
+const pair = keypair();
 // describe('Array', function() {
 //   describe('#indexOf()', function() {
 //     it('should return -1 when the value is not present', function() {
@@ -13,11 +18,32 @@ const webApi = require("../../smile-identity-core");
 // test that the validation is done correctly
 
 // test that the sec key is generated correctly
-describe('WebApi', () => {
-  describe('#determineSecKey', () => {
-    it('should create a sec key', function() {
-      let api_key = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RR RUJBUVVBQTRHTkFEQ0JpUUtCZ1FEdlpTL0ljS3k0OE5xbEc3TTJpdDV3YnJB TAp5M2dJa0E2NFV1UzI5djhpaTV6RzBFVmxUL2dOL3phbGxhdktoTm1zT3JM TjFXTEFieU54UjhOYkZSdjFIeWVYCjdkb2dDbWkzSC9FUCtPdWZENVFjbldX WUtkbG9xMG42Z1hYTkhNbzRCNnJOVXR4SFpEYnZ2OTF0QVR5YkwrSjYKS0Z3 SWE0czlic2hWM0NaYlR3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0t LQo=";
-      assert.notEqual(new webApi('125', '', api_key, 2, '/tmp').determineSecKey().indexOf('|'), -1);
+describe('Signature', () => {
+  describe('#generate_sec_key', () => {
+    it('should create a sec_key', function() {
+      let timestamp = Date.now();
+      let signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_sec_key(timestamp);
+      assert.equal(timestamp, signature.timestamp);
+      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
+      assert.equal(hash, signature.sec_key.split('|')[1]);
+      let decrypted = crypto.privateDecrypt({
+        key: Buffer.from(pair.private),
+        padding: crypto.constants.RSA_PKCS1_PADDING
+      }, Buffer.from(signature.sec_key.split('|')[0], 'base64')).toString();
+      assert.equal(decrypted, hash);
+    });
+  });
+
+  describe('#confirm_sec_key', () => {
+    it('should be able to decode a valid sec_key', () => {
+      let timestamp = Date.now();
+      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
+      let encrypted = crypto.privateEncrypt({
+        key: Buffer.from(pair.private),
+        padding: crypto.constants.RSA_PKCS1_PADDING
+      }, Buffer.from(hash)).toString('base64');
+      let sec_key = [encrypted, hash].join('|')
+      assert.equal(true, new Signature('001', Buffer.from(pair.public).toString('base64')).confirm_sec_key(timestamp, sec_key));
     });
   });
 });

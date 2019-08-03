@@ -10,6 +10,7 @@
   "author": "beaglebets",
   "license": "ISC",
   "devDependencies": {
+    "keypair": "^1.0.1",
     "mocha": "^6.1.4",
     "sinon": "^7.3.2"
   },
