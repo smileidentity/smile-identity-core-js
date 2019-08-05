@@ -14,7 +14,7 @@ class WebApi {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
     this.api_key = api_key;
-    if (['0', '1'].indexOf(sid_server) > -1) {
+    if (['0', '1'].indexOf(sid_server.toString()) > -1) {
       var sid_server_mapping = {
         '0': '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test',
         '1': 'la7am6gdm8.execute-api.us-west-2.amazonaws.com/prod'
@@ -46,31 +46,31 @@ class WebApi {
         _private.checkBoolean('return_images', options.return_images);
       },
       validateReturnData: function() {
-        if (_private.data.callback_url.length === 0 && !_private.data.return_job_status) {
-          _private.data.reject(new Error("Please choose to either get your response via the callback or job status query"));
+        if ((!_private.data.callback_url || _private.data.callback_url.length === 0) && !_private.data.return_job_status) {
+          throw new Error("Please choose to either get your response via the callback or job status query");
         }
       },
       validateEnrollWithID: function() { 
         var hasImage = function(imageData) {
           return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
         }
-        if(!_private.data.images.some(hasImage) && _private.data.id_info['entered'].toString() !== 'true') {
-          _private.data.reject(new Error("You are attempting to complete a job type 1 without providing an id card image or id info"));
+        if(!_private.data.images.some(hasImage) && (_private.data.id_info['entered'] && _private.data.id_info['entered'].toString() !== 'true')) {
+          throw new Error("You are attempting to complete a job type 1 without providing an id card image or id info");
         }
       },
       partnerParams: function(partnerParams) {
         if (!partnerParams) {
-          _private.data.reject(new Error('Please ensure that you send through partner params'));
+          throw new Error('Please ensure that you send through partner params');
         }
 
 
         if (typeof partnerParams !== 'object') {
-          _private.data.reject(new Error('Partner params needs to be an object'));
+          throw new Error('Partner params needs to be an object');
         }
 
         ['user_id', 'job_id', 'job_type'].forEach((key) => {
           if (!partnerParams[key] || (typeof partnerParams === 'string' && partnerParams[key].length === 0)) {
-            _private.data.reject(new Error(`Please make sure that ${key} is included in the partner params`));
+            throw new Error(`Please make sure that ${key} is included in the partner params`);
           }
         });
         partnerParams['job_type'] = parseInt(partnerParams['job_type'], 10);
@@ -81,37 +81,37 @@ class WebApi {
           return imageData['image_type_id'] === 0 || imageData['image_type_id'] === 2;
         }
         if (!images) {
-          _private.data.reject(new Error('Please ensure that you send through image details'));
+          throw new Error('Please ensure that you send through image details');
         }
 
         if (!Array.isArray(images)) {
-          _private.data.reject(new Error('Image details needs to be an array'));
+          throw new Error('Image details needs to be an array');
         }
 
         // all job types require at least a selfie
         if (images.length === 0 || !images.some(hasImage)) {
-          _private.data.reject(new Error('You need to send through at least one selfie image'));
+          throw new Error('You need to send through at least one selfie image');
         }
 
         images.forEach((image) => {
           if (image['image_type_id'] > 3) {
-            _private.data.reject(new Error("Invalid image_type_id"));
+            throw new Error("Invalid image_type_id");
           }
           if (image['image_type_id'] > 1 && image['image'].match(/(\.je?pg)$/)) {
-            _private.data.reject(new Error("image_type_id mismatch"));
+            throw new Error("image_type_id mismatch");
           }
           if (image['image_type_id'] < 2 && !image['image'].match(/(\.je?pg)$/)) {
-            _private.data.reject(new Error("image_type_id mismatch"));
+            throw new Error("image_type_id mismatch");
           }
         });
 
         _private.data.images = images;
       },
       idInfo: function(id_info) {
-        if (id_info['entered'].toString() === 'true') {
+        if ('entered' in id_info && id_info['entered'].toString() === 'true') {
           ['first_name', 'last_name', 'country', 'id_type', 'id_number'].forEach((key) => {
             if (!id_info[key] || id_info[key].length === 0) {
-              _private.data.reject(new Error(`Please make sure that ${key} is included in the id_info`));
+              throw new Error(`Please make sure that ${key} is included in the id_info`);
             }
           });
         }
@@ -123,7 +123,7 @@ class WebApi {
           bool = false;
         }
         if (!!bool !== bool) {
-          _private.data.reject(new Error(`${key} needs to be a boolean`));
+          throw new Error(`${key} needs to be a boolean`);
         }
 
         _private.data[key] = bool;
@@ -174,7 +174,7 @@ class WebApi {
               });
             } else {
               var err = JSON.parse(json);
-              _private.data.reject(new Error(`${err.code}:${err.error}`));
+              throw new Error(`${err.code}:${err.error}`);
             }
           });
         });
@@ -183,7 +183,7 @@ class WebApi {
         req.end();
 
         req.on("error", function(err) {
-          _private.data.reject(err);
+          throw err;
         });
 
       },
@@ -285,7 +285,7 @@ class WebApi {
               var body = JSON.parse(json);
               var valid = new Signature(data.partner_id, data.api_key).confirm_sec_key(body['timestamp'], body['signature']);
               if (!valid) {
-                _private.data.reject(new Error("Unable to confirm validity of the job_status response"));
+                throw new Error("Unable to confirm validity of the job_status response");
               }
               if (!body['job_complete']) {
                 return setTimeout(function() {
@@ -296,7 +296,7 @@ class WebApi {
               }
             } else {
               err = JSON.parse(json);
-              _private.data.reject(new Error(`${err.code}:err.error`));
+              throw new Error(`${err.code}:err.error`);
             }
           });
 
@@ -342,7 +342,7 @@ class WebApi {
                 return _private.data.resolve();
               }
             } else {
-              _private.data.reject(new Error(`${resp.statusCode}`));
+              throw new Error(`${resp.statusCode}`);
             }
           });
 
@@ -350,7 +350,7 @@ class WebApi {
         req.write(Buffer.from(_private.data.zip));
         req.end();
         req.on("error", (err) => {
-          _private.data.reject(err);
+          throw err;
         });
 
       }      
