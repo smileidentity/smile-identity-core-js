@@ -216,6 +216,37 @@ describe('WebApi', () => {
       });
       done();
     });
+
+    it('should ensure that job type 1 has an id card image if there is no id_info', (done) => {
+      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 1
+      };
+        
+      instance.submit_job(partner_params, [{image_type_id: 0, image: 'path/to/image.jpg'}], {}, {return_job_status: true}).catch((err) => {
+        assert.equal(err.message, "You are attempting to complete a job type 1 without providing an id card image or id info");
+        done();
+      });
+    });
+
+    it('should ensure that optional fields are booleans', (done) => {
+      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      ['return_job_status', 'return_images', 'return_history'].forEach((flag) => {
+        let options = {};
+        options[flag] = 'not a boolean'
+        instance.submit_job(partner_params, [{image_type_id: 0, image: 'path/to/image.jpg'}], {}, options).catch((err) => {
+          assert.equal(err.message, `${flag} needs to be a boolean`);
+        });
+      });
+      done();
+    });
   });
 });
 

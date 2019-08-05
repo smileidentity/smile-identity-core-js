@@ -54,7 +54,7 @@ class WebApi {
         var hasImage = function(imageData) {
           return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
         }
-        if(!_private.data.images.some(hasImage) && (_private.data.id_info['entered'] && _private.data.id_info['entered'].toString() !== 'true')) {
+        if(!_private.data.images.some(hasImage) && (!_private.data.id_info['entered'] || _private.data.id_info['entered'].toString() !== 'true')) {
           throw new Error("You are attempting to complete a job type 1 without providing an id card image or id info");
         }
       },
