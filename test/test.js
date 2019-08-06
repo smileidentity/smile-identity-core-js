@@ -433,6 +433,62 @@ describe('WebApi', () => {
       });
 
     });
+
+    it('should poll job_status until job_complete is true', (done) => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_job_status: true
+      };
+
+      let timestamp = Date.now();
+      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
+      let encrypted = crypto.privateEncrypt({
+        key: Buffer.from(pair.private),
+        padding: crypto.constants.RSA_PKCS1_PADDING
+      }, Buffer.from(hash)).toString('base64');
+      let sec_key = [encrypted, hash].join('|');
+      let jobStatusResponse = {
+        job_success: false,
+        job_complete: false,
+        result: {
+          ResultCode: '0810',
+          ResultText: 'Awesome!'
+        },
+        timestamp: timestamp,
+        signature: sec_key
+      };
+      
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/upload')
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200)
+        .isDone();
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status')
+        .reply(200, jobStatusResponse)
+        .isDone();
+      jobStatusResponse.job_complete = true;
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status')
+        .reply(200, jobStatusResponse)
+        .isDone();
+
+      let promise = instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options)
+      promise.then((resp) => {
+        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
+        done();
+      });
+    }).timeout(5000);
   });
 });
 
