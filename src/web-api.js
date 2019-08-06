@@ -174,7 +174,7 @@ class WebApi {
               });
             } else {
               var err = JSON.parse(json);
-              _private.data.reject(`err.code:err.error`)
+              _private.data.reject(new Error(`${err.code}:${err.error}`));
             }
           });
         });
@@ -183,7 +183,7 @@ class WebApi {
         req.end();
 
         req.on("error", function(err) {
-          _private.data.reject(err);
+          _private.data.reject(`${err.code}:${err.error}`);
         });
 
       },
