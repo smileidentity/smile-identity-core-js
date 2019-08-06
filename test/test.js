@@ -3,7 +3,10 @@ const WebApi = require("./../index.js");
 const Signature = require("./../src/signature");
 const crypto = require('crypto');
 
+const https = require('https');
 const keypair = require('keypair');
+const nock = require('nock');
+const sinon = require('sinon');
 
 const pair = keypair();
 
@@ -245,6 +248,46 @@ describe('WebApi', () => {
           assert.equal(err.message, `${flag} needs to be a boolean`);
         });
       });
+      done();
+    });
+
+    it('should be able to send a job', (done) => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {};
+      
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/upload', (body) => {
+          assert.equal(body.smile_client_id, '001');
+          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.timestamp, undefined);
+          assert.equal(body.file_name, 'selfie.zip');
+          assert.equal(body.partner_params.user_id, partner_params.user_id);
+          assert.equal(body.partner_params.job_id, partner_params.job_id);
+          assert.equal(body.partner_params.job_type, partner_params.job_type);
+          assert.equal(body.callback_url, 'https://a_callback.cb');
+          return true;
+        })
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/', (body) => {
+          // still need to evaluate the zip file
+          return true;
+        })
+        .reply(200)
+        .isDone();
+
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+        assert.equal(resp, undefined);
+      });
+
       done();
     });
   });
