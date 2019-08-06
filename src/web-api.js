@@ -356,7 +356,7 @@ class WebApi {
       }      
     };
     // this section kicks everything off
-    var result = new Promise(async function(resolve, reject) {
+    var result = new Promise((resolve, reject) => {
       try {
         _private.data.resolve = resolve;
         _private.data.reject = reject;
