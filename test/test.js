@@ -277,15 +277,79 @@ describe('WebApi', () => {
         })
         .isDone();
       nock('https://some_url.com')
-        .put('/', (body) => {
-          // still need to evaluate the zip file
-          return true;
-        })
+        .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
 
       instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
         assert.equal(resp, undefined);
+      });
+
+      done();
+    });
+
+    it('should raise an error when a network call fails', (done) => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {};
+      
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/upload')
+        .replyWithError(400, {
+          code: '2204',
+          error: 'unauthorized'
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .times(0)
+        .reply(200);
+
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+        // make sure this test fails if the job goes through
+        assert.equal(false);
+      }).catch((err) => {
+        console.log(err)
+        assert.equal(err.message, '2204:unauthorized');
+      });
+
+      done();
+    });
+
+    it('should return a response from job_status if that flag is set to true', (done) => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_job_status: true
+      };
+
+      let jobStatusResponse
+      
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/upload')
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200)
+        .isDone();
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status')
+        .reply(200, jobStatusResponse)
+        .isDone();
+
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+        assert.equal(resp, jobStatusResponse);
       });
 
       done();

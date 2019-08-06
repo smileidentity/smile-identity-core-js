@@ -174,7 +174,7 @@ class WebApi {
               });
             } else {
               var err = JSON.parse(json);
-              throw new Error(`${err.code}:${err.error}`);
+              _private.data.reject(`err.code:err.error`)
             }
           });
         });
@@ -183,7 +183,7 @@ class WebApi {
         req.end();
 
         req.on("error", function(err) {
-          throw err;
+          _private.data.reject(err);
         });
 
       },
@@ -285,7 +285,7 @@ class WebApi {
               var body = JSON.parse(json);
               var valid = new Signature(data.partner_id, data.api_key).confirm_sec_key(body['timestamp'], body['signature']);
               if (!valid) {
-                throw new Error("Unable to confirm validity of the job_status response");
+                _private.data.reject("Unable to confirm validity of the job_status response");
               }
               if (!body['job_complete']) {
                 return setTimeout(function() {
@@ -296,7 +296,7 @@ class WebApi {
               }
             } else {
               err = JSON.parse(json);
-              throw new Error(`${err.code}:err.error`);
+              _private.data.reject(`${err.code}:err.error`);
             }
           });
 
@@ -342,7 +342,7 @@ class WebApi {
                 return _private.data.resolve();
               }
             } else {
-              throw new Error(`${resp.statusCode}`);
+              _private.data.reject(new Error(`Zip upload status code: ${resp.statusCode}`));
             }
           });
 
@@ -350,7 +350,7 @@ class WebApi {
         req.write(Buffer.from(_private.data.zip));
         req.end();
         req.on("error", (err) => {
-          throw err;
+          _private.data.reject(err);
         });
 
       }      
