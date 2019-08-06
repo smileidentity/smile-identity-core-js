@@ -486,6 +486,7 @@ describe('WebApi', () => {
       let promise = instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options)
       promise.then((resp) => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
+        assert.equal(resp.job_complete, true);
         done();
       });
     }).timeout(5000);

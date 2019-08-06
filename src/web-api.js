@@ -147,7 +147,7 @@ class WebApi {
       setupRequests: function() {
         // make the first call to the upload lambda
         var json = '';
-        var path = `/${_private.data.url.split('/')[1]}/upload`
+        var path = `/${_private.data.url.split('/')[1]}/upload`;
         var host = _private.data.url.split('/')[0];
         var body = _private.configurePrepUploadJson();
         var options = {
@@ -222,7 +222,7 @@ class WebApi {
           "id_info": _private.data.id_info,
           "images": _private.configureImagePayload(),
           "server_information": serverInformation
-        }
+        };
         return info;
       },
       configureImagePayload: function() {
@@ -264,7 +264,7 @@ class WebApi {
         var json = '';
         var timeout = counter < 4 ? 2000 : 4000;
         counter++;
-        var path = `/${_private.data.url.split('/')[1]}/job_status`
+        var path = `/${_private.data.url.split('/')[1]}/job_status`;
         var host = _private.data.url.split('/')[0];
         var options = {
           hostname: host,
@@ -373,8 +373,8 @@ class WebApi {
     return result;
     result.then((resp) => {
       return resp;
-    }).catch((e) => {
-      throw e;
+    }).catch((err) => {
+      throw err;
     });
   }
 
