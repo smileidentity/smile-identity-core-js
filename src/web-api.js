@@ -130,7 +130,7 @@ class WebApi {
       },
       determineSecKey: function(timestamp) {
         // calculate an outgoing signature
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(_private.data.timestamp);
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
       },
       configurePrepUploadJson: function() {
         var body =  {
@@ -295,8 +295,8 @@ class WebApi {
                 _private.data.resolve(body);
               }
             } else {
-              err = JSON.parse(json);
-              _private.data.reject(`${err.code}:err.error`);
+              var err = JSON.parse(json);
+              _private.data.reject(`${err.code}:${err.error}`);
             }
           });
 
@@ -307,7 +307,7 @@ class WebApi {
           job_id: _private.data.partner_params.job_id,
           partner_id: _private.data.partner_id,
           timestamp: timestamp,
-          sec_key: _private.determineSecKey(timestamp),
+          sec_key: _private.determineSecKey(timestamp).sec_key,
           history: _private.data.return_history,
           image_links: _private.data.return_images
         }));
