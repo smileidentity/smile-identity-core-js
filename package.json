@@ -1,16 +1,19 @@
 {
   "name": "smile-identity-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The official Smile Identity gem exposes two classes namely, the WebApi and Signature class.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "nyc mocha",
     "start": "node index.js"
   },
   "author": "beaglebets",
   "license": "ISC",
   "devDependencies": {
+    "keypair": "^1.0.1",
     "mocha": "^6.1.4",
+    "nock": "^10.0.6",
+    "nyc": "^14.1.1",
     "sinon": "^7.3.2"
   },
   "dependencies": {

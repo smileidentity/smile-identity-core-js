@@ -1,4 +1,5 @@
 # SmileIdentityCore
+[![Build Status](https://travis-ci.com/smileidentity/smile-identity-core-js.svg?token=zyz9yHUXZ1bSkqNUZtZR&branch=master)](https://travis-ci.com/smileidentity/smile-identity-core-js)    
 
 The official Smile Identity gem exposes two classes namely, the WebApi and Signature class.
 
@@ -6,18 +7,21 @@ The Web API allows you as the Partner to validate a user’s identity against th
 
 The Signature class allows you as the Partner to generate a sec key to interact with our servers.
 
+#### Requires node 6.x or higher
+
 ## Documentation
 
 This package requires specific input parameters, for more detail on these parameters please refer to our [documentation for Web API](https://docs-smileid.herokuapp.com/docs#web-api-introduction).
 
 Please note that you will have to be a Smile Identity Partner to be able to query our services.
+
 ## Usage
 
 
 Install it to your system as:
 
 ```
-  $ npm install smile-identity-core
+$ npm install smile-identity-core
 ```
 
 #### Calculating your Signature

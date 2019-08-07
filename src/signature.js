@@ -14,16 +14,16 @@ class Signature {
       key: Buffer.from(this.apiKey, 'base64'),
       padding: crypto.constants.RSA_PKCS1_PADDING
     }, Buffer.from(hash)).toString('base64');
-    return [encrypted, hash].join('|');
+    return {sec_key: [encrypted, hash].join('|'), timestamp: timestamp};
   }
 
   confirm_sec_key(timestamp, sec_key) {
     var hash = crypto.createHash('sha256').update(parseInt(this.partnerID, 10) + ":" + timestamp).digest('hex');
     var encrypted = sec_key.split('|')[0];
-    var decrypted = crypto.publicDecrypt({
-      key: Buffer.from(this.apiKey, 'base64'),
-      padding: crypto.constants.RSA_PKCS1_PADDING
-    }, Buffer.from(encrypted, 'base64')).toString();
+  var decrypted = crypto.publicDecrypt({
+    key: Buffer.from(this.apiKey, 'base64'),
+    padding: crypto.constants.RSA_PKCS1_PADDING
+  }, Buffer.from(encrypted, 'base64')).toString();
     return decrypted === hash;
   }
 
