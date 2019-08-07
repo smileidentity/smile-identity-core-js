@@ -196,7 +196,7 @@ class WebApi {
               "majorVersion": 2,
               "minorVersion": 0
             },
-            "language": "ruby"
+            "language": "javascript"
           },
           "misc_information": {
             "sec_key": _private.data.sec_key,
