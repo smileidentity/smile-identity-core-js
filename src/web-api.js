@@ -130,13 +130,13 @@ class WebApi {
       },
       determineSecKey: function(timestamp) {
         // calculate an outgoing signature
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(_private.data.timestamp);
       },
       configurePrepUploadJson: function() {
         var body =  {
           file_name: 'selfie.zip',
           timestamp: _private.data.timestamp,
-          sec_key: _private.determineSecKey(),
+          sec_key: _private.determineSecKey().sec_key,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
           model_parameters: {}, 
