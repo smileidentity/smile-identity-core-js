@@ -45,7 +45,8 @@ The response will be an object:
 
 #### Web api
 ```
-$ let WebApi = require('WebApi');
+$ let WebApi = require("smile-identity-core");
+
 $ connection = new WebApi(partner_id, default_callback, api_key, sid_server);
 
 $ response = connection.submit_job(partner_params, image_details, id_info, options);
@@ -107,7 +108,7 @@ response.then((result) => {
 
 ## Development
 
-After checking out the repo, run `npm install` to install dependencies. Then, run `npm test` to run the tests. 
+After checking out the repo, run `npm install` to install dependencies. Then, run `npm test` to run the tests.
 
 To release a new version, update the version number in `package.json`, and then run `git tag -a <new version number>`, which will create a git tag for the version, push git commits and tags, and push the changes to github for review.
 
