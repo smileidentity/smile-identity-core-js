@@ -1,6 +1,7 @@
 var assert = require('assert');
 const WebApi = require("./../index.js");
 const Signature = require("./../src/signature");
+const Utilities = require("./../src/utilities");
 const crypto = require('crypto');
 
 const https = require('https');
@@ -491,35 +492,61 @@ describe('WebApi', () => {
       });
     }).timeout(5000);
   });
+
 });
 
-// test that the prep upload
-  // test that the body is configured correctly
-    // inputs ->
-    // body =  {
-    //   file_name: @file_details[:file_name],
-    //   timestamp: @timestamp,
-    //   sec_key: determine_sec_key,
-    //   smile_client_id: @partner_id,
-    //   partner_params: @partner_params,
-    //   model_parameters: {}, # what is this for
-    //   callback_url: @callback_url
-    // }
+describe('Utilities', () => {
+  describe('#get_job_status', () => {
+    it('should be able to check job_status successfully', (done) => {
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_images: true,
+        return_history: true,
+        done: done
+      };
 
-// tests the correct behaviour of prep upload call when its a 200 vs an error
-  // mock the request itself
-  // outputs ->
-  // response that says 200 with upload url
-  // error
-
-// test that the info.json is configured correctly
-
-// test that the file gets zipped correctly
-  // using the file size and name etc.
-
-// test that the we check for success and error messages
-// test that we respond wit an empty string when its a success
-
-// test that we hit the job query method if return job status is true
-// test what happens when the job query reaches its counter
-//  test what happens when job status errors out
+      let timestamp = Date.now();
+      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
+      let encrypted = crypto.privateEncrypt({
+        key: Buffer.from(pair.private),
+        padding: crypto.constants.RSA_PKCS1_PADDING
+      }, Buffer.from(hash)).toString('base64');
+      let sec_key = [encrypted, hash].join('|');
+      let jobStatusResponse = {
+        job_success: true,
+        job_complete: true,
+        result: {
+          ResultCode: '0810',
+          ResultText: 'Awesome!'
+        },
+        timestamp: timestamp,
+        signature: sec_key
+      };
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status',(body) => {
+          assert.equal(body.job_id, partner_params.job_id);
+          assert.equal(body.user_id, partner_params.user_id);
+          assert.notEqual(body.timestamp, undefined);
+          assert.notEqual(body.sec_key, undefined);
+          assert.equal(body.image_links, true);
+          assert.equal(body.history, true);
+          return true;
+        })
+        .reply(200, jobStatusResponse)
+        .isDone();
+      new Utilities('001', Buffer.from(pair.public).toString('base64'), 0)
+        .get_job_status(partner_params.user_id, partner_params.job_id, options)
+        .then((job_status, err) => {
+          assert.equal(job_status.sec_key, jobStatusResponse.sec_key);
+          assert.equal(job_status.job_complete, true);
+          done();
+        }).catch((err) => {
+          console.log(err)
+        });
+    });
+  });
+});
