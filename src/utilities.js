@@ -40,11 +40,16 @@ class Utilities {
 
         resp.on('end', () => {
           var body = JSON.parse(json);
-          var valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
-          if (!valid) {
-            throw new Error("Unable to confirm validity of the job_status response");
+          if (resp.statusCode === 200) {
+            var valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
+            if (!valid) {
+              throw new Error("Unable to confirm validity of the job_status response");
+            }
+            resolve(body);
+          } else {
+            var err = JSON.parse(json);
+            reject(new Error(`${err.code}:${err.error}`));
           }
-          resolve(body);
         });
 
       });
@@ -62,7 +67,7 @@ class Utilities {
       req.end();
 
       req.on("error", (err) => {
-        reject(err);
+        reject(new Error(err));
       });
     });
   }

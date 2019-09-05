@@ -548,5 +548,52 @@ describe('Utilities', () => {
           console.log(err)
         });
     });
+
+    it('should raise an error if one occurs', (done) => {
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_images: true,
+        return_history: true,
+        done: done
+      };
+
+      let timestamp = Date.now();
+      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
+      let encrypted = crypto.privateEncrypt({
+        key: Buffer.from(pair.private),
+        padding: crypto.constants.RSA_PKCS1_PADDING
+      }, Buffer.from(hash)).toString('base64');
+      let sec_key = [encrypted, hash].join('|');
+      let jobStatusResponse = {
+        error: 'oops'
+      };
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status',(body) => {
+          assert.equal(body.job_id, partner_params.job_id);
+          assert.equal(body.user_id, partner_params.user_id);
+          assert.notEqual(body.timestamp, undefined);
+          assert.notEqual(body.sec_key, undefined);
+          assert.equal(body.image_links, true);
+          assert.equal(body.history, true);
+          return true;
+        })
+        .replyWithError(400, {
+          code: '2204',
+          error: 'unauthorized'
+        })
+        .isDone();
+      new Utilities('001', Buffer.from(pair.public).toString('base64'), 0)
+        .get_job_status(partner_params.user_id, partner_params.job_id, options)
+        .then((job_status) => {
+          assertNull(job_status);
+        }).catch((err) => {
+          assert.equal(err.message, 'Error: 400');
+          done();
+        });
+    });
   });
 });
