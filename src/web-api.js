@@ -6,6 +6,7 @@ const https = require('https');
 const jszip = require('jszip');
 const path = require('path');
 const Signature = require('./signature');
+const Utilities = require('./utilities');
 const url = require('url');
 
 class WebApi {
@@ -13,6 +14,7 @@ class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
+    this.sid_server = sid_server;
     this.api_key = api_key;
     if (['0', '1'].indexOf(sid_server.toString()) > -1) {
       var sid_server_mapping = {
@@ -34,7 +36,8 @@ class WebApi {
         timestamp: Date.now(),
         url: this.url,
         partner_id: this.partner_id,
-        api_key: this.api_key
+        api_key: this.api_key,
+        sid_server: this.sid_server
       },
       validateInputs: function() {
         // validate inputs and add them to our data store
@@ -261,63 +264,31 @@ class WebApi {
       },
       QueryJobStatus: function(counter=0) {
         // call job status for the result of the job
-        var json = '';
         var timeout = counter < 4 ? 2000 : 4000;
         counter++;
-        var path = `/${_private.data.url.split('/')[1]}/job_status`;
-        var host = _private.data.url.split('/')[0];
-        var options = {
-          hostname: host,
-          path: path,
-          method: 'POST',
-          headers: {
-            'Content-Type': "application/json"
-          }
-        };
-        var data = this.data;
-        var req = https.request(options, (resp) => {
-          resp.on('data', (chunk) => {
-            json += chunk;
-          });
-
-          resp.on('end', () => {
-            if (resp.statusCode === 200) {
-              var body = JSON.parse(json);
-              var valid = new Signature(data.partner_id, data.api_key).confirm_sec_key(body['timestamp'], body['signature']);
-              if (!valid) {
-                _private.data.reject("Unable to confirm validity of the job_status response");
+        new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.sid_server)
+          .get_job_status(
+            _private.data.partner_params.user_id,
+            _private.data.partner_params.job_id,
+            {
+              history: _private.data.return_history,
+              image_links: _private.data.return_images
+          }).then((body) => {
+            if (!body['job_complete']) {
+              if (counter > 21) {
+                return _private.data.reject(new Error("Timeout waiting for job status response."));
               }
-              if (!body['job_complete']) {
-                return setTimeout(function() {
-                  _private.QueryJobStatus(counter);
-                }, timeout);
-              } else {
-                _private.data.resolve(body);
-              }
+              setTimeout(function() {
+                return _private.QueryJobStatus(counter);
+              }, timeout);
             } else {
-              var err = JSON.parse(json);
-              _private.data.reject(`${err.code}:${err.error}`);
+              return _private.data.resolve(body);
             }
+          }).catch((err) => {
+            setTimeout(function() {
+              return _private.QueryJobStatus(counter);
+            }, timeout);
           });
-
-        });
-        var timestamp = Date.now();
-        req.write(JSON.stringify({
-          user_id: _private.data.partner_params.user_id,
-          job_id: _private.data.partner_params.job_id,
-          partner_id: _private.data.partner_id,
-          timestamp: timestamp,
-          sec_key: _private.determineSecKey(timestamp).sec_key,
-          history: _private.data.return_history,
-          image_links: _private.data.return_images
-        }));
-        req.end();
-
-        req.on("error", (err) => {
-          return setTimeout(function() {
-            _private.QueryJobStatus(counter);
-          }, timeout);
-        });
       },
       uploadFile: function(signedUrl, info_json) {
         // upload zip file to s3 using the signed link obtained from the upload lambda

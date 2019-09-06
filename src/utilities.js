@@ -40,10 +40,11 @@ class Utilities {
 
         resp.on('end', () => {
           var body = JSON.parse(json);
+          console.log(resp.statusCode, body)
           if (resp.statusCode === 200) {
             var valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
             if (!valid) {
-              throw new Error("Unable to confirm validity of the job_status response");
+              return reject(new Error("Unable to confirm validity of the job_status response"));
             }
             resolve(body);
           } else {
@@ -73,4 +74,4 @@ class Utilities {
   }
 };
 
-module.exports = Utilities
+module.exports = Utilities;
