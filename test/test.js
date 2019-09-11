@@ -493,6 +493,56 @@ describe('WebApi', () => {
     }).timeout(5000);
   });
 
+  describe('#get_job_status', () => {
+    it("should call Utilities.new().get_job_status", (done) => {
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_images: true,
+        return_history: true
+      };
+      let timestamp = Date.now();
+      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
+      let encrypted = crypto.privateEncrypt({
+        key: Buffer.from(pair.private),
+        padding: crypto.constants.RSA_PKCS1_PADDING
+      }, Buffer.from(hash)).toString('base64');
+      let sec_key = [encrypted, hash].join('|');
+      let jobStatusResponse = {
+        job_success: true,
+        job_complete: true,
+        result: {
+          ResultCode: '0810',
+          ResultText: 'Awesome!'
+        },
+        timestamp: timestamp,
+        signature: sec_key
+      };
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status',(body) => {
+          assert.equal(body.job_id, partner_params.job_id);
+          assert.equal(body.user_id, partner_params.user_id);
+          assert.notEqual(body.timestamp, undefined);
+          assert.notEqual(body.sec_key, undefined);
+          assert.equal(body.image_links, true);
+          assert.equal(body.history, true);
+          return true;
+        })
+        .reply(200, jobStatusResponse)
+        .isDone();
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let promise = instance.get_job_status(partner_params, options);
+      promise.then((resp) => {
+        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
+        assert.equal(resp.job_complete, true);
+        done();
+      });
+    });
+  });
+
 });
 
 describe('Utilities', () => {
@@ -505,8 +555,7 @@ describe('Utilities', () => {
       };
       let options = {
         return_images: true,
-        return_history: true,
-        done: done
+        return_history: true
       };
 
       let timestamp = Date.now();
@@ -558,8 +607,7 @@ describe('Utilities', () => {
       };
       let options = {
         return_images: true,
-        return_history: true,
-        done: done
+        return_history: true
       };
 
       let timestamp = Date.now();

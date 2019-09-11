@@ -349,6 +349,11 @@ class WebApi {
     });
   }
 
+  get_job_status(partner_params, options) {
+    return new Utilities(this.partner_id, this.api_key, this.sid_server)
+      .get_job_status(partner_params.user_id, partner_params.job_id, options);
+  }
+
 }
 
 module.exports = WebApi;
