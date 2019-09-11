@@ -40,7 +40,6 @@ class Utilities {
 
         resp.on('end', () => {
           var body = JSON.parse(json);
-          console.log(resp.statusCode, body)
           if (resp.statusCode === 200) {
             var valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
             if (!valid) {

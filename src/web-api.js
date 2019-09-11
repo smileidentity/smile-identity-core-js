@@ -271,22 +271,22 @@ class WebApi {
             _private.data.partner_params.user_id,
             _private.data.partner_params.job_id,
             {
-              history: _private.data.return_history,
-              image_links: _private.data.return_images
+              return_history: _private.data.return_history,
+              return_images: _private.data.return_images
           }).then((body) => {
             if (!body['job_complete']) {
               if (counter > 21) {
                 return _private.data.reject(new Error("Timeout waiting for job status response."));
               }
               setTimeout(function() {
-                return _private.QueryJobStatus(counter);
+                _private.QueryJobStatus(counter);
               }, timeout);
             } else {
               return _private.data.resolve(body);
             }
           }).catch((err) => {
             setTimeout(function() {
-              return _private.QueryJobStatus(counter);
+              _private.QueryJobStatus(counter);
             }, timeout);
           });
       },
