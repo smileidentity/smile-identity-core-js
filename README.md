@@ -107,7 +107,16 @@ response.then((result) => {
 });
 ```
 
+You can also use the WebApi class to get the status of a job.
+```
+$ let WebApi = require("smile-identity-core");
 
+$ connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+
+$ response = connection.get_job_status(partner_params, options);
+// where options is {return_history: true | false, return_images: true | false}
+```
+This function also returns a promise.
 
 ## Development
 
