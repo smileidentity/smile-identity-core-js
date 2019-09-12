@@ -1,7 +1,7 @@
 # SmileIdentityCore
 [![Build Status](https://travis-ci.com/smileidentity/smile-identity-core-js.svg?token=zyz9yHUXZ1bSkqNUZtZR&branch=master)](https://travis-ci.com/smileidentity/smile-identity-core-js)    
 
-The official Smile Identity gem exposes two classes namely, the WebApi and Signature class.
+The official Smile Identity gem exposes 3 classes namely, the WebApi, Signature, and Utilities classes.
 
 The Web API allows you as the Partner to validate a user’s identity against the relevant Identity Authorities/Third Party databases that Smile Identity has access to using ID information provided by your customer/user (including photo for compare).
 
@@ -25,6 +25,7 @@ $ npm install smile-identity-core
 ```
 
 #### Calculating your Signature
+If you are attempting to make an api request to our system outside of the WebApi class you can use the Signature class to calculate the sec_key value needed to authenticate with our system.
 
 ```
 $ connection = new Signature(partner_id, api_key);
@@ -105,6 +106,17 @@ response.then((result) => {
   // figure out what went wrong
 });
 ```
+
+You can also use the WebApi class to get the status of a job.
+```
+$ let WebApi = require("smile-identity-core");
+
+$ connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+
+$ response = connection.get_job_status(partner_params, options);
+// where options is {return_history: true | false, return_images: true | false}
+```
+This function also returns a promise.
 
 ## Development
 
