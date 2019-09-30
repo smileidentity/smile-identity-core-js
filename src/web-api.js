@@ -100,10 +100,10 @@ class WebApi {
           if (image['image_type_id'] > 3) {
             throw new Error("Invalid image_type_id");
           }
-          if (image['image_type_id'] > 1 && image['image'].match(/(\.je?pg)$/)) {
+          if (image['image_type_id'] > 1 && image['image'].match(/(\.jpe?g)|(\.png)$/)) {
             throw new Error("image_type_id mismatch");
           }
-          if (image['image_type_id'] < 2 && !image['image'].match(/(\.je?pg)$/)) {
+          if (image['image_type_id'] < 2 && !image['image'].match(/(\.jpe?g)|(\.png)$/)) {
             throw new Error("image_type_id mismatch");
           }
         });
