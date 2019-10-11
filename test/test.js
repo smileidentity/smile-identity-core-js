@@ -2,8 +2,9 @@ var assert = require('assert');
 const WebApi = require("./../index.js");
 const Signature = require("./../src/signature");
 const Utilities = require("./../src/utilities");
-const crypto = require('crypto');
+const IDApi = require("./../src/id-api");
 
+const crypto = require('crypto');
 const https = require('https');
 const jszip = require('jszip');
 const keypair = require('keypair');
@@ -229,7 +230,7 @@ describe('WebApi', () => {
         job_id: '1',
         job_type: 1
       };
-        
+
       instance.submit_job(partner_params, [{image_type_id: 0, image: 'path/to/image.jpg'}], {}, {return_job_status: true}).catch((err) => {
         assert.equal(err.message, "You are attempting to complete a job type 1 without providing an id card image or id info");
         done();
@@ -261,7 +262,7 @@ describe('WebApi', () => {
         job_type: 4
       };
       let options = {};
-      
+
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload', (body) => {
           assert.equal(body.smile_client_id, '001');
@@ -298,7 +299,7 @@ describe('WebApi', () => {
         job_type: 4
       };
       let options = {};
-      
+
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload')
         .replyWithError(400, {
@@ -351,7 +352,7 @@ describe('WebApi', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      
+
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload')
         .reply(200, {
@@ -404,7 +405,7 @@ describe('WebApi', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      
+
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload')
         .reply(200, {
@@ -463,7 +464,7 @@ describe('WebApi', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      
+
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload')
         .reply(200, {
@@ -643,6 +644,18 @@ describe('Utilities', () => {
           assert.equal(err.message, 'Error: 400');
           done();
         });
+    });
+  });
+});
+
+describe('IDapi', () => {
+  describe('#new', () => {
+    it('should instantiate and set the global variables', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      assert.equal(instance.partner_id, '001');
+      assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
+      assert.equal(instance.url, '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test');
+      done();
     });
   });
 });
