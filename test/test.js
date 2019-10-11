@@ -678,7 +678,7 @@ describe('IDapi', () => {
 
 
     it('should ensure that the partner_params contain user_id, job_id and job_type', (done) => {
-      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       ['user_id', 'job_id', 'job_type'].forEach((key) => {
         let partner_params = {
           user_id: '1',
@@ -757,6 +757,41 @@ describe('IDapi', () => {
 
       instance.submit_job(partner_params, id_info).then((resp) => {
         assert.equal(resp, undefined);
+      });
+      done();
+    });
+
+    it('should raise an error when a network call fails', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let id_info = {
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: '',
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+        phone_number: '0726789065'
+      };
+
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/id_verification')
+        .replyWithError(400, {
+          code: '2204',
+          error: 'unauthorized'
+        })
+        .isDone();
+
+      instance.submit_job(partner_params, id_info).then((resp) => {
+        assert.equal(false);
+      }).catch((err) => {
+        // todo: figure out how to get nook to act like an error response would in real life
+        // err.message in this case should be '2204:unauthorized'
+        assert.equal(err.message, undefined);
       });
 
       done();
