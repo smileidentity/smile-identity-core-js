@@ -1,4 +1,6 @@
 "use strict";
+const Signature = require('./signature');
+const https = require('https');
 
 class IDApi {
 

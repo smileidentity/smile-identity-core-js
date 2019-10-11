@@ -693,37 +693,69 @@ describe('IDapi', () => {
       done();
     });
 
-    xit('should be able to send a job', (done) => {
-      let instance = new IDapi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+    it('should be able to send a job', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
         user_id: '1',
         job_id: '1',
         job_type: 4
       };
-      let options = {};
+      let id_info = {
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: '',
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+        phone_number: '0726789065'
+      };
 
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload', (body) => {
-          assert.equal(body.smile_client_id, '001');
+        .post('/test/id_verification', (body) => {
+          assert.equal(body.partner_id, '001');
           assert.notEqual(body.sec_key, undefined);
           assert.notEqual(body.timestamp, undefined);
-          assert.equal(body.file_name, 'selfie.zip');
           assert.equal(body.partner_params.user_id, partner_params.user_id);
           assert.equal(body.partner_params.job_id, partner_params.job_id);
           assert.equal(body.partner_params.job_type, partner_params.job_type);
-          assert.equal(body.callback_url, 'https://a_callback.cb');
+          assert.equal(body.first_name, id_info.first_name);
+          assert.equal(body.last_name, id_info.last_name);
+          assert.equal(body.middle_name, id_info.middle_name);
+          assert.equal(body.country, id_info.country);
+          assert.equal(body.id_type, id_info.id_type);
+          assert.equal(body.id_number, id_info.id_number);
+          assert.equal(body.phone_number, id_info.phone_number);
           return true;
         })
         .reply(200, {
-          upload_url: 'https://some_url.com',
+          "JSONVersion": "1.0.0",
+          "SmileJobID": "0000001096",
+          "PartnerParams": {
+              "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
+              "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
+              "job_type": 5
+          },
+          "ResultType": "ID Verification",
+          "ResultText": "ID Number Validated",
+          "ResultCode": "1012",
+          "IsFinalResult": "true",
+          "Actions": {
+              "Verify_ID_Number": "Verified",
+              "Return_Personal_Info": "Returned"
+          },
+          "Country": "NG",
+          "IDType": "BVN",
+          "IDNumber": "00000000000",
+          "ExpirationDate": "NaN-NaN-NaN",
+          "FullName": "some  person",
+          "DOB": "NaN-NaN-NaN",
+          "Photo": "Not Available",
+          "sec_key": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba",
+          "timestamp": 1570612182124
         })
         .isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200)
-        .isDone();
 
-      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+      instance.submit_job(partner_params, id_info).then((resp) => {
         assert.equal(resp, undefined);
       });
 
