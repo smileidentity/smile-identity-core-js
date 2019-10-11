@@ -668,6 +668,69 @@ describe('IDapi', () => {
       });
     });
 
+    it('should ensure that the partner_params are an object', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      instance.submit_job('not partner params', {}).catch((err) => {
+        assert.equal(err.message, 'Partner params needs to be an object')
+        done();
+      });
+    });
+
+
+    it('should ensure that the partner_params contain user_id, job_id and job_type', (done) => {
+      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      ['user_id', 'job_id', 'job_type'].forEach((key) => {
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 1
+        };
+        delete partner_params[key];
+        instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
+          assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
+        });
+      });
+      done();
+    });
+
+    xit('should be able to send a job', (done) => {
+      let instance = new IDapi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {};
+
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/upload', (body) => {
+          assert.equal(body.smile_client_id, '001');
+          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.timestamp, undefined);
+          assert.equal(body.file_name, 'selfie.zip');
+          assert.equal(body.partner_params.user_id, partner_params.user_id);
+          assert.equal(body.partner_params.job_id, partner_params.job_id);
+          assert.equal(body.partner_params.job_type, partner_params.job_type);
+          assert.equal(body.callback_url, 'https://a_callback.cb');
+          return true;
+        })
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200)
+        .isDone();
+
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+        assert.equal(resp, undefined);
+      });
+
+      done();
+    });
+
+
 
   });
 
