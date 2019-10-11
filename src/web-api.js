@@ -53,7 +53,7 @@ class WebApi {
           throw new Error("Please choose to either get your response via the callback or job status query");
         }
       },
-      validateEnrollWithID: function() { 
+      validateEnrollWithID: function() {
         var hasImage = function(imageData) {
           return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
         }
@@ -65,7 +65,6 @@ class WebApi {
         if (!partnerParams) {
           throw new Error('Please ensure that you send through partner params');
         }
-
 
         if (typeof partnerParams !== 'object') {
           throw new Error('Partner params needs to be an object');
@@ -142,7 +141,7 @@ class WebApi {
           sec_key: _private.determineSecKey().sec_key,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
-          model_parameters: {}, 
+          model_parameters: {},
           callback_url: _private.data.callback_url
         };
         return JSON.stringify(body);
@@ -324,7 +323,7 @@ class WebApi {
           _private.data.reject(err);
         });
 
-      }      
+      }
     };
     // this section kicks everything off
     var result = new Promise((resolve, reject) => {
