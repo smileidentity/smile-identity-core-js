@@ -660,18 +660,15 @@ describe('IDapi', () => {
   });
 
   describe('#submit_job', () => {
-    it('should ensure that a method of getting data back has been selected', (done) => {
-      let partner_params = {
-          user_id: '1',
-          job_id: '1',
-          job_type: 1
-        };
-      let instance = new WebApi('001', '', Buffer.from(pair.public).toString('base64'), 0);
-      instance.submit_job(partner_params, [{image_type_id: 0, image: 'path/to/image.jpg'}], {}, {}).catch((err) => {
-        assert.equal(err.message, 'Please choose to either get your response via the callback or job status query')
+    it('should ensure that the partner_params are present', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      instance.submit_job(null, {}).catch((err) => {
+        assert.equal(err.message, 'Please ensure that you send through partner params')
         done();
       });
     });
+
+
   });
 
 });

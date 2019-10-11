@@ -18,10 +18,9 @@ class IDApi {
     }
   }
 
-  submit_job(partner_params, image_details, id_info, options) {
+  submit_job(partner_params, id_info) {
     var _private = {
       data: {
-        callback_url: options.optional_callback || this.default_callback,
         timestamp: Date.now(),
         url: this.url,
         partner_id: this.partner_id,
@@ -32,8 +31,6 @@ class IDApi {
         _private.partnerParams(partner_params);
         _private.idInfo(id_info);
       },
-
-
       partnerParams: function(partnerParams) {
         if (!partnerParams) {
           throw new Error('Please ensure that you send through partner params');
@@ -54,9 +51,9 @@ class IDApi {
         _private.data.partner_params = partnerParams;
       },
       idInfo: function(idInfo) {
-        if !idInfo ||  Object.keys(idInfo).length == 0
+        if (!idInfo ||  Object.keys(idInfo).length == 0) {
           throw new Error("Please make sure that id_info not empty or nil");
-        end
+        }
 
         _private.data.id_info = idInfo;
       },
