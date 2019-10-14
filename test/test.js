@@ -1,8 +1,9 @@
 var assert = require('assert');
-const WebApi = require("./../index.js");
-const Signature = require("./../src/signature");
-const Utilities = require("./../src/utilities");
-const IDApi = require("./../src/id-api");
+const SmileIdentity = require("./../index.js");
+const WebApi = SmileIdentity.WebApi;
+const Signature = SmileIdentity.Signature;
+const Utilities = SmileIdentity.Utilities;
+const IDApi = SmileIdentity.IDApi;
 
 const crypto = require('crypto');
 const https = require('https');
