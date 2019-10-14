@@ -32,7 +32,7 @@ class WebApi {
     // define the data and functions we will need
     var _private = {
       data: {
-        callback_url: options.optional_callback || this.default_callback,
+        callback_url: (options && options.optional_callback) || this.default_callback,
         timestamp: Date.now(),
         url: this.url,
         partner_id: this.partner_id,
