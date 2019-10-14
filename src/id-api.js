@@ -50,6 +50,10 @@ class IDApi {
         });
 
         partnerParams['job_type'] = parseInt(partnerParams['job_type'], 10);
+        if (parseInt(partnerParams['job_type'], 10) !== 5) {
+          throw new Error('Please ensure that you are setting your job_type to 5 to query ID Api');
+        }
+
         _private.data.partner_params = partnerParams;
       },
       idInfo: function(idInfo) {

@@ -685,7 +685,7 @@ describe('IDapi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 1
+          job_type: 5
         };
         delete partner_params[key];
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
@@ -695,12 +695,25 @@ describe('IDapi', () => {
       done();
     });
 
-    it('should be able to send a job', (done) => {
+    it('should ensure that the the job id is set to 5', (done) => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
         user_id: '1',
         job_id: '1',
         job_type: 4
+      };
+      instance.submit_job(partner_params, null).catch((err) => {
+        assert.equal(err.message, 'Please ensure that you are setting your job_type to 5 to query ID Api')
+        done();
+      });
+    });
+
+    it('should be able to send a job', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 5
       };
       let id_info = {
         first_name: 'John',
@@ -770,7 +783,7 @@ describe('IDapi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: 5
       };
       let id_info = {
         first_name: 'John',
