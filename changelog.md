@@ -4,3 +4,4 @@ Amend the success response when job status is false to be a JSON String containi
 Add the ID API Class
 Add the ability to query ID Api from the Web API class
 Update the documentation
+Change the way that we import the classes from thee modules (not backward compatible)
