@@ -287,7 +287,7 @@ describe('WebApi', () => {
         .isDone();
 
       instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
-        assert.equal(resp, {success: true, smile_job_id: smile_job_id});
+        assert.deepEqual(resp, {success: true, smile_job_id: smile_job_id});
       });
 
       done();
