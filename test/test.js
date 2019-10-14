@@ -262,7 +262,7 @@ describe('WebApi', () => {
         job_type: 4
       };
       let options = {};
-      let smile_job_id = '0000988';
+      let smile_job_id = '0000000111';
 
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload', (body) => {
