@@ -327,7 +327,15 @@ class WebApi {
         req.on("error", (err) => {
           _private.data.reject(err);
         });
+      },
+      setupIDApiRequest: function() {
+        let promise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
 
+        promise.then((idApiResp) => {
+          return _private.data.resolve(idApiResp);
+        }).catch((err) => {
+          throw _private.data.reject(err);
+        });
       }
     };
     // this section kicks everything off
@@ -338,17 +346,7 @@ class WebApi {
         _private.validateInputs();
 
         if (parseInt(_private.data.partner_params.job_type, 10) === 5) {
-          let IdApiPromise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
-
-          IdApiPromise.then((idApiResp) => {
-            console.log(idApiResp);
-            return idApiResp;
-          }).catch((err) => {
-            throw err;
-          });
-
-          // console.log(new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info));
-          // return new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
+          _private.setupIDApiRequest();
         } else {
           _private.validateReturnData();
           if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
