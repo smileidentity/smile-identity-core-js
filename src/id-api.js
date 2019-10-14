@@ -66,14 +66,11 @@ class IDApi {
         return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
       },
       configureJson: function() {
-        delete _private.data.id_info.entered;
-
         var body =  {
           timestamp: _private.data.timestamp,
           sec_key: _private.determineSecKey().sec_key,
           partner_id: _private.data.partner_id,
-          partner_params: _private.data.partner_params,
-          entered: 'true'
+          partner_params: _private.data.partner_params
         };
 
         return JSON.stringify({...body, ..._private.data.id_info});
