@@ -7,6 +7,8 @@ const jszip = require('jszip');
 const path = require('path');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
+const IDApi = require('./id-api');
+
 const url = require('url');
 
 class WebApi {
@@ -32,7 +34,7 @@ class WebApi {
     // define the data and functions we will need
     var _private = {
       data: {
-        callback_url: (options && options.optional_callback) || this.default_callback,
+        callback_url: options && options.optional_callback || this.default_callback,
         timestamp: Date.now(),
         url: this.url,
         partner_id: this.partner_id,
@@ -42,11 +44,14 @@ class WebApi {
       validateInputs: function() {
         // validate inputs and add them to our data store
         _private.partnerParams(partner_params);
-        _private.images(image_details);
         _private.idInfo(id_info);
-        _private.checkBoolean('return_job_status', options.return_job_status);
-        _private.checkBoolean('return_history', options.return_history);
-        _private.checkBoolean('return_images', options.return_images);
+
+        if(parseInt(partner_params.job_type, 10) !== 5) {
+          _private.images(image_details);
+          _private.checkBoolean('return_job_status', options.return_job_status);
+          _private.checkBoolean('return_history', options.return_history);
+          _private.checkBoolean('return_images', options.return_images);
+        }
       },
       validateReturnData: function() {
         if ((!_private.data.callback_url || _private.data.callback_url.length === 0) && !_private.data.return_job_status) {
@@ -331,11 +336,27 @@ class WebApi {
         _private.data.resolve = resolve;
         _private.data.reject = reject;
         _private.validateInputs();
-        _private.validateReturnData();
-        if (parseInt(_private.data.partner_params.job_type, 10) == 1) {
-          _private.validateEnrollWithID();
+
+        if (parseInt(_private.data.partner_params.job_type, 10) === 5) {
+          let IdApiPromise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
+
+          IdApiPromise.then((idApiResp) => {
+            console.log(idApiResp);
+            return idApiResp;
+          }).catch((err) => {
+            throw err;
+          });
+
+          // console.log(new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info));
+          // return new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
+        } else {
+          _private.validateReturnData();
+          if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
+            _private.validateEnrollWithID();
+          }
+          _private.setupRequests();
         }
-        _private.setupRequests();
+
       } catch (err) {
         reject(err);
       }
