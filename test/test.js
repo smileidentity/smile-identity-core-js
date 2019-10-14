@@ -262,6 +262,7 @@ describe('WebApi', () => {
         job_type: 4
       };
       let options = {};
+      let smile_job_id = '0000988';
 
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload', (body) => {
@@ -277,6 +278,7 @@ describe('WebApi', () => {
         })
         .reply(200, {
           upload_url: 'https://some_url.com',
+          smile_job_id: smile_job_id
         })
         .isDone();
       nock('https://some_url.com')
@@ -285,7 +287,7 @@ describe('WebApi', () => {
         .isDone();
 
       instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
-        assert.equal(resp, undefined);
+        assert.equal(resp, {success: true, smile_job_id: smile_job_id});
       });
 
       done();

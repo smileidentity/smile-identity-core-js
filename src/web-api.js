@@ -172,7 +172,7 @@ class WebApi {
               var infoJson = _private.configureInfoJson(prepUploadResponse);
 
               _private.zipUpFile(infoJson, () => {
-                return _private.uploadFile(prepUploadResponse['upload_url'], infoJson);
+                return _private.uploadFile(prepUploadResponse['upload_url'], infoJson, prepUploadResponse['smile_job_id']);
               });
             } else {
               var err = JSON.parse(json);
@@ -289,7 +289,7 @@ class WebApi {
             }, timeout);
           });
       },
-      uploadFile: function(signedUrl, info_json) {
+      uploadFile: function(signedUrl, info_json, SmileJobID) {
         // upload zip file to s3 using the signed link obtained from the upload lambda
         var json = '';
         var options = url.parse(signedUrl);
@@ -309,7 +309,7 @@ class WebApi {
               if (_private.data.return_job_status) {
                 return _private.QueryJobStatus();
               } else {
-                return _private.data.resolve();
+                return _private.data.resolve({success: true, smile_job_id: SmileJobID});
               }
             } else {
               _private.data.reject(new Error(`Zip upload status code: ${resp.statusCode}`));
