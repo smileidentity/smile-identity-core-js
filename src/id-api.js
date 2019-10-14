@@ -56,8 +56,16 @@ class IDApi {
         _private.data.partner_params = partnerParams;
       },
       idInfo: function(idInfo) {
+        if (typeof idInfo !== 'object') {
+          throw new Error('ID Info needs to be an object');
+        }
+
         if (!idInfo ||  Object.keys(idInfo).length == 0) {
           throw new Error("Please make sure that id_info not empty or nil");
+        }
+
+        if(!idInfo.id_number || idInfo.id_number.length === 0) {
+          throw new Error("Please provide an id_number in the id_info payload");
         }
 
         _private.data.id_info = idInfo;

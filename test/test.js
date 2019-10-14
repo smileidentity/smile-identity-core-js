@@ -739,7 +739,6 @@ describe('IDapi', () => {
       });
     });
 
-
     it('should ensure that the partner_params contain user_id, job_id and job_type', (done) => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       ['user_id', 'job_id', 'job_type'].forEach((key) => {
@@ -754,6 +753,30 @@ describe('IDapi', () => {
         });
       });
       done();
+    });
+
+    it('should ensure that the id_info is an object', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      instance.submit_job({user_id: '1', job_id: '1', job_type: 5}, '').catch((err) => {
+        assert.equal(err.message, 'ID Info needs to be an object')
+        done();
+      });
+    });
+
+    it('should ensure that the id_info object is not empty or nil', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      instance.submit_job({user_id: '1', job_id: '1', job_type: 5}, {}).catch((err) => {
+        assert.equal(err.message, 'Please make sure that id_info not empty or nil')
+        done();
+      });
+    });
+
+    it('should ensure that the id_info object is not empty or nil', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      instance.submit_job({user_id: '1', job_id: '1', job_type: 5}, {id_number: ''}).catch((err) => {
+        assert.equal(err.message, 'Please provide an id_number in the id_info payload')
+        done();
+      });
     });
 
     it('should ensure that the the job id is set to 5', (done) => {
