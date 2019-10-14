@@ -323,12 +323,12 @@ response.then((result) => {
 Sometimes, you may want to get a particular job status at a later time. You may use the get_job_status function to do this:
 
 You will already have your Web Api class initialised as follows:
-```ruby
+```javascript
   connection = new WebApi(partner_id, default_callback, api_key, sid_server);
 ```
 
 Thereafter, simply call get_job_status with the correct parameters:
-```ruby
+```javascript
   response = connection.get_job_status(partner_params, options)
 
   where options is {return_history: true | false, return_image_links: true | false}
