@@ -42,7 +42,6 @@ class IDApi {
           throw new Error('Partner params needs to be an object');
         }
 
-        // look into with job type being a string
         ['user_id', 'job_id', 'job_type'].forEach((key) => {
           if (!partnerParams[key] || (typeof partnerParams === 'string' && partnerParams[key].length === 0)) {
             throw new Error(`Please make sure that ${key} is included in the partner params`);
