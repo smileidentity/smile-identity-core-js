@@ -711,6 +711,32 @@ describe('IDapi', () => {
         id_number: '00000000000',
         phone_number: '0726789065'
       };
+      let IDApiResponse = {
+        "JSONVersion": "1.0.0",
+        "SmileJobID": "0000001096",
+        "PartnerParams": {
+            "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
+            "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
+            "job_type": 5
+        },
+        "ResultType": "ID Verification",
+        "ResultText": "ID Number Validated",
+        "ResultCode": "1012",
+        "IsFinalResult": "true",
+        "Actions": {
+          "Verify_ID_Number": "Verified",
+          "Return_Personal_Info": "Returned"
+        },
+        "Country": "NG",
+        "IDType": "BVN",
+        "IDNumber": "00000000000",
+        "ExpirationDate": "NaN-NaN-NaN",
+        "FullName": "some  person",
+        "DOB": "NaN-NaN-NaN",
+        "Photo": "Not Available",
+        "sec_key": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba",
+        "timestamp": 1570612182124
+      };
 
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/id_verification', (body) => {
@@ -729,38 +755,14 @@ describe('IDapi', () => {
           assert.equal(body.phone_number, id_info.phone_number);
           return true;
         })
-        .reply(200, {
-          "JSONVersion": "1.0.0",
-          "SmileJobID": "0000001096",
-          "PartnerParams": {
-              "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
-              "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-              "job_type": 5
-          },
-          "ResultType": "ID Verification",
-          "ResultText": "ID Number Validated",
-          "ResultCode": "1012",
-          "IsFinalResult": "true",
-          "Actions": {
-              "Verify_ID_Number": "Verified",
-              "Return_Personal_Info": "Returned"
-          },
-          "Country": "NG",
-          "IDType": "BVN",
-          "IDNumber": "00000000000",
-          "ExpirationDate": "NaN-NaN-NaN",
-          "FullName": "some  person",
-          "DOB": "NaN-NaN-NaN",
-          "Photo": "Not Available",
-          "sec_key": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba",
-          "timestamp": 1570612182124
-        })
+        .reply(200, IDApiResponse)
         .isDone();
 
-      instance.submit_job(partner_params, id_info).then((resp) => {
-        assert.equal(resp, undefined);
+      let promise = instance.submit_job(partner_params, id_info);
+      promise.then((resp) => {
+        assert.deepEqual(Object.keys(resp).sort(), ['JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp'].sort());
+        done();
       });
-      done();
     });
 
     it('should raise an error when a network call fails', (done) => {

@@ -93,7 +93,7 @@ class IDApi {
 
           resp.on('end', function() {
             if (resp.statusCode === 200) {
-              return JSON.parse(json);
+              return _private.data.resolve(JSON.parse(json));
             } else {
               var err = JSON.parse(json);
               _private.data.reject(new Error(`${err.code}:${err.error}`));
