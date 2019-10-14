@@ -1,6 +1,6 @@
 {
   "name": "smile-identity-core",
-  "version": "0.2.4",
+  "version": "1.0.0",
   "description": "The official Smile Identity gem exposes two classes namely, the WebApi and Signature class.",
   "main": "index.js",
   "scripts": {
