@@ -7,6 +7,8 @@ const jszip = require('jszip');
 const path = require('path');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
+const IDApi = require('./id-api');
+
 const url = require('url');
 
 class WebApi {
@@ -32,7 +34,7 @@ class WebApi {
     // define the data and functions we will need
     var _private = {
       data: {
-        callback_url: options.optional_callback || this.default_callback,
+        callback_url: options && options.optional_callback || this.default_callback,
         timestamp: Date.now(),
         url: this.url,
         partner_id: this.partner_id,
@@ -42,18 +44,21 @@ class WebApi {
       validateInputs: function() {
         // validate inputs and add them to our data store
         _private.partnerParams(partner_params);
-        _private.images(image_details);
         _private.idInfo(id_info);
-        _private.checkBoolean('return_job_status', options.return_job_status);
-        _private.checkBoolean('return_history', options.return_history);
-        _private.checkBoolean('return_images', options.return_images);
+
+        if(parseInt(partner_params.job_type, 10) !== 5) {
+          _private.images(image_details);
+          _private.checkBoolean('return_job_status', options.return_job_status);
+          _private.checkBoolean('return_history', options.return_history);
+          _private.checkBoolean('return_images', options.return_images);
+        }
       },
       validateReturnData: function() {
         if ((!_private.data.callback_url || _private.data.callback_url.length === 0) && !_private.data.return_job_status) {
           throw new Error("Please choose to either get your response via the callback or job status query");
         }
       },
-      validateEnrollWithID: function() { 
+      validateEnrollWithID: function() {
         var hasImage = function(imageData) {
           return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
         }
@@ -65,7 +70,6 @@ class WebApi {
         if (!partnerParams) {
           throw new Error('Please ensure that you send through partner params');
         }
-
 
         if (typeof partnerParams !== 'object') {
           throw new Error('Partner params needs to be an object');
@@ -142,7 +146,7 @@ class WebApi {
           sec_key: _private.determineSecKey().sec_key,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
-          model_parameters: {}, 
+          model_parameters: {},
           callback_url: _private.data.callback_url
         };
         return JSON.stringify(body);
@@ -173,7 +177,7 @@ class WebApi {
               var infoJson = _private.configureInfoJson(prepUploadResponse);
 
               _private.zipUpFile(infoJson, () => {
-                return _private.uploadFile(prepUploadResponse['upload_url'], infoJson);
+                return _private.uploadFile(prepUploadResponse['upload_url'], infoJson, prepUploadResponse['smile_job_id']);
               });
             } else {
               var err = JSON.parse(json);
@@ -290,7 +294,7 @@ class WebApi {
             }, timeout);
           });
       },
-      uploadFile: function(signedUrl, info_json) {
+      uploadFile: function(signedUrl, info_json, SmileJobID) {
         // upload zip file to s3 using the signed link obtained from the upload lambda
         var json = '';
         var options = url.parse(signedUrl);
@@ -310,7 +314,7 @@ class WebApi {
               if (_private.data.return_job_status) {
                 return _private.QueryJobStatus();
               } else {
-                return _private.data.resolve();
+                return _private.data.resolve({success: true, smile_job_id: SmileJobID});
               }
             } else {
               _private.data.reject(new Error(`Zip upload status code: ${resp.statusCode}`));
@@ -323,8 +327,16 @@ class WebApi {
         req.on("error", (err) => {
           _private.data.reject(err);
         });
+      },
+      setupIDApiRequest: function() {
+        let promise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
 
-      }      
+        promise.then((idApiResp) => {
+          return _private.data.resolve(idApiResp);
+        }).catch((err) => {
+          throw _private.data.reject(err);
+        });
+      }
     };
     // this section kicks everything off
     var result = new Promise((resolve, reject) => {
@@ -332,11 +344,17 @@ class WebApi {
         _private.data.resolve = resolve;
         _private.data.reject = reject;
         _private.validateInputs();
-        _private.validateReturnData();
-        if (parseInt(_private.data.partner_params.job_type, 10) == 1) {
-          _private.validateEnrollWithID();
+
+        if (parseInt(_private.data.partner_params.job_type, 10) === 5) {
+          _private.setupIDApiRequest();
+        } else {
+          _private.validateReturnData();
+          if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
+            _private.validateEnrollWithID();
+          }
+          _private.setupRequests();
         }
-        _private.setupRequests();
+
       } catch (err) {
         reject(err);
       }
