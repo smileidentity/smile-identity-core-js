@@ -115,8 +115,13 @@ class WebApi {
         _private.data.images = images;
       },
       idInfo: function(id_info) {
+
+        if(!('entered' in id_info) || id_info['entered'].toString() === 'false') {
+          id_info['entered'] = 'false';
+        }
+
         if ('entered' in id_info && id_info['entered'].toString() === 'true') {
-          ['first_name', 'last_name', 'country', 'id_type', 'id_number'].forEach((key) => {
+          ['country', 'id_type', 'id_number'].forEach((key) => {
             if (!id_info[key] || id_info[key].length === 0) {
               throw new Error(`Please make sure that ${key} is included in the id_info`);
             }

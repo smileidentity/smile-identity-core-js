@@ -207,10 +207,8 @@ describe('WebApi', () => {
         job_id: '1',
         job_type: 1
       };
-      ['first_name', 'last_name', 'country', 'id_type', 'id_number'].forEach((key) => {
+      ['country', 'id_type', 'id_number'].forEach((key) => {
         let id_info = {
-          first_name: 'Some',
-          last_name: 'Person',
           country: 'NG',
           id_type: 'BVN',
           id_number: '12345',
