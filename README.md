@@ -509,3 +509,29 @@ To release a new version, update the version number in `package.json`, and then 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/smileidentity/smile-identity-core-js
+
+## Deploying
+
+Ask a Smile Identity team member to add you to the npm team organisation. Provide them with your npm username.
+
+Once you are added to the organisation, login to npm on the command line using ``npm login``.
+
+To publish a new version, first update the version number in the package.json file following the semantic versioning spec found [here](https://docs.npmjs.com/about-semantic-versioning).
+
+We strongly suggest updating the github tag to match the npm published version. You can do this as follows:
+
+```
+$ git tag -a <tagname which is the npm version number> -m '<message>'
+$ git push origin <tag>
+```
+
+The gist of it is as follows:
+
+| Code status | Stage | Rule      |  Example version |
+|----------|:-------------:|:------|------:|
+|First release|New product|Start with 1.0.0|1.0.0|
+|Backward compatible bug fixes|Patch release|Increment the third digit|1.0.1|
+|Backward compatible new features|Minor release|Increment the middle digit and reset last digit to zero|1.1.0|
+|Changes that break backward compatibility|Major release|Increment the first digit and reset middle and last digits to zero|2.0.0|
+
+Thereafter, run ```npm publish``` and follow the section to install and use the library in your external app.
