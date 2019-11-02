@@ -6,3 +6,7 @@ Add the ability to query ID Api from the Web API class
 Update the documentation to include Web Api (job type 5) and ID API
 Change the way that we import the classes from the modules (not backward compatible) e.g require("smile-identity-core").WebAPI
 Remove the id_info validations for Web API (only validate the id_number, id_type and country)
+
+## [1.0.1] - 2019-11-02
+## Updated
+.git files are once again being ignored with an npm version bump
