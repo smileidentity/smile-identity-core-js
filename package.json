@@ -11,13 +11,13 @@
   "license": "ISC",
   "devDependencies": {
     "keypair": "^1.0.1",
-    "mocha": "^6.1.4",
+    "mocha": "^6.2.3",
     "nock": "^10.0.6",
     "nyc": "^14.1.1",
-    "sinon": "^7.3.2"
+    "sinon": "^7.5.0"
   },
   "dependencies": {
-    "jszip": "^3.2.2"
+    "jszip": "^3.4.0"
   },
   "directories": {
     "test": "test"
