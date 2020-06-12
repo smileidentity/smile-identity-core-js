@@ -9,3 +9,7 @@ module.exports = {
   Signature,
   Utilities
 }
+
+if ((typeof(process) === 'undefined' && typeof(process.versions.node) === 'undefined') || typeof(window) !== 'undefined') {
+	console.error('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
+}
