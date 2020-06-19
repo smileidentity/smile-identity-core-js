@@ -167,19 +167,6 @@ describe('WebApi', () => {
       });
     });
 
-    it('should ensure that images only contains valid image type ids', (done) => {
-      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
-      let partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 1
-      };
-      instance.submit_job(partner_params, [{image_type_id: 5, image: 'path/to/image'}, {image_type_id: 2, image: 'path/to/image'}], {}, {return_job_status: true}).catch((err) => {
-        assert.equal(err.message, 'Invalid image_type_id');
-        done();
-      });
-    });
-
     it('should ensure that the image type id is correct', (done) => {
       let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
@@ -551,7 +538,7 @@ describe('WebApi', () => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         assert.equal(resp.job_complete, true);
         done();
-      });
+      }).catch((err) => console.log(err));
     }).timeout(5000);
   });
 
