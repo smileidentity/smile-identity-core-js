@@ -167,26 +167,6 @@ describe('WebApi', () => {
       });
     });
 
-    it('should ensure that the image type id is correct', (done) => {
-      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
-      let partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 1
-      };
-      [2, 3].forEach((val) => {
-        instance.submit_job(partner_params, [{image_type_id: val, image: 'path/to/image.jpg'}, {image_type_id: 2, image: 'path/to/image'}], {}, {return_job_status: true}).catch((err) => {
-          assert.equal(err.message, 'image_type_id mismatch');
-        });
-      });
-      [0, 1].forEach((val) => {
-        instance.submit_job(partner_params, [{image_type_id: val, image: 'path/to/image'}, {image_type_id: 2, image: 'path/to/image'}], {}, {return_job_status: true}).catch((err) => {
-          assert.equal(err.message, 'image_type_id mismatch');
-        });
-      });
-      done();
-    });
-
     it('should ensure that id_info is correctly filled out', (done) => {
       let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {

@@ -100,15 +100,6 @@ class WebApi {
           throw new Error('You need to send through at least one selfie image');
         }
 
-        images.forEach((image) => {
-          if (image['image_type_id'] > 1 && image['image'].match(/(\.jpe?g)|(\.png)$/)) {
-            throw new Error("image_type_id mismatch");
-          }
-          if (image['image_type_id'] < 2 && !image['image'].match(/(\.jpe?g)|(\.png)$/)) {
-            throw new Error("image_type_id mismatch");
-          }
-        });
-
         _private.data.images = images;
       },
       idInfo: function(id_info) {
