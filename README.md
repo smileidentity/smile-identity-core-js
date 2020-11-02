@@ -25,7 +25,7 @@ This package **requires node 6.x or higher**
 
 This package requires specific input parameters, for more detail on these parameters please refer to our [documentation for Web API](https://docs.smileidentity.com/products/web-api/javascript).
 
-Please note that you will have to be a Smile Identity Partner to be able to query our services.
+Please note that you will have to be a Smile Identity Partner to be able to query our services. You can sign up on the [Portal](https://portal.smileidentity.com/signup?products[]=1-IDVALIDATION&products[]=2-AUTHENTICATION).
 
 ## Usage
 
