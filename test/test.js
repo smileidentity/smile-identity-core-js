@@ -92,7 +92,7 @@ describe('WebApi', () => {
       assert.equal(instance.partner_id, '001');
       assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
       assert.equal(instance.default_callback, 'https://a_callback.com');
-      assert.equal(instance.url, '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test');
+      assert.equal(instance.url, 'testapi.smileidentity.com/v1');
       done();
     });
   });
@@ -258,8 +258,8 @@ describe('WebApi', () => {
       let options = {};
       let smile_job_id = '0000000111';
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload', (body) => {
           assert.equal(body.smile_client_id, '001');
           assert.notEqual(body.sec_key, undefined);
           assert.notEqual(body.timestamp, undefined);
@@ -299,8 +299,8 @@ describe('WebApi', () => {
       };
       let smile_job_id = '0000000111';
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload', (body) => {
           assert.equal(body.smile_client_id, '001');
           assert.notEqual(body.signature, undefined);
           assert.notEqual(body.timestamp, undefined);
@@ -372,8 +372,8 @@ describe('WebApi', () => {
       };
       let smile_job_id = '0000000111';
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
           return true;
         })
         .reply(200, IDApiResponse)
@@ -433,8 +433,8 @@ describe('WebApi', () => {
       };
       let smile_job_id = '0000000111';
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
           return true;
         })
         .reply(200, IDApiResponse)
@@ -460,8 +460,8 @@ describe('WebApi', () => {
         signature: true
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .replyWithError(400, {
           code: '2204',
           error: 'unauthorized'
@@ -513,8 +513,8 @@ describe('WebApi', () => {
         signature: sec_key
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .reply(200, {
           upload_url: 'https://some_url.com',
         })
@@ -523,8 +523,8 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status')
         .reply(200, jobStatusResponse)
         .isDone();
 
@@ -566,8 +566,8 @@ describe('WebApi', () => {
         signature: sec_key
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .reply(200, {
           upload_url: 'https://some_url.com',
         })
@@ -576,8 +576,8 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -625,8 +625,8 @@ describe('WebApi', () => {
         signature: sec_key
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .reply(200, {
           upload_url: 'https://some_url.com',
         })
@@ -635,13 +635,13 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status')
         .reply(200, jobStatusResponse)
         .isDone();
       jobStatusResponse.job_complete = true;
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status')
         .reply(200, jobStatusResponse)
         .isDone();
 
@@ -682,8 +682,8 @@ describe('WebApi', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -736,8 +736,8 @@ describe('Utilities', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -785,8 +785,8 @@ describe('Utilities', () => {
         timestamp: timestamp,
         signature: signature
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -830,8 +830,8 @@ describe('Utilities', () => {
       let jobStatusResponse = {
         error: 'oops'
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -863,7 +863,7 @@ describe('IDapi', () => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       assert.equal(instance.partner_id, '001');
       assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
-      assert.equal(instance.url, '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test');
+      assert.equal(instance.url, 'testapi.smileidentity.com/v1');
       done();
     });
   });
@@ -981,8 +981,8 @@ describe('IDapi', () => {
         "timestamp": 1570612182124
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
           assert.equal(body.partner_id, '001');
           assert.notEqual(body.sec_key, undefined);
           assert.notEqual(body.timestamp, undefined);
@@ -1025,8 +1025,8 @@ describe('IDapi', () => {
         phone_number: '0726789065'
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification')
         .replyWithError(400, {
           code: '2204',
           error: 'unauthorized'
@@ -1087,8 +1087,8 @@ describe('IDapi', () => {
         "timestamp": 1570612182124
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
           assert.equal(body.partner_id, '001');
           assert.notEqual(body.signature, undefined);
           assert.notEqual(body.timestamp, undefined);
