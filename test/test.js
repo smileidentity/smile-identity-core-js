@@ -55,6 +55,34 @@ describe('Signature', () => {
       done();
     });
   });
+
+  describe('#generate_signature', () => {
+    it('should calculate a signature and use a timestamp if provided one', (done) => {
+      let timestamp = new Date().toISOString();
+      let hmac = crypto.createHmac('sha256', '1234');
+      hmac.update(timestamp, 'utf8');
+      hmac.update('002', 'utf8');
+      hmac.update("sid_request", 'utf8');
+      let output = hmac.digest().toString('base64');
+      let result = new Signature('002', '1234').generate_signature(timestamp)
+      assert.equal(output, result.signature);
+      assert.equal(timestamp, result.timestamp);
+      done();
+    });
+  });
+
+  describe('#confirm_signature', () => {
+    it('should confirm an incoming signaute', (done) => {
+      let timestamp = new Date().toISOString();
+      let hmac = crypto.createHmac('sha256', '1234');
+      hmac.update(timestamp, 'utf8');
+      hmac.update('002', 'utf8');
+      hmac.update("sid_request", 'utf8');
+      let output = hmac.digest().toString('base64');
+      assert.equal(true, new Signature('002', '1234').confirm_signature(timestamp, output));
+      done();
+    });
+  });
 });
 
 describe('WebApi', () => {
