@@ -41,7 +41,12 @@ class Utilities {
         resp.on('end', () => {
           var body = JSON.parse(json);
           if (resp.statusCode === 200) {
-            var valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
+            var valid;
+            if (optionFlags.signature) {
+              valid = new Signature(this.partner_id, this.api_key).confirm_signature(body['timestamp'], body['signature']);
+            } else {
+              valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
+            }
             if (!valid) {
               return reject(new Error("Unable to confirm validity of the job_status response"));
             }
@@ -53,17 +58,26 @@ class Utilities {
         });
 
       });
-      var timestamp = Date.now();
-      var signature = new Signature(this.partner_id, this.api_key).generate_sec_key();
-      req.write(JSON.stringify({
+      var timestamp;
+      if (optionFlags.signature) {
+        timestamp = new Date().toISOString();
+      } else {
+        timestamp = Date.now();
+      }
+      let reqBody = {
         user_id: user_id,
         job_id: job_id,
         partner_id: this.partner_id,
-        timestamp: signature.timestamp,
-        sec_key: signature.sec_key,
+        timestamp: timestamp,
         history: optionFlags.return_history,
         image_links: optionFlags.return_images
-      }));
+      };
+      if (optionFlags.signature) {
+        reqBody.signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
+      } else {
+        reqBody.sec_key = new Signature(this.partner_id, this.api_key).generate_sec_key(timestamp).sec_key;
+      }
+      req.write(JSON.stringify(reqBody));
       req.end();
 
       req.on("error", (err) => {

@@ -656,6 +656,55 @@ describe('Utilities', () => {
         });
     });
 
+    it('should be able to use the signature instead of the sec_key when provided an option flag', (done) => {
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_images: true,
+        return_history: true,
+        signature: true
+      };
+
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', '1234').generate_signature(timestamp).signature;
+      
+      let jobStatusResponse = {
+        job_success: true,
+        job_complete: true,
+        result: {
+          ResultCode: '0810',
+          ResultText: 'Awesome!'
+        },
+        timestamp: timestamp,
+        signature: signature
+      };
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/job_status',(body) => {
+          assert.equal(body.job_id, partner_params.job_id);
+          assert.equal(body.user_id, partner_params.user_id);
+          assert.notEqual(body.timestamp, undefined);
+          assert.notEqual(body.signature, undefined);
+          assert.equal(body.image_links, true);
+          assert.equal(body.history, true);
+          return true;
+        })
+        .reply(200, jobStatusResponse)
+        .isDone();
+      new Utilities('001', '1234', 0)
+        .get_job_status(partner_params.user_id, partner_params.job_id, options)
+        .then((job_status, err) => {
+          assert.equal(job_status.signature, jobStatusResponse.signature);
+          assert.equal(job_status.job_complete, true);
+          done();
+        }).catch((err) => {
+          assert.equal(null, err);
+          console.log(err)
+        });
+    });
+
     it('should raise an error if one occurs', (done) => {
       let partner_params = {
         user_id: '1',
