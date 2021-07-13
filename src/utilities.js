@@ -9,8 +9,8 @@ class Utilities {
     this.api_key = api_key;
     if (['0', '1'].indexOf(sid_server.toString()) > -1) {
       var sid_server_mapping = {
-        '0': '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test',
-        '1': 'la7am6gdm8.execute-api.us-west-2.amazonaws.com/prod'
+        '0': 'testapi.smileidentity.com/v1',
+        '1': 'api.smileidentity.com/v1'
       };
       this.url = sid_server_mapping[sid_server.toString()];
     } else {

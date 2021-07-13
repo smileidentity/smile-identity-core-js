@@ -427,7 +427,7 @@ Your response will return a promise that contains a JSON Object below (with imag
 ##### submit_job method
 ```
 $ const connection = new IDApi(partner_id, api_key, sid_server);
-$ const response = connection.submit_job(partner_params, id_info);
+$ const response = connection.submit_job(partner_params, id_info, options);
 ```
 
 **Response**
