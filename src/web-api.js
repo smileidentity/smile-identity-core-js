@@ -30,12 +30,12 @@ class WebApi {
 
   }
 
-  submit_job(partner_params, image_details, id_info, options) {
+  submit_job(partner_params, image_details, id_info, options={}) {
     // define the data and functions we will need
     var _private = {
       data: {
         callback_url: options && options.optional_callback || this.default_callback,
-        timestamp: Date.now(),
+        timestamp: options && options.signature ? new Date().toISOString() : Date.now(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,
@@ -132,16 +132,24 @@ class WebApi {
         // calculate an outgoing signature
         return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
       },
+      determineSignature: function(timestamp) {
+        // calculate an outgoing signature
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(timestamp || _private.data.timestamp);
+      },
       configurePrepUploadJson: function() {
         var body =  {
           file_name: 'selfie.zip',
           timestamp: _private.data.timestamp,
-          sec_key: _private.determineSecKey().sec_key,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
           model_parameters: {},
           callback_url: _private.data.callback_url
         };
+        if (options && options.signature) {
+          body.signature = _private.determineSignature().signature;
+        } else {
+          body.sec_key = _private.determineSecKey().sec_key;
+        }
         return JSON.stringify(body);
       },
       setupRequests: function() {
@@ -269,7 +277,8 @@ class WebApi {
             _private.data.partner_params.job_id,
             {
               return_history: _private.data.return_history,
-              return_images: _private.data.return_images
+              return_images: _private.data.return_images,
+              signature: options ? options.signature : false
           }).then((body) => {
             if (!body['job_complete']) {
               if (counter > 21) {
@@ -322,7 +331,8 @@ class WebApi {
         });
       },
       setupIDApiRequest: function() {
-        let promise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server).submit_job(_private.data.partner_params, _private.data.id_info);
+        let idapiOptions = options ? options : {};
+        let promise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server, {}).submit_job(_private.data.partner_params, _private.data.id_info, idapiOptions);
 
         promise.then((idApiResp) => {
           return _private.data.resolve(idApiResp);

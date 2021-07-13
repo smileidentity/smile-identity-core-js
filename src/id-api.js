@@ -82,7 +82,7 @@ class IDApi {
           partner_id: _private.data.partner_id,
           partner_params: _private.data.partner_params
         };
-        if (options.signature) {
+        if (options && options.signature) {
           body.signature = _private.determineSignature().signature;
         } else {
           body.sec_key = _private.determineSecKey().sec_key;

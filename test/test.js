@@ -287,6 +287,47 @@ describe('WebApi', () => {
       done();
     });
 
+    it('should be able to send a job with a signature', (done) => {
+      let instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        signature: true
+      };
+      let smile_job_id = '0000000111';
+
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/upload', (body) => {
+          assert.equal(body.smile_client_id, '001');
+          assert.notEqual(body.signature, undefined);
+          assert.notEqual(body.timestamp, undefined);
+          assert.equal(body.file_name, 'selfie.zip');
+          assert.equal(body.partner_params.user_id, partner_params.user_id);
+          assert.equal(body.partner_params.job_id, partner_params.job_id);
+          assert.equal(body.partner_params.job_type, partner_params.job_type);
+          assert.equal(body.callback_url, 'https://a_callback.cb');
+          return true;
+        })
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+          smile_job_id: smile_job_id
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200)
+        .isDone();
+
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+        assert.deepEqual(resp, {success: true, smile_job_id: smile_job_id});
+      });
+
+      done();
+    });
+
     it('should call IDApi.new().submit_job if the job type is 5', (done) => {
       let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
@@ -347,6 +388,67 @@ describe('WebApi', () => {
       });
     });
 
+    it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', (done) => {
+      let instance = new WebApi('001', null, '1234', 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 5
+      };
+      let id_info = {
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: '',
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+        phone_number: '0726789065'
+      };
+      let timestamp = new Date().toISOString();
+      let IDApiResponse = {
+        "JSONVersion": "1.0.0",
+        "SmileJobID": "0000001096",
+        "PartnerParams": {
+            "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
+            "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
+            "job_type": 5
+        },
+        "ResultType": "ID Verification",
+        "ResultText": "ID Number Validated",
+        "ResultCode": "1012",
+        "IsFinalResult": "true",
+        "Actions": {
+          "Verify_ID_Number": "Verified",
+          "Return_Personal_Info": "Returned"
+        },
+        "Country": "NG",
+        "IDType": "BVN",
+        "IDNumber": "00000000000",
+        "ExpirationDate": "NaN-NaN-NaN",
+        "FullName": "some  person",
+        "DOB": "NaN-NaN-NaN",
+        "Photo": "Not Available",
+        "signature": new Signature('001', '1234').generate_signature(timestamp).signature,
+        "timestamp": timestamp
+      };
+      let smile_job_id = '0000000111';
+
+      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
+        .post('/test/id_verification', (body) => {
+          return true;
+        })
+        .reply(200, IDApiResponse)
+        .isDone()
+
+      let promise = instance.submit_job(partner_params, null, id_info, {signature: true});
+      promise.then((resp) => {
+        assert.deepEqual(Object.keys(resp).sort(), [
+          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'
+        ].sort());
+        done();
+      });
+    });
+
     it('should raise an error when a network call fails', (done) => {
       let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
@@ -354,7 +456,9 @@ describe('WebApi', () => {
         job_id: '1',
         job_type: 4
       };
-      let options = {};
+      let options = {
+        signature: true
+      };
 
       nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
         .post('/test/upload')
