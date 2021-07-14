@@ -9,8 +9,8 @@ class Utilities {
     this.api_key = api_key;
     if (['0', '1'].indexOf(sid_server.toString()) > -1) {
       var sid_server_mapping = {
-        '0': '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test',
-        '1': 'la7am6gdm8.execute-api.us-west-2.amazonaws.com/prod'
+        '0': 'testapi.smileidentity.com/v1',
+        '1': 'api.smileidentity.com/v1'
       };
       this.url = sid_server_mapping[sid_server.toString()];
     } else {
@@ -41,7 +41,12 @@ class Utilities {
         resp.on('end', () => {
           var body = JSON.parse(json);
           if (resp.statusCode === 200) {
-            var valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
+            var valid;
+            if (optionFlags.signature) {
+              valid = new Signature(this.partner_id, this.api_key).confirm_signature(body['timestamp'], body['signature']);
+            } else {
+              valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
+            }
             if (!valid) {
               return reject(new Error("Unable to confirm validity of the job_status response"));
             }
@@ -53,17 +58,26 @@ class Utilities {
         });
 
       });
-      var timestamp = Date.now();
-      var signature = new Signature(this.partner_id, this.api_key).generate_sec_key();
-      req.write(JSON.stringify({
+      var timestamp;
+      if (optionFlags.signature) {
+        timestamp = new Date().toISOString();
+      } else {
+        timestamp = Date.now();
+      }
+      let reqBody = {
         user_id: user_id,
         job_id: job_id,
         partner_id: this.partner_id,
-        timestamp: signature.timestamp,
-        sec_key: signature.sec_key,
+        timestamp: timestamp,
         history: optionFlags.return_history,
         image_links: optionFlags.return_images
-      }));
+      };
+      if (optionFlags.signature) {
+        reqBody.signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
+      } else {
+        reqBody.sec_key = new Signature(this.partner_id, this.api_key).generate_sec_key(timestamp).sec_key;
+      }
+      req.write(JSON.stringify(reqBody));
       req.end();
 
       req.on("error", (err) => {
