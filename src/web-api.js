@@ -76,7 +76,7 @@ class WebApi {
         }
 
         ['user_id', 'job_id', 'job_type'].forEach((key) => {
-          if (!partnerParams[key] || (typeof partnerParams === 'string' && partnerParams[key].length === 0)) {
+          if (!partnerParams[key]) {
             throw new Error(`Please make sure that ${key} is included in the partner params`);
           }
         });
