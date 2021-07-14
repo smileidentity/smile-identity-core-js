@@ -70,11 +70,11 @@ class IDApi {
 
         _private.data.id_info = idInfo;
       },
-      determineSecKey: function(timestamp) {
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
+      determineSecKey: function() {
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(_private.data.timestamp);
       },
-      determineSignature: function(timestamp) {
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(timestamp || _private.data.timestamp);
+      determineSignature: function() {
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(_private.data.timestamp);
       },
       configureJson: function() {
         var body =  {
