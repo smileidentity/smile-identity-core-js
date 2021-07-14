@@ -33,7 +33,7 @@ class Signature {
     hmac.update(this.partnerID, 'utf8');
     hmac.update("sid_request", 'utf8');
     let output = hmac.digest().toString('base64');
-    return {signature: output, timestamp: timestamp}
+    return {signature: output, timestamp: timestamp};
   }
 
   confirm_signature(timestamp, signature) {
