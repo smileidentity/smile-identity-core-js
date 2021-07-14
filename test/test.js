@@ -143,6 +143,22 @@ describe('WebApi', () => {
       done();
     });
 
+    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', (done) => {
+      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      ['user_id', 'job_id', 'job_type'].forEach((key) => {
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 1
+        };
+        partner_params[key] = '';
+        instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
+          assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
+        });
+      });
+      done();
+    });
+
     it('should ensure that images exist', (done) => {
       let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
@@ -894,6 +910,22 @@ describe('IDapi', () => {
           job_type: 5
         };
         delete partner_params[key];
+        instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
+          assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
+        });
+      });
+      done();
+    });
+
+    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      ['user_id', 'job_id', 'job_type'].forEach((key) => {
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 5
+        };
+        partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
           assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
         });
