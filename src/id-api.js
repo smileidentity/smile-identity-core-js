@@ -80,7 +80,8 @@ class IDApi {
         var body =  {
           timestamp: _private.data.timestamp,
           partner_id: _private.data.partner_id,
-          partner_params: _private.data.partner_params
+          partner_params: _private.data.partner_params,
+          language: "javascript"
         };
         if (options && options.signature) {
           body.signature = _private.determineSignature().signature;
