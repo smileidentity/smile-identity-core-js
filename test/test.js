@@ -55,6 +55,34 @@ describe('Signature', () => {
       done();
     });
   });
+
+  describe('#generate_signature', () => {
+    it('should calculate a signature and use a timestamp if provided one', (done) => {
+      let timestamp = new Date().toISOString();
+      let hmac = crypto.createHmac('sha256', '1234');
+      hmac.update(timestamp, 'utf8');
+      hmac.update('002', 'utf8');
+      hmac.update("sid_request", 'utf8');
+      let output = hmac.digest().toString('base64');
+      let result = new Signature('002', '1234').generate_signature(timestamp)
+      assert.equal(output, result.signature);
+      assert.equal(timestamp, result.timestamp);
+      done();
+    });
+  });
+
+  describe('#confirm_signature', () => {
+    it('should confirm an incoming signaute', (done) => {
+      let timestamp = new Date().toISOString();
+      let hmac = crypto.createHmac('sha256', '1234');
+      hmac.update(timestamp, 'utf8');
+      hmac.update('002', 'utf8');
+      hmac.update("sid_request", 'utf8');
+      let output = hmac.digest().toString('base64');
+      assert.equal(true, new Signature('002', '1234').confirm_signature(timestamp, output));
+      done();
+    });
+  });
 });
 
 describe('WebApi', () => {
@@ -64,7 +92,7 @@ describe('WebApi', () => {
       assert.equal(instance.partner_id, '001');
       assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
       assert.equal(instance.default_callback, 'https://a_callback.com');
-      assert.equal(instance.url, '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test');
+      assert.equal(instance.url, 'testapi.smileidentity.com/v1');
       done();
     });
   });
@@ -108,6 +136,22 @@ describe('WebApi', () => {
           job_type: 1
         };
         delete partner_params[key];
+        instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
+          assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
+        });
+      });
+      done();
+    });
+
+    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', (done) => {
+      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      ['user_id', 'job_id', 'job_type'].forEach((key) => {
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 1
+        };
+        partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
           assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
         });
@@ -230,10 +274,51 @@ describe('WebApi', () => {
       let options = {};
       let smile_job_id = '0000000111';
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload', (body) => {
           assert.equal(body.smile_client_id, '001');
           assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.timestamp, undefined);
+          assert.equal(body.file_name, 'selfie.zip');
+          assert.equal(body.partner_params.user_id, partner_params.user_id);
+          assert.equal(body.partner_params.job_id, partner_params.job_id);
+          assert.equal(body.partner_params.job_type, partner_params.job_type);
+          assert.equal(body.callback_url, 'https://a_callback.cb');
+          return true;
+        })
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+          smile_job_id: smile_job_id
+        })
+        .isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200)
+        .isDone();
+
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+        assert.deepEqual(resp, {success: true, smile_job_id: smile_job_id});
+      });
+
+      done();
+    });
+
+    it('should be able to send a job with a signature', (done) => {
+      let instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        signature: true
+      };
+      let smile_job_id = '0000000111';
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload', (body) => {
+          assert.equal(body.smile_client_id, '001');
+          assert.notEqual(body.signature, undefined);
           assert.notEqual(body.timestamp, undefined);
           assert.equal(body.file_name, 'selfie.zip');
           assert.equal(body.partner_params.user_id, partner_params.user_id);
@@ -303,8 +388,8 @@ describe('WebApi', () => {
       };
       let smile_job_id = '0000000111';
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
           return true;
         })
         .reply(200, IDApiResponse)
@@ -319,6 +404,67 @@ describe('WebApi', () => {
       });
     });
 
+    it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', (done) => {
+      let instance = new WebApi('001', null, '1234', 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 5
+      };
+      let id_info = {
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: '',
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+        phone_number: '0726789065'
+      };
+      let timestamp = new Date().toISOString();
+      let IDApiResponse = {
+        "JSONVersion": "1.0.0",
+        "SmileJobID": "0000001096",
+        "PartnerParams": {
+            "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
+            "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
+            "job_type": 5
+        },
+        "ResultType": "ID Verification",
+        "ResultText": "ID Number Validated",
+        "ResultCode": "1012",
+        "IsFinalResult": "true",
+        "Actions": {
+          "Verify_ID_Number": "Verified",
+          "Return_Personal_Info": "Returned"
+        },
+        "Country": "NG",
+        "IDType": "BVN",
+        "IDNumber": "00000000000",
+        "ExpirationDate": "NaN-NaN-NaN",
+        "FullName": "some  person",
+        "DOB": "NaN-NaN-NaN",
+        "Photo": "Not Available",
+        "signature": new Signature('001', '1234').generate_signature(timestamp).signature,
+        "timestamp": timestamp
+      };
+      let smile_job_id = '0000000111';
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
+          return true;
+        })
+        .reply(200, IDApiResponse)
+        .isDone()
+
+      let promise = instance.submit_job(partner_params, null, id_info, {signature: true});
+      promise.then((resp) => {
+        assert.deepEqual(Object.keys(resp).sort(), [
+          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'
+        ].sort());
+        done();
+      });
+    });
+
     it('should raise an error when a network call fails', (done) => {
       let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       let partner_params = {
@@ -326,10 +472,12 @@ describe('WebApi', () => {
         job_id: '1',
         job_type: 4
       };
-      let options = {};
+      let options = {
+        signature: true
+      };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .replyWithError(400, {
           code: '2204',
           error: 'unauthorized'
@@ -381,8 +529,8 @@ describe('WebApi', () => {
         signature: sec_key
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .reply(200, {
           upload_url: 'https://some_url.com',
         })
@@ -391,8 +539,8 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status')
         .reply(200, jobStatusResponse)
         .isDone();
 
@@ -434,8 +582,8 @@ describe('WebApi', () => {
         signature: sec_key
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .reply(200, {
           upload_url: 'https://some_url.com',
         })
@@ -444,8 +592,8 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -493,8 +641,8 @@ describe('WebApi', () => {
         signature: sec_key
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/upload')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload')
         .reply(200, {
           upload_url: 'https://some_url.com',
         })
@@ -503,13 +651,13 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200)
         .isDone();
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status')
         .reply(200, jobStatusResponse)
         .isDone();
       jobStatusResponse.job_complete = true;
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status')
         .reply(200, jobStatusResponse)
         .isDone();
 
@@ -550,8 +698,8 @@ describe('WebApi', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -604,8 +752,8 @@ describe('Utilities', () => {
         timestamp: timestamp,
         signature: sec_key
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -620,6 +768,55 @@ describe('Utilities', () => {
         .get_job_status(partner_params.user_id, partner_params.job_id, options)
         .then((job_status, err) => {
           assert.equal(job_status.sec_key, jobStatusResponse.sec_key);
+          assert.equal(job_status.job_complete, true);
+          done();
+        }).catch((err) => {
+          assert.equal(null, err);
+          console.log(err)
+        });
+    });
+
+    it('should be able to use the signature instead of the sec_key when provided an option flag', (done) => {
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 4
+      };
+      let options = {
+        return_images: true,
+        return_history: true,
+        signature: true
+      };
+
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', '1234').generate_signature(timestamp).signature;
+      
+      let jobStatusResponse = {
+        job_success: true,
+        job_complete: true,
+        result: {
+          ResultCode: '0810',
+          ResultText: 'Awesome!'
+        },
+        timestamp: timestamp,
+        signature: signature
+      };
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
+          assert.equal(body.job_id, partner_params.job_id);
+          assert.equal(body.user_id, partner_params.user_id);
+          assert.notEqual(body.timestamp, undefined);
+          assert.notEqual(body.signature, undefined);
+          assert.equal(body.image_links, true);
+          assert.equal(body.history, true);
+          return true;
+        })
+        .reply(200, jobStatusResponse)
+        .isDone();
+      new Utilities('001', '1234', 0)
+        .get_job_status(partner_params.user_id, partner_params.job_id, options)
+        .then((job_status, err) => {
+          assert.equal(job_status.signature, jobStatusResponse.signature);
           assert.equal(job_status.job_complete, true);
           done();
         }).catch((err) => {
@@ -649,8 +846,8 @@ describe('Utilities', () => {
       let jobStatusResponse = {
         error: 'oops'
       };
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/job_status',(body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
@@ -682,7 +879,7 @@ describe('IDapi', () => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       assert.equal(instance.partner_id, '001');
       assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
-      assert.equal(instance.url, '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test');
+      assert.equal(instance.url, 'testapi.smileidentity.com/v1');
       done();
     });
   });
@@ -713,6 +910,22 @@ describe('IDapi', () => {
           job_type: 5
         };
         delete partner_params[key];
+        instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
+          assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
+        });
+      });
+      done();
+    });
+
+    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', (done) => {
+      let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      ['user_id', 'job_id', 'job_type'].forEach((key) => {
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 5
+        };
+        partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
           assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
         });
@@ -800,8 +1013,8 @@ describe('IDapi', () => {
         "timestamp": 1570612182124
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification', (body) => {
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
           assert.equal(body.partner_id, '001');
           assert.notEqual(body.sec_key, undefined);
           assert.notEqual(body.timestamp, undefined);
@@ -844,8 +1057,8 @@ describe('IDapi', () => {
         phone_number: '0726789065'
       };
 
-      nock('https://3eydmgh10d.execute-api.us-west-2.amazonaws.com')
-        .post('/test/id_verification')
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification')
         .replyWithError(400, {
           code: '2204',
           error: 'unauthorized'
@@ -863,7 +1076,75 @@ describe('IDapi', () => {
       done();
     });
 
+    it('should use the signature instead of sec_key when provided an optional parameter', (done) => {
+      let instance = new IDApi('001', '1234', 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: 5
+      };
+      let id_info = {
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: '',
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+        phone_number: '0726789065'
+      };
+      let IDApiResponse = {
+        "JSONVersion": "1.0.0",
+        "SmileJobID": "0000001096",
+        "PartnerParams": {
+            "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
+            "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
+            "job_type": 5
+        },
+        "ResultType": "ID Verification",
+        "ResultText": "ID Number Validated",
+        "ResultCode": "1012",
+        "IsFinalResult": "true",
+        "Actions": {
+          "Verify_ID_Number": "Verified",
+          "Return_Personal_Info": "Returned"
+        },
+        "Country": "NG",
+        "IDType": "BVN",
+        "IDNumber": "00000000000",
+        "ExpirationDate": "NaN-NaN-NaN",
+        "FullName": "some  person",
+        "DOB": "NaN-NaN-NaN",
+        "Photo": "Not Available",
+        "signature": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=",
+        "timestamp": 1570612182124
+      };
 
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/id_verification', (body) => {
+          assert.equal(body.partner_id, '001');
+          assert.notEqual(body.signature, undefined);
+          assert.notEqual(body.timestamp, undefined);
+          assert.equal(body.partner_params.user_id, partner_params.user_id);
+          assert.equal(body.partner_params.job_id, partner_params.job_id);
+          assert.equal(body.partner_params.job_type, partner_params.job_type);
+          assert.equal(body.first_name, id_info.first_name);
+          assert.equal(body.last_name, id_info.last_name);
+          assert.equal(body.middle_name, id_info.middle_name);
+          assert.equal(body.country, id_info.country);
+          assert.equal(body.id_type, id_info.id_type);
+          assert.equal(body.id_number, id_info.id_number);
+          assert.equal(body.phone_number, id_info.phone_number);
+          return true;
+        })
+        .reply(200, IDApiResponse)
+        .isDone();
+
+      let promise = instance.submit_job(partner_params, id_info, {signature: true});
+      promise.then((resp) => {
+        assert.deepEqual(Object.keys(resp).sort(), ['JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'].sort());
+        done();
+      });
+    });
 
   });
 

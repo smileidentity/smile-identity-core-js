@@ -11,8 +11,8 @@ class IDApi {
 
     if (['0', '1'].indexOf(sid_server.toString()) > -1) {
       var sid_server_mapping = {
-        '0': '3eydmgh10d.execute-api.us-west-2.amazonaws.com/test',
-        '1': 'la7am6gdm8.execute-api.us-west-2.amazonaws.com/prod'
+        '0': 'testapi.smileidentity.com/v1',
+        '1': 'api.smileidentity.com/v1'
       };
       this.url = sid_server_mapping[sid_server.toString()];
     } else {
@@ -20,10 +20,10 @@ class IDApi {
     }
   }
 
-  submit_job(partner_params, id_info) {
+  submit_job(partner_params, id_info, options={}) {
     var _private = {
       data: {
-        timestamp: Date.now(),
+        timestamp: options.signature ? new Date().toISOString() : Date.now(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,
@@ -43,7 +43,7 @@ class IDApi {
         }
 
         ['user_id', 'job_id', 'job_type'].forEach((key) => {
-          if (!partnerParams[key] || (typeof partnerParams === 'string' && partnerParams[key].length === 0)) {
+          if (!partnerParams[key]) {
             throw new Error(`Please make sure that ${key} is included in the partner params`);
           }
         });
@@ -70,17 +70,24 @@ class IDApi {
 
         _private.data.id_info = idInfo;
       },
-      determineSecKey: function(timestamp) {
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
+      determineSecKey: function() {
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(_private.data.timestamp);
+      },
+      determineSignature: function() {
+        return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(_private.data.timestamp);
       },
       configureJson: function() {
         var body =  {
           timestamp: _private.data.timestamp,
-          sec_key: _private.determineSecKey().sec_key,
           partner_id: _private.data.partner_id,
-          partner_params: _private.data.partner_params
+          partner_params: _private.data.partner_params,
+          language: "javascript"
         };
-
+        if (options && options.signature) {
+          body.signature = _private.determineSignature().signature;
+        } else {
+          body.sec_key = _private.determineSecKey().sec_key;
+        }
         return JSON.stringify({...body, ..._private.data.id_info});
       },
       setupRequests: function() {
