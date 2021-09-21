@@ -385,6 +385,10 @@ class WebApi {
 				reject( new Error('Request params needs to be an object') );
 			}
 
+			if (!(requestParams.callback_url || this.default_callback)) {
+				reject(new Error('Callback URL is required for this method'));
+			}
+
 			['user_id', 'job_id', 'product'].forEach(requiredParam => {
 				if (!requestParams[requiredParam]) {
 					reject( new Error(`${requiredParam} is required to get a web token`) );
@@ -398,6 +402,7 @@ class WebApi {
 				user_id: requestParams.user_id,
 				job_id: requestParams.job_id,
 				product: requestParams.product,
+				callback_url: requestParams.callback_url,
 				partner_id: this.partner_id,
 				signature,
 				timestamp,

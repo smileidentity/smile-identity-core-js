@@ -797,6 +797,50 @@ describe('WebApi', () => {
 				done();
 			});
 		});
+
+		describe("handle callback url", () => {
+			it('should ensure that a callback URL exists', (done) => {
+				const tokenResponse = new Error('Callback URL is required for this method');
+
+				let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+				let promise = instance.get_web_token({});
+				promise.catch(err => {
+					assert.equal(err.message, 'Callback URL is required for this method');
+					done();
+				});
+			});
+
+			it('should work with a callback_url param', (done) => {
+				const requestParams = {
+					user_id: '1',
+					job_id: '1',
+					product: 'ekyc_smartselfie',
+					callback_url: 'https://a.callback.url/',
+				};
+
+				const tokenResponse = {
+					token: "42"
+				};
+
+				nock('https://testapi.smileidentity.com')
+					.post('/v1/token',(body) => {
+						assert.equal(body.job_id, requestParams.job_id);
+						assert.equal(body.user_id, requestParams.user_id);
+						assert.equal(body.product, requestParams.product);
+						assert.equal(body.callback_url, requestParams.callback_url);
+						return true;
+					})
+					.reply(200, tokenResponse)
+					.isDone();
+
+				let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+				let promise = instance.get_web_token(requestParams);
+				promise.then(resp => {
+					assert.equal(resp.token, '42');
+					done();
+				});
+			});
+		});
 	});
 });
 
