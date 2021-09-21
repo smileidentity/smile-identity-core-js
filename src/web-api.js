@@ -376,7 +376,7 @@ class WebApi {
   }
 
 	get_web_token(requestParams) {
-		return new Primise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			if (!requestParams) {
 				reject( new Error('Please ensure that you send through request params') );
 			}
@@ -385,7 +385,7 @@ class WebApi {
 				reject( new Error('Request params needs to be an object') );
 			}
 
-			['user_id', 'job_id', 'product_type'].forEach(requiredParam => {
+			['user_id', 'job_id', 'product'].forEach(requiredParam => {
 				if (!requestParams[requiredParam]) {
 					reject( new Error(`${requiredParam} is required to get a web token`) );
 				}
@@ -397,7 +397,7 @@ class WebApi {
 			const body = JSON.stringify({
 				user_id: requestParams.user_id,
 				job_id: requestParams.job_id,
-				product_type: requestParams.product_type,
+				product: requestParams.product,
 				partner_id: this.partner_id,
 				signature,
 				timestamp,
@@ -430,7 +430,7 @@ class WebApi {
 					} else {
 						var err = JSON.parse(json);
 
-						reject ( new Error(`${err.code): ${err.error}`) );
+						reject ( new Error(`${err.code}: ${err.error}`) );
 					}
 				});
 			});
@@ -439,9 +439,9 @@ class WebApi {
 			req.end();
 
 			req.on("error", function(err) {
-				reject new Error(`${err.code}:${err.error}`) );
+				reject( new Error(`${err.code}:${err.error}`) );
 			});
-		}
+		});
 	}
 
 }

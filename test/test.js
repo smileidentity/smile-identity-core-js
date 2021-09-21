@@ -731,9 +731,9 @@ describe('WebApi', () => {
 
 			nock('https://testapi.smileidentity.com')
 				.post('/v1/token',(body) => {
-					assert.equal(body.job_id, partner_params.job_id);
-					assert.equal(body.user_id, partner_params.user_id);
-					assert.equal(body.product, partner_params.user_id);
+					assert.equal(body.job_id, requestParams.job_id);
+					assert.equal(body.user_id, requestParams.user_id);
+					assert.equal(body.product, requestParams.product);
 					return true;
 				})
 				.reply(412, tokenResponse)
@@ -760,9 +760,9 @@ describe('WebApi', () => {
 
 			nock('https://testapi.smileidentity.com')
 				.post('/v1/token',(body) => {
-					assert.equal(body.job_id, partner_params.job_id);
-					assert.equal(body.user_id, partner_params.user_id);
-					assert.equal(body.product, partner_params.user_id);
+					assert.equal(body.job_id, requestParams.job_id);
+					assert.equal(body.user_id, requestParams.user_id);
+					assert.equal(body.product, requestParams.product);
 					return true;
 				})
 				.reply(200, tokenResponse)
