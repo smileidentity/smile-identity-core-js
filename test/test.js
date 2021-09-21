@@ -721,6 +721,28 @@ describe('WebApi', () => {
   });
 
 	describe('#get_web_token', () => {
+		it('should ensure it is called with params', (done) => {
+			const tokenResponse = new Error('Please ensure that you send through request params');
+
+			let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+			let promise = instance.get_web_token();
+			promise.catch(err => {
+				assert.equal(err.message, 'Please ensure that you send through request params');
+				done();
+			});
+		});
+
+		it('should ensure the params are in an object', (done) => {
+			const tokenResponse = new Error('Request params needs to be an object');
+
+			let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+			let promise = instance.get_web_token('requestParams');
+			promise.catch(err => {
+				assert.equal(err.message, 'Request params needs to be an object');
+				done();
+			});
+		});
+
 		it("should ensure that all required params are sent", (done) => {
 			const requestParams = {
 				user_id: '1',
@@ -733,7 +755,7 @@ describe('WebApi', () => {
 				.post('/v1/token',(body) => {
 					assert.equal(body.job_id, requestParams.job_id);
 					assert.equal(body.user_id, requestParams.user_id);
-					assert.equal(body.product, requestParams.product);
+					assert.equal(body.product, undefined);
 					return true;
 				})
 				.reply(412, tokenResponse)
@@ -742,7 +764,7 @@ describe('WebApi', () => {
 			let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
 			let promise = instance.get_web_token(requestParams);
 			promise.catch(err => {
-				assert.equal(err.message, 'product is required to get a web token')
+				assert.equal(err.message, 'product is required to get a web token');
 				done();
 			});
 		});
