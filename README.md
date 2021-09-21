@@ -8,6 +8,7 @@ The official Smile Identity gem exposes four classes namely; the Web Api class, 
 The **Web Api Class** allows you as the Partner to validate a user’s identity against the relevant Identity Authorities/Third Party databases that Smile Identity has access to using ID information provided by your customer/user (including photo for compare). It has the following public methods:
 - submit_job
 - get_job_status
+- get_web_token
 
 The **ID Api Class** lets you performs basic KYC Services including verifying an ID number as well as retrieve a user's Personal Information. It has the following public methods:
 - submit_job
@@ -425,6 +426,43 @@ Your response will return a promise that contains a JSON Object below (with imag
       "selfie_image":"image_link"
    },
    "timestamp":"2019-10-10T12:32:04.622Z"
+}
+
+##### get_web_token method
+You may want to use our hosted web integration, and create a session. The `get_web_token` function enables this.
+
+You have your Web Api class initialised as follows:
+```javascript
+  connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+```
+
+Next, you'll need to create your request object. This should take the following
+structure:
+
+```json
+{
+	// String: required
+	"user_id": 'user-1',
+	// String: required
+	"job_id": 'job-1',
+	// String: required one of 'authentication', 'identity_verification', 'smartselfie', 'ekyc_smartselfie', 'enhanced_kyc', 'document_verification'
+	"product": 'authentication',
+	// String: optional, defaults to global callback url
+	"callback_url": "https://smileidentity.com/callback"
+}
+```
+
+Thereafter, call `get_web_token` with the correct parameters:
+```javascript
+  response = connection.get_web_token(requestParams)
+```
+
+**Response**
+
+Your response will return a promise that contains a JSON Object below:
+```
+{
+	"token": <token_string>
 }
 ```
 
