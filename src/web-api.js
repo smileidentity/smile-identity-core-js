@@ -375,6 +375,75 @@ class WebApi {
       .get_job_status(partner_params.user_id, partner_params.job_id, options);
   }
 
+	get_web_token(requestParams) {
+		return new Primise((resolve, reject) => {
+			if (!requestParams) {
+				reject( new Error('Please ensure that you send through request params') );
+			}
+
+			if (typeof requestParams !== 'object') {
+				reject( new Error('Request params needs to be an object') );
+			}
+
+			['user_id', 'job_id', 'product_type'].forEach(requiredParam => {
+				if (!requestParams[requiredParam]) {
+					reject( new Error(`${requiredParam} is required to get a web token`) );
+				}
+			});
+
+			const timestamp = new Date().toISOString();
+			const signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
+
+			const body = JSON.stringify({
+				user_id: requestParams.user_id,
+				job_id: requestParams.job_id,
+				product_type: requestParams.product_type,
+				partner_id: this.partner_id,
+				signature,
+				timestamp,
+			});
+
+			let json = '';
+			let path = `/${this.url.split('/')[1]}/token`;
+			let host = this.url.split('/')[0];
+			const options = {
+				hostname: host,
+				path: path,
+				method: 'POST',
+				headers: {
+					'Content-Type': "application/json"
+				}
+			};
+
+			const req = https.request(options, resp => {
+				resp.setEncoding('utf8');
+
+				resp.on('data', chunk => {
+					json += chunk;
+				});
+
+				resp.on('end', () => {
+					if (resp.statusCode === 200) {
+						const tokenResponse = JSON.parse(json);
+
+						resolve( tokenResponse );
+					} else {
+						var err = JSON.parse(json);
+
+						reject ( new Error(`${err.code): ${err.error}`) );
+					}
+				});
+			});
+
+			req.write(body);
+			req.end();
+
+			req.on("error", function(err) {
+				reject new Error(`${err.code}:${err.error}`) );
+			});
+		}
+	}
+
 }
 
 module.exports = WebApi;

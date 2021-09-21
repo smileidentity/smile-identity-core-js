@@ -720,6 +720,62 @@ describe('WebApi', () => {
     });
   });
 
+	describe('#get_web_token', () => {
+		it("should ensure that all required params are sent", (done) => {
+			const requestParams = {
+				user_id: '1',
+				job_id: '1',
+			};
+
+			const tokenResponse = new Error('product is required to get a web token');
+
+			nock('https://testapi.smileidentity.com')
+				.post('/v1/token',(body) => {
+					assert.equal(body.job_id, partner_params.job_id);
+					assert.equal(body.user_id, partner_params.user_id);
+					assert.equal(body.product, partner_params.user_id);
+					return true;
+				})
+				.reply(412, tokenResponse)
+				.isDone();
+
+			let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+			let promise = instance.get_web_token(requestParams);
+			promise.catch(err => {
+				assert.equal(err.message, 'product is required to get a web token')
+				done();
+			});
+		});
+
+		it("should return a token when all required params are set", (done) => {
+			const requestParams = {
+				user_id: '1',
+				job_id: '1',
+				product: 'ekyc_smartselfie',
+			};
+
+			const tokenResponse = {
+				token: "42"
+			};
+
+			nock('https://testapi.smileidentity.com')
+				.post('/v1/token',(body) => {
+					assert.equal(body.job_id, partner_params.job_id);
+					assert.equal(body.user_id, partner_params.user_id);
+					assert.equal(body.product, partner_params.user_id);
+					return true;
+				})
+				.reply(200, tokenResponse)
+				.isDone();
+
+			let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+			let promise = instance.get_web_token(requestParams);
+			promise.then(resp => {
+				assert.equal(resp.token, '42');
+				done();
+			});
+		});
+	});
 });
 
 describe('Utilities', () => {
