@@ -402,7 +402,7 @@ class WebApi {
 				user_id: requestParams.user_id,
 				job_id: requestParams.job_id,
 				product: requestParams.product,
-				callback_url: requestParams.callback_url,
+				callback_url: requestParams.callback_url || this.default_callback,
 				partner_id: this.partner_id,
 				signature,
 				timestamp,
