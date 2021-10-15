@@ -850,6 +850,10 @@ describe('WebApi', () => {
 					product: 'ekyc_smartselfie'
 				};
 
+				const tokenResponse = {
+					token: 42
+				};
+
 				nock('https://testapi.smileidentity.com')
 					.post('/v1/token',(body) => {
 						assert.equal(body.job_id, requestParams.job_id);
