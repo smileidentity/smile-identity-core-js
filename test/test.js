@@ -806,6 +806,7 @@ describe('WebApi', () => {
 				let promise = instance.get_web_token({});
 				promise.catch(err => {
 					assert.equal(err.message, 'Callback URL is required for this method');
+
 					done();
 				});
 			});
@@ -834,6 +835,33 @@ describe('WebApi', () => {
 					.isDone();
 
 				let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+				let promise = instance.get_web_token(requestParams);
+				promise.then(resp => {
+					assert.equal(resp.token, '42');
+					done();
+				});
+			});
+
+			it('should fallback to the default callback URL', (done) => {
+				const defaultCallbackURL = 'https://smileidentity.com/callback';
+				const requestParams = {
+					user_id: '1',
+					job_id: '1',
+					product: 'ekyc_smartselfie'
+				};
+
+				nock('https://testapi.smileidentity.com')
+					.post('/v1/token',(body) => {
+						assert.equal(body.job_id, requestParams.job_id);
+						assert.equal(body.user_id, requestParams.user_id);
+						assert.equal(body.product, requestParams.product);
+						assert.equal(body.callback_url, defaultCallbackURL);
+						return true;
+					})
+					.reply(200, tokenResponse)
+					.isDone();
+
+				let instance = new WebApi('001', defaultCallbackURL, Buffer.from(pair.public).toString('base64'), 0);
 				let promise = instance.get_web_token(requestParams);
 				promise.then(resp => {
 					assert.equal(resp.token, '42');
