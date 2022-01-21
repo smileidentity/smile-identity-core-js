@@ -51,6 +51,7 @@ class WebApi {
           _private.checkBoolean('return_job_status', options.return_job_status);
           _private.checkBoolean('return_history', options.return_history);
           _private.checkBoolean('return_images', options.return_images);
+          _private.checkBoolean('use_enrolled_image', options.use_enrolled_image);
         }
       },
       validateReturnData: function() {
@@ -139,6 +140,7 @@ class WebApi {
       configurePrepUploadJson: function() {
         var body =  {
           file_name: 'selfie.zip',
+          use_enrolled_image: _private.data.use_enrolled_image,
           timestamp: _private.data.timestamp,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
