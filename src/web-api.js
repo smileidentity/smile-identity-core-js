@@ -67,6 +67,14 @@ class WebApi {
           throw new Error("You are attempting to complete a job type 1 without providing an id card image or id info");
         }
       },
+      validateDocumentVerification: function() {
+        var hasIDImage = function(imageData) {
+          return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
+        }
+        if(!_private.data.images.some(hasIDImage) && (!_private.data.id_info['country'] || !_private.data.id_info['id_type'])) {
+          throw new Error("You are attempting to complete a job type 6 without providing an id card image or id info");
+        }
+      },
       partnerParams: function(partnerParams) {
         if (!partnerParams) {
           throw new Error('Please ensure that you send through partner params');
@@ -356,6 +364,9 @@ class WebApi {
           _private.validateReturnData();
           if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
             _private.validateEnrollWithID();
+          }
+          if (parseInt(_private.data.partner_params.job_type, 10) === 6) {
+            _private.validateDocumentVerification();
           }
           _private.setupRequests();
         }
