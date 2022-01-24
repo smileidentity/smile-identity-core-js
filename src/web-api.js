@@ -71,8 +71,8 @@ class WebApi {
         var hasIDImage = function(imageData) {
           return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
         }
-        if(!_private.data.images.some(hasIDImage) && (!_private.data.id_info['country'] || !_private.data.id_info['id_type'])) {
-          throw new Error("You are attempting to complete a job type 6 without providing an id card image or id info");
+        if(!_private.data.images.some(hasIDImage)) {
+          throw new Error("You are attempting to complete a job type 6 without providing an id card image");
         }
       },
       partnerParams: function(partnerParams) {
@@ -112,9 +112,17 @@ class WebApi {
         _private.data.images = images;
       },
       idInfo: function(id_info) {
-
         if(!('entered' in id_info) || id_info['entered'].toString() === 'false') {
           id_info['entered'] = 'false';
+
+          // ACTION: document verification jobs do not check for `country` and `id_type`
+          if (_private.data.partner_params['job_type'] === 6) {
+            ['country', 'id_type'].forEach(key => {
+              if (!id_info[key] || id_info[key].length === 0) {
+                throw new Error(`Please make sure that ${key} is included in the id_info`);
+              }
+            });
+          }
         }
 
         if ('entered' in id_info && id_info['entered'].toString() === 'true') {
