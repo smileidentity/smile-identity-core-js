@@ -775,6 +775,43 @@ describe('WebApi', () => {
 
         done();
       });
+
+      it('should not require a selfie image when `use_enrolled_image` option is selected', (done) => {
+        let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 6
+        };
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload', (body) => {
+            assert.equal(body.use_enrolled_image, true);
+          })
+          .reply(200, {
+            upload_url: 'https://some_url.com',
+          })
+          .isDone();
+        nock('https://some_url.com')
+          .put('/') // todo: find a way to unzip and test info.json
+          .reply(200)
+          .isDone();
+
+        instance.submit_job(
+          partner_params,
+          [
+            {image_type_id: 1, image: 'path/to/image.jpg'},
+          ],
+          {country: 'NG', id_type: 'NIN'},
+          {return_job_status: true, use_enrolled_image: true}
+        )
+          .then(resp => {
+            assert.deepEqual(resp, { success: true });
+          })
+          .catch(e => console.error(e.message));
+
+        done();
+      });
     });
   });
 

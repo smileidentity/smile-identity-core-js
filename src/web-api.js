@@ -93,7 +93,7 @@ class WebApi {
         _private.data.partner_params = partnerParams;
       },
       images: function(images) {
-        var hasImage = function(imageData) {
+        var hasSelfieImage = function(imageData) {
           return imageData['image_type_id'] === 0 || imageData['image_type_id'] === 2;
         }
         if (!images) {
@@ -104,8 +104,14 @@ class WebApi {
           throw new Error('Image details needs to be an array');
         }
 
-        // all job types require at least a selfie
-        if (images.length === 0 || !images.some(hasImage)) {
+        // most job types require at least a selfie,
+        // JT6 does not when `use_enrolled_image` flag is passed
+        if (images.length === 0 ||
+          !(
+            images.some(hasSelfieImage) ||
+            (options.use_enrolled_image && parseInt(partner_params.job_type, 10) === 6)
+          )
+        ) {
           throw new Error('You need to send through at least one selfie image');
         }
 
