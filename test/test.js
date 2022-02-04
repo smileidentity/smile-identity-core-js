@@ -687,7 +687,7 @@ describe('WebApi', () => {
           {return_job_status: true, use_enrolled_image: true}
         )
         .catch((err) => {
-          assert.equal(err.message, "You are attempting to complete a job type 6 without providing an id card image");
+          assert.equal(err.message, "You are attempting to complete a Document Verification job without providing an id card image");
           done();
         });
       });

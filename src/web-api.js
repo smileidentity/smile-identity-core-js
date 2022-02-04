@@ -72,7 +72,7 @@ class WebApi {
           return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
         }
         if(!_private.data.images.some(hasIDImage)) {
-          throw new Error("You are attempting to complete a job type 6 without providing an id card image");
+          throw new Error("You are attempting to complete a Document Verification job without providing an id card image");
         }
       },
       partnerParams: function(partnerParams) {
