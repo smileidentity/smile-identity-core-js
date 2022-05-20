@@ -70,24 +70,19 @@ class IDApi {
 
         _private.data.id_info = idInfo;
       },
-      determineSecKey: function() {
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(_private.data.timestamp);
-      },
       determineSignature: function() {
         return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(_private.data.timestamp);
       },
       configureJson: function() {
-        var body =  {
+        const body = {
           timestamp: _private.data.timestamp,
           partner_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
-          language: "javascript"
+          language: "javascript",
+          source_sdk: "javascript",
+          source_sdk_version: "2.0.0",
+          signature: _private.determineSignature().signature
         };
-        if (options && options.signature) {
-          body.signature = _private.determineSignature().signature;
-        } else {
-          body.sec_key = _private.determineSecKey().sec_key;
-        }
         return JSON.stringify({...body, ..._private.data.id_info});
       },
       setupRequests: function() {

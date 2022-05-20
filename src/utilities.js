@@ -16,15 +16,14 @@ class Utilities {
     } else {
       this.url = sid_server;
     }
-
   }
 
   get_job_status(user_id, job_id, optionFlags = {}) {
     return new Promise((resolve, reject) => {
-      var json = '';
-      var path = `/${this.url.split('/')[1]}/job_status`;
-      var host = this.url.split('/')[0];
-      var options = {
+      let json = '';
+      const path = `/${this.url.split('/')[1]}/job_status`;
+      const host = this.url.split('/')[0];
+      const options = {
         hostname: host,
         path: path,
         method: 'POST',
@@ -32,50 +31,37 @@ class Utilities {
           'Content-Type': "application/json"
         }
       };
-      var data = this.data;
-      var req = https.request(options, (resp) => {
+      const req = https.request(options, (resp) => {
         resp.on('data', (chunk) => {
           json += chunk;
         });
 
         resp.on('end', () => {
-          var body = JSON.parse(json);
+          const body = JSON.parse(json);
           if (resp.statusCode === 200) {
-            var valid;
-            if (optionFlags.signature) {
-              valid = new Signature(this.partner_id, this.api_key).confirm_signature(body['timestamp'], body['signature']);
-            } else {
-              valid = new Signature(this.partner_id, this.api_key).confirm_sec_key(body['timestamp'], body['signature']);
-            }
+            const valid = new Signature(this.partner_id, this.api_key).confirm_signature(body['timestamp'], body['signature']);
             if (!valid) {
               return reject(new Error("Unable to confirm validity of the job_status response"));
             }
             resolve(body);
           } else {
-            var err = JSON.parse(json);
+            const err = JSON.parse(json);
             reject(new Error(`${err.code}:${err.error}`));
           }
         });
 
       });
-      var timestamp;
-      if (optionFlags.signature) {
-        timestamp = new Date().toISOString();
-      } else {
-        timestamp = Date.now();
-      }
+      const timestamp = new Date().toISOString();
       let reqBody = {
         user_id: user_id,
         job_id: job_id,
         partner_id: this.partner_id,
         timestamp: timestamp,
         history: optionFlags.return_history,
-        image_links: optionFlags.return_images
-      };
-      if (optionFlags.signature) {
-        reqBody.signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
-      } else {
-        reqBody.sec_key = new Signature(this.partner_id, this.api_key).generate_sec_key(timestamp).sec_key;
+        image_links: optionFlags.return_images,
+        signature: new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature,
+        source_sdk: "javascript",
+        source_sdk_version: "2.0.0"
       }
       req.write(JSON.stringify(reqBody));
       req.end();

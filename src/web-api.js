@@ -151,38 +151,32 @@ class WebApi {
 
         _private.data[key] = bool;
       },
-      determineSecKey: function(timestamp) {
-        // calculate an outgoing signature
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
-      },
       determineSignature: function(timestamp) {
         // calculate an outgoing signature
         return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(timestamp || _private.data.timestamp);
       },
       configurePrepUploadJson: function() {
-        var body =  {
+        const body = {
           file_name: 'selfie.zip',
           use_enrolled_image: _private.data.use_enrolled_image,
           timestamp: _private.data.timestamp,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
           model_parameters: {},
-          callback_url: _private.data.callback_url
+          callback_url: _private.data.callback_url,
+          signature: _private.determineSignature().signature,
+          source_sdk: "javascript",
+          source_sdk_version: "2.0.0"
         };
-        if (options && options.signature) {
-          body.signature = _private.determineSignature().signature;
-        } else {
-          body.sec_key = _private.determineSecKey().sec_key;
-        }
         return JSON.stringify(body);
       },
       setupRequests: function() {
         // make the first call to the upload lambda
         var json = '';
-        var path = `/${_private.data.url.split('/')[1]}/upload`;
-        var host = _private.data.url.split('/')[0];
-        var body = _private.configurePrepUploadJson();
-        var options = {
+        const path = `/${_private.data.url.split('/')[1]}/upload`;
+        const host = _private.data.url.split('/')[0];
+        const body = _private.configurePrepUploadJson();
+        const options = {
           hostname: host,
           path: path,
           method: 'POST',
@@ -221,7 +215,7 @@ class WebApi {
       },
       configureInfoJson: function(serverInformation) {
         // create the json file sent as part of the zip file
-        var info = {
+        const info = {
           "package_information": {
             "apiVersion": {
               "buildNumber": 0,
@@ -293,7 +287,7 @@ class WebApi {
       },
       QueryJobStatus: function(counter=0) {
         // call job status for the result of the job
-        var timeout = counter < 4 ? 2000 : 4000;
+        const timeout = counter < 4 ? 2000 : 4000;
         counter++;
         new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.sid_server)
           .get_job_status(
@@ -301,8 +295,7 @@ class WebApi {
             _private.data.partner_params.job_id,
             {
               return_history: _private.data.return_history,
-              return_images: _private.data.return_images,
-              signature: options ? options.signature : false
+              return_images: _private.data.return_images
           }).then((body) => {
             if (!body['job_complete']) {
               if (counter > 21) {
@@ -402,80 +395,81 @@ class WebApi {
       .get_job_status(partner_params.user_id, partner_params.job_id, options);
   }
 
-	get_web_token(requestParams) {
-		return new Promise((resolve, reject) => {
-			if (!requestParams) {
-				reject( new Error('Please ensure that you send through request params') );
-			}
+  get_web_token(requestParams) {
+      return new Promise((resolve, reject) => {
+          if (!requestParams) {
+              reject( new Error('Please ensure that you send through request params') );
+          }
 
-			if (typeof requestParams !== 'object') {
-				reject( new Error('Request params needs to be an object') );
-			}
+          if (typeof requestParams !== 'object') {
+              reject( new Error('Request params needs to be an object') );
+          }
 
-			if (!(requestParams.callback_url || this.default_callback)) {
-				reject(new Error('Callback URL is required for this method'));
-			}
+          if (!(requestParams.callback_url || this.default_callback)) {
+              reject(new Error('Callback URL is required for this method'));
+          }
 
-			['user_id', 'job_id', 'product'].forEach(requiredParam => {
-				if (!requestParams[requiredParam]) {
-					reject( new Error(`${requiredParam} is required to get a web token`) );
-				}
-			});
+          ['user_id', 'job_id', 'product'].forEach(requiredParam => {
+              if (!requestParams[requiredParam]) {
+                  reject( new Error(`${requiredParam} is required to get a web token`) );
+              }
+          });
 
-			const timestamp = new Date().toISOString();
-			const signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
+          const timestamp = new Date().toISOString();
+          const signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
 
-			const body = JSON.stringify({
-				user_id: requestParams.user_id,
-				job_id: requestParams.job_id,
-				product: requestParams.product,
-				callback_url: requestParams.callback_url || this.default_callback,
-				partner_id: this.partner_id,
-				signature,
-				timestamp,
-			});
+          const body = JSON.stringify({
+              user_id: requestParams.user_id,
+              job_id: requestParams.job_id,
+              product: requestParams.product,
+              callback_url: requestParams.callback_url || this.default_callback,
+              partner_id: this.partner_id,
+              source_sdk: "javascript",
+              source_sdk_version: "2.0.0",
+              signature,
+              timestamp
+          });
 
-			let json = '';
-			let path = `/${this.url.split('/')[1]}/token`;
-			let host = this.url.split('/')[0];
-			const options = {
-				hostname: host,
-				path: path,
-				method: 'POST',
-				headers: {
-					'Content-Type': "application/json"
-				}
-			};
+          let json = '';
+          let path = `/${this.url.split('/')[1]}/token`;
+          let host = this.url.split('/')[0];
+          const options = {
+              hostname: host,
+              path: path,
+              method: 'POST',
+              headers: {
+                  'Content-Type': "application/json"
+              }
+          };
 
-			const req = https.request(options, resp => {
-				resp.setEncoding('utf8');
+          const req = https.request(options, resp => {
+              resp.setEncoding('utf8');
 
-				resp.on('data', chunk => {
-					json += chunk;
-				});
+              resp.on('data', chunk => {
+                  json += chunk;
+              });
 
-				resp.on('end', () => {
-					if (resp.statusCode === 200) {
-						const tokenResponse = JSON.parse(json);
+              resp.on('end', () => {
+                  if (resp.statusCode === 200) {
+                      const tokenResponse = JSON.parse(json);
 
-						resolve( tokenResponse );
-					} else {
-						var err = JSON.parse(json);
+                      resolve( tokenResponse );
+                  } else {
+                    const err = JSON.parse(json);
 
-						reject ( new Error(`${err.code}: ${err.error}`) );
-					}
-				});
-			});
+                    reject ( new Error(`${err.code}: ${err.error}`) );
+                  }
+              });
+          });
 
-			req.write(body);
-			req.end();
+          req.write(body);
+          req.end();
 
-			req.on("error", function(err) {
-				reject( new Error(`${err.code}:${err.error}`) );
-			});
-		});
-	}
-
+          req.on("error", function(err) {
+              reject( new Error(`${err.code}:${err.error}`) );
+          });
+      });
+  }
 }
 
 module.exports = WebApi;
