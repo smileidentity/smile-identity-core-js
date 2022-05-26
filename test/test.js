@@ -918,7 +918,7 @@ describe('WebApi', () => {
 			const requestParams = {
 				user_id: '1',
 				job_id: '1',
-				product: 'ekyc_smartselfie',
+				product: 'biometric_kyc',
 			};
 
 			const tokenResponse = {
