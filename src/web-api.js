@@ -178,7 +178,7 @@ class WebApi {
       },
       setupRequests: function() {
         // make the first call to the upload lambda
-        var json = '';
+        let json = '';
         var path = `/${_private.data.url.split('/')[1]}/upload`;
         var host = _private.data.url.split('/')[0];
         var body = _private.configurePrepUploadJson();
