@@ -295,7 +295,8 @@ class WebApi {
             _private.data.partner_params.job_id,
             {
               return_history: _private.data.return_history,
-              return_images: _private.data.return_images
+              return_images: _private.data.return_images,
+              signature: true
           }).then((body) => {
             if (!body['job_complete']) {
               if (counter > 21) {

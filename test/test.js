@@ -25,37 +25,6 @@ describe('Signature', () => {
     });
   });
 
-  describe('#generate_sec_key', () => {
-    it('should create a sec_key', function(done) {
-      let timestamp = Date.now();
-      let signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_sec_key(timestamp);
-      assert.equal(typeof(signature), 'object');
-      assert.equal(timestamp, signature.timestamp);
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      assert.equal(hash, signature.sec_key.split('|')[1]);
-      let decrypted = crypto.privateDecrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(signature.sec_key.split('|')[0], 'base64')).toString();
-      assert.equal(decrypted, hash);
-      done();
-    });
-  });
-
-  describe('#confirm_sec_key', () => {
-    it('should be able to decode a valid sec_key', (done) => {
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
-      assert.equal(true, new Signature('001', Buffer.from(pair.public).toString('base64')).confirm_sec_key(timestamp, sec_key));
-      done();
-    });
-  });
-
   describe('#generate_signature', () => {
     it('should calculate a signature and use a timestamp if provided one', (done) => {
       let timestamp = new Date().toISOString();
