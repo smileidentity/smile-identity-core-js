@@ -31,6 +31,7 @@ class Utilities {
           'Content-Type': "application/json"
         }
       };
+      var data = this.data;
       const req = https.request(options, (resp) => {
         resp.on('data', (chunk) => {
           json += chunk;
