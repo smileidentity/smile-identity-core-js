@@ -14,7 +14,6 @@ const sinon = require('sinon');
 
 const pair = keypair();
 
-// test that the sec key is generated correctly
 describe('Signature', () => {
   describe('#new', () => {
     it('should set the partner_id and api_key values', (done) => {
@@ -796,7 +795,6 @@ describe('WebApi', () => {
 				let promise = instance.get_web_token({});
 				promise.catch(err => {
 					assert.equal(err.message, 'Callback URL is required for this method');
-
 					done();
 				});
 			});
@@ -912,7 +910,6 @@ describe('Utilities', () => {
           done();
         }).catch((err) => {
           assert.equal(null, err);
-          console.log(err)
         });
     });
 
