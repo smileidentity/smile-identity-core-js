@@ -23,7 +23,7 @@ class IDApi {
   submit_job(partner_params, id_info, options={}) {
     var _private = {
       data: {
-        timestamp: options.signature ? new Date().toISOString() : Date.now(),
+        timestamp: new Date().toISOString(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,

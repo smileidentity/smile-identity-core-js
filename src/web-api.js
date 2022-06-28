@@ -35,7 +35,7 @@ class WebApi {
     var _private = {
       data: {
         callback_url: options && options.optional_callback || this.default_callback,
-        timestamp: options && options.signature ? new Date().toISOString() : Date.now(),
+        timestamp: new Date().toISOString(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,

@@ -246,48 +246,6 @@ describe('WebApi', () => {
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload', (body) => {
           assert.equal(body.smile_client_id, '001');
-          assert.notEqual(body.sec_key, undefined);
-          assert.notEqual(body.timestamp, undefined);
-          assert.equal(body.file_name, 'selfie.zip');
-          assert.equal(body.partner_params.user_id, partner_params.user_id);
-          assert.equal(body.partner_params.job_id, partner_params.job_id);
-          assert.equal(body.partner_params.job_type, partner_params.job_type);
-          assert.equal(body.callback_url, 'https://a_callback.cb');
-          return true;
-        })
-        .reply(200, {
-          upload_url: 'https://some_url.com',
-          smile_job_id: smile_job_id
-        })
-        .isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200)
-        .isDone();
-
-      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
-        assert.deepEqual(resp, {success: true, smile_job_id: smile_job_id});
-      });
-
-      done();
-    });
-
-    it('should be able to send a job with a signature', (done) => {
-      let instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
-      let partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 4
-      };
-      let options = {
-        signature: true
-      };
-      let smile_job_id = '0000000111';
-
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload', (body) => {
-          assert.equal(body.smile_client_id, '001');
-          assert.notEqual(body.signature, undefined);
           assert.notEqual(body.timestamp, undefined);
           assert.equal(body.file_name, 'selfie.zip');
           assert.equal(body.partner_params.user_id, partner_params.user_id);
@@ -314,66 +272,6 @@ describe('WebApi', () => {
     });
 
     it('should call IDApi.new().submit_job if the job type is 5', (done) => {
-      let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
-      let partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 5
-      };
-      let id_info = {
-        first_name: 'John',
-        last_name: 'Doe',
-        middle_name: '',
-        country: 'NG',
-        id_type: 'BVN',
-        id_number: '00000000000',
-        phone_number: '0726789065'
-      };
-      let IDApiResponse = {
-        "JSONVersion": "1.0.0",
-        "SmileJobID": "0000001096",
-        "PartnerParams": {
-            "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
-            "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-            "job_type": 5
-        },
-        "ResultType": "ID Verification",
-        "ResultText": "ID Number Validated",
-        "ResultCode": "1012",
-        "IsFinalResult": "true",
-        "Actions": {
-          "Verify_ID_Number": "Verified",
-          "Return_Personal_Info": "Returned"
-        },
-        "Country": "NG",
-        "IDType": "BVN",
-        "IDNumber": "00000000000",
-        "ExpirationDate": "NaN-NaN-NaN",
-        "FullName": "some  person",
-        "DOB": "NaN-NaN-NaN",
-        "Photo": "Not Available",
-        "sec_key": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba",
-        "timestamp": 1570612182124
-      };
-      let smile_job_id = '0000000111';
-
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', (body) => {
-          return true;
-        })
-        .reply(200, IDApiResponse)
-        .isDone()
-
-      let promise = instance.submit_job(partner_params, null, id_info, null);
-      promise.then((resp) => {
-        assert.deepEqual(Object.keys(resp).sort(), [
-          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp'
-        ].sort());
-        done();
-      });
-    });
-
-    it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', (done) => {
       let instance = new WebApi('001', null, '1234', 0);
       let partner_params = {
         user_id: '1',
@@ -425,7 +323,7 @@ describe('WebApi', () => {
         .reply(200, IDApiResponse)
         .isDone()
 
-      let promise = instance.submit_job(partner_params, null, id_info, {signature: true});
+      let promise = instance.submit_job(partner_params, null, id_info, {});
       promise.then((resp) => {
         assert.deepEqual(Object.keys(resp).sort(), [
           'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'
@@ -441,9 +339,6 @@ describe('WebApi', () => {
         job_id: '1',
         job_type: 4
       };
-      let options = {
-        signature: true
-      };
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload')
@@ -457,7 +352,7 @@ describe('WebApi', () => {
         .times(0)
         .reply(200);
 
-      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
+      instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, {}).then((resp) => {
         // make sure this test fails if the job goes through
         assert.equal(false);
       }).catch((err) => {
@@ -480,13 +375,9 @@ describe('WebApi', () => {
         return_job_status: true
       };
 
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_signature(timestamp).signature;
+      
       let jobStatusResponse = {
         job_success: true,
         job_complete: true,
@@ -495,7 +386,7 @@ describe('WebApi', () => {
           ResultText: 'Awesome!'
         },
         timestamp: timestamp,
-        signature: sec_key
+        signature: signature
       };
 
       nock('https://testapi.smileidentity.com')
@@ -533,13 +424,8 @@ describe('WebApi', () => {
         return_history: true
       };
 
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_signature(timestamp).signature;
       let jobStatusResponse = {
         job_success: true,
         job_complete: true,
@@ -548,7 +434,7 @@ describe('WebApi', () => {
           ResultText: 'Awesome!'
         },
         timestamp: timestamp,
-        signature: sec_key
+        signature: signature
       };
 
       nock('https://testapi.smileidentity.com')
@@ -566,7 +452,7 @@ describe('WebApi', () => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.signature, undefined);
           assert.equal(body.image_links, true);
           assert.equal(body.history, true);
           return true;
@@ -575,7 +461,7 @@ describe('WebApi', () => {
         .isDone();
 
       instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options).then((resp) => {
-        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
+        assert.equal(resp.signature, jobStatusResponse.signature);
         done();
       }).catch((e) => console.log(e));
 
@@ -592,13 +478,8 @@ describe('WebApi', () => {
         return_job_status: true
       };
 
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_signature(timestamp).signature;
       let jobStatusResponse = {
         job_success: false,
         job_complete: false,
@@ -607,7 +488,7 @@ describe('WebApi', () => {
           ResultText: 'Awesome!'
         },
         timestamp: timestamp,
-        signature: sec_key
+        signature: signature
       };
 
       nock('https://testapi.smileidentity.com')
@@ -632,7 +513,7 @@ describe('WebApi', () => {
 
       let promise = instance.submit_job(partner_params, [{image_type_id: 2, image: 'base6image'}], {}, options)
       promise.then((resp) => {
-        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
+        assert.equal(resp.signature, jobStatusResponse.signature);
         assert.equal(resp.job_complete, true);
         done();
       }).catch((err) => console.log(err));
@@ -795,13 +676,8 @@ describe('WebApi', () => {
         return_images: true,
         return_history: true
       };
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_signature(timestamp).signature;
       let jobStatusResponse = {
         job_success: true,
         job_complete: true,
@@ -810,14 +686,14 @@ describe('WebApi', () => {
           ResultText: 'Awesome!'
         },
         timestamp: timestamp,
-        signature: sec_key
+        signature: signature
       };
       nock('https://testapi.smileidentity.com')
         .post('/v1/job_status',(body) => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.signature, undefined);
           assert.equal(body.image_links, true);
           assert.equal(body.history, true);
           return true;
@@ -827,7 +703,7 @@ describe('WebApi', () => {
       let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       let promise = instance.get_job_status(partner_params, options);
       promise.then((resp) => {
-        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
+        assert.equal(resp.signature, jobStatusResponse.signature);
         assert.equal(resp.job_complete, true);
         done();
       });
@@ -1003,59 +879,6 @@ describe('Utilities', () => {
         return_history: true
       };
 
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
-      let jobStatusResponse = {
-        job_success: true,
-        job_complete: true,
-        result: {
-          ResultCode: '0810',
-          ResultText: 'Awesome!'
-        },
-        timestamp: timestamp,
-        signature: sec_key
-      };
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status',(body) => {
-          assert.equal(body.job_id, partner_params.job_id);
-          assert.equal(body.user_id, partner_params.user_id);
-          assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
-          assert.equal(body.image_links, true);
-          assert.equal(body.history, true);
-          return true;
-        })
-        .reply(200, jobStatusResponse)
-        .isDone();
-      new Utilities('001', Buffer.from(pair.public).toString('base64'), 0)
-        .get_job_status(partner_params.user_id, partner_params.job_id, options)
-        .then((job_status, err) => {
-          assert.equal(job_status.sec_key, jobStatusResponse.sec_key);
-          assert.equal(job_status.job_complete, true);
-          done();
-        }).catch((err) => {
-          assert.equal(null, err);
-          console.log(err)
-        });
-    });
-
-    it('should be able to use the signature instead of the sec_key when provided an option flag', (done) => {
-      let partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 4
-      };
-      let options = {
-        return_images: true,
-        return_history: true,
-        signature: true
-      };
-
       let timestamp = new Date().toISOString();
       let signature = new Signature('001', '1234').generate_signature(timestamp).signature;
       
@@ -1104,13 +927,8 @@ describe('Utilities', () => {
         return_history: true
       };
 
-      let timestamp = Date.now();
-      let hash = crypto.createHash('sha256').update(1 + ":" + timestamp).digest('hex');
-      let encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING
-      }, Buffer.from(hash)).toString('base64');
-      let sec_key = [encrypted, hash].join('|');
+      let timestamp = new Date().toISOString();
+      let signature = new Signature('001', Buffer.from(pair.public).toString('base64'));
       let jobStatusResponse = {
         error: 'oops'
       };
@@ -1119,7 +937,7 @@ describe('Utilities', () => {
           assert.equal(body.job_id, partner_params.job_id);
           assert.equal(body.user_id, partner_params.user_id);
           assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.signature, undefined);
           assert.equal(body.image_links, true);
           assert.equal(body.history, true);
           return true;
@@ -1277,14 +1095,14 @@ describe('IDapi', () => {
         "FullName": "some  person",
         "DOB": "NaN-NaN-NaN",
         "Photo": "Not Available",
-        "sec_key": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba",
+        "signature": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=",
         "timestamp": 1570612182124
       };
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/id_verification', (body) => {
           assert.equal(body.partner_id, '001');
-          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.signature, undefined);
           assert.notEqual(body.timestamp, undefined);
           assert.equal(body.partner_params.user_id, partner_params.user_id);
           assert.equal(body.partner_params.job_id, partner_params.job_id);
@@ -1303,7 +1121,7 @@ describe('IDapi', () => {
 
       let promise = instance.submit_job(partner_params, id_info);
       promise.then((resp) => {
-        assert.deepEqual(Object.keys(resp).sort(), ['JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp'].sort());
+        assert.deepEqual(Object.keys(resp).sort(), ['JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'].sort());
         done();
       });
     });
@@ -1343,77 +1161,5 @@ describe('IDapi', () => {
 
       done();
     });
-
-    it('should use the signature instead of sec_key when provided an optional parameter', (done) => {
-      let instance = new IDApi('001', '1234', 0);
-      let partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 5
-      };
-      let id_info = {
-        first_name: 'John',
-        last_name: 'Doe',
-        middle_name: '',
-        country: 'NG',
-        id_type: 'BVN',
-        id_number: '00000000000',
-        phone_number: '0726789065'
-      };
-      let IDApiResponse = {
-        "JSONVersion": "1.0.0",
-        "SmileJobID": "0000001096",
-        "PartnerParams": {
-            "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
-            "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-            "job_type": 5
-        },
-        "ResultType": "ID Verification",
-        "ResultText": "ID Number Validated",
-        "ResultCode": "1012",
-        "IsFinalResult": "true",
-        "Actions": {
-          "Verify_ID_Number": "Verified",
-          "Return_Personal_Info": "Returned"
-        },
-        "Country": "NG",
-        "IDType": "BVN",
-        "IDNumber": "00000000000",
-        "ExpirationDate": "NaN-NaN-NaN",
-        "FullName": "some  person",
-        "DOB": "NaN-NaN-NaN",
-        "Photo": "Not Available",
-        "signature": "RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=",
-        "timestamp": 1570612182124
-      };
-
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', (body) => {
-          assert.equal(body.partner_id, '001');
-          assert.notEqual(body.signature, undefined);
-          assert.notEqual(body.timestamp, undefined);
-          assert.equal(body.partner_params.user_id, partner_params.user_id);
-          assert.equal(body.partner_params.job_id, partner_params.job_id);
-          assert.equal(body.partner_params.job_type, partner_params.job_type);
-          assert.equal(body.first_name, id_info.first_name);
-          assert.equal(body.last_name, id_info.last_name);
-          assert.equal(body.middle_name, id_info.middle_name);
-          assert.equal(body.country, id_info.country);
-          assert.equal(body.id_type, id_info.id_type);
-          assert.equal(body.id_number, id_info.id_number);
-          assert.equal(body.phone_number, id_info.phone_number);
-          return true;
-        })
-        .reply(200, IDApiResponse)
-        .isDone();
-
-      let promise = instance.submit_job(partner_params, id_info, {signature: true});
-      promise.then((resp) => {
-        assert.deepEqual(Object.keys(resp).sort(), ['JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'].sort());
-        done();
-      });
-    });
-
   });
-
 });
