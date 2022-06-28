@@ -2,12 +2,14 @@ const WebApi = require("./src/web-api.js");
 const Signature = require("./src/signature.js");
 const IDApi = require("./src/id-api.js");
 const Utilities = require("./src/utilities.js");
+const Constants = require("./src/constants.js");
 
 module.exports = {
   WebApi,
   IDApi,
   Signature,
-  Utilities
+  Utilities,
+  Constants
 }
 
 if ((typeof(process) === 'undefined' && typeof(process.versions.node) === 'undefined') || typeof(window) !== 'undefined') {

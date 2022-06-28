@@ -1,6 +1,7 @@
 "use strict";
 const https = require('https');
 const Signature = require('./signature');
+const Constants = require('./constants');
 
 class Utilities {
 
@@ -61,8 +62,8 @@ class Utilities {
         history: optionFlags.return_history,
         image_links: optionFlags.return_images,
         signature: new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature,
-        source_sdk: "javascript",
-        source_sdk_version: "2.0.0"
+        source_sdk: Constants.SOURCE_SDK,
+        source_sdk_version: Constants.SOURCE_SDK_VERSION
       }
       req.write(JSON.stringify(reqBody));
       req.end();

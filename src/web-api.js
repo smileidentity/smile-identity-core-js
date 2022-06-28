@@ -8,6 +8,7 @@ const path = require('path');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
+const Constants = require('./constants');
 
 const url = require('url');
 
@@ -165,8 +166,8 @@ class WebApi {
           model_parameters: {},
           callback_url: _private.data.callback_url,
           signature: _private.determineSignature().signature,
-          source_sdk: "javascript",
-          source_sdk_version: "2.0.0"
+          source_sdk: Constants.SOURCE_SDK,
+          source_sdk_version: Constants.SOURCE_SDK_VERSION
         };
         return JSON.stringify(body);
       },
@@ -425,8 +426,8 @@ class WebApi {
               product: requestParams.product,
               callback_url: requestParams.callback_url || this.default_callback,
               partner_id: this.partner_id,
-              source_sdk: "javascript",
-              source_sdk_version: "2.0.0",
+              source_sdk: Constants.SOURCE_SDK,
+              source_sdk_version: Constants.SOURCE_SDK_VERSION,
               signature,
               timestamp
           });

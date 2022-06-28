@@ -1,5 +1,6 @@
 "use strict";
 const Signature = require('./signature');
+const Constants = require('./constants');
 const https = require('https');
 
 class IDApi {
@@ -79,8 +80,8 @@ class IDApi {
           partner_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
           language: "javascript",
-          source_sdk: "javascript",
-          source_sdk_version: "2.0.0",
+          source_sdk: Constants.SOURCE_SDK,
+          source_sdk_version: Constants.SOURCE_SDK_VERSION,
           signature: _private.determineSignature().signature
         };
         return JSON.stringify({...body, ..._private.data.id_info});
