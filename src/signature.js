@@ -8,31 +8,6 @@ class Signature {
       this.apiKey = apiKey;
   }
 
-  /**
-   * @deprecated Use generate_signature instead
-   */
-  generate_sec_key(timestamp=Date.now()) {
-    const hash = crypto.createHash('sha256').update(parseInt(this.partnerID, 10) + ":" + timestamp).digest('hex');
-    const encrypted = crypto.publicEncrypt({
-      key: Buffer.from(this.apiKey, 'base64'),
-      padding: crypto.constants.RSA_PKCS1_PADDING
-    }, Buffer.from(hash)).toString('base64');
-    return {sec_key: [encrypted, hash].join('|'), timestamp: timestamp};
-  }
-
-  /**
-   * @deprecated Obsolete with deprecation of sec_key
-   */
-  confirm_sec_key(timestamp, sec_key) {
-    const hash = crypto.createHash('sha256').update(parseInt(this.partnerID, 10) + ":" + timestamp).digest('hex');
-    const encrypted = sec_key.split('|')[0];
-    const decrypted = crypto.publicDecrypt({
-      key: Buffer.from(this.apiKey, 'base64'),
-      padding: crypto.constants.RSA_PKCS1_PADDING
-    }, Buffer.from(encrypted, 'base64')).toString();
-    return decrypted === hash;
-  }
-
   generate_signature(timestamp=new Date().toISOString()) {
     let hmac = crypto.createHmac('sha256', this.apiKey);
     hmac.update(timestamp, 'utf8');
