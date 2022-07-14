@@ -3,3 +3,7 @@
 .idea/
 src/.idea/
 test/.idea/
+
+# MacOS files
+.DS_Store
+*.DS_Store
