@@ -3,6 +3,7 @@
 .idea/
 src/.idea/
 test/.idea/
+package-lock.json
 
 # MacOS files
 .DS_Store
