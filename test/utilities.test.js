@@ -7,9 +7,9 @@ const { Utilities, Signature } = require('..');
 
 const pair = keypair();
 
-describe('Utilities', function() {
-  describe('#get_job_status', function() {
-    it('should be able to check job_status successfully', function(done) {
+describe('Utilities', () => {
+  describe('#get_job_status', () => {
+    it('should be able to check job_status successfully', (done) => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -61,7 +61,7 @@ describe('Utilities', function() {
         });
     });
 
-    it('should be able to use the signature instead of the sec_key when provided an option flag', function(done) {
+    it('should be able to use the signature instead of the sec_key when provided an option flag', (done) => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -110,7 +110,7 @@ describe('Utilities', function() {
         });
     });
 
-    it('should raise an error if one occurs', function(done) {
+    it('should raise an error if one occurs', (done) => {
       const partner_params = {
         user_id: '1',
         job_id: '1',

@@ -7,9 +7,9 @@ const { WebApi, Signature } = require('..');
 
 const pair = keypair();
 
-describe('WebApi', function() {
-  describe('#new', function() {
-    it('should instantiate and set the global variables', function(done) {
+describe('WebApi', () => {
+  describe('#new', () => {
+    it('should instantiate and set the global variables', (done) => {
       const instance = new WebApi('001', 'https://a_callback.com', Buffer.from(pair.public).toString('base64'), 0);
       assert.equal(instance.partner_id, '001');
       assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
@@ -19,8 +19,8 @@ describe('WebApi', function() {
     });
   });
 
-  describe('#submit_job', function() {
-    it('should ensure that a method of getting data back has been selected', function(done) {
+  describe('#submit_job', () => {
+    it('should ensure that a method of getting data back has been selected', (done) => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -33,7 +33,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that the partner_params are present', function(done) {
+    it('should ensure that the partner_params are present', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job(null, {}, {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'Please ensure that you send through partner params');
@@ -41,7 +41,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that the partner_params are an object', function(done) {
+    it('should ensure that the partner_params are an object', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job('not partner params', {}, {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'Partner params needs to be an object');
@@ -49,7 +49,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that the partner_params contain user_id, job_id and job_type', function(done) {
+    it('should ensure that the partner_params contain user_id, job_id and job_type', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       ['user_id', 'job_id', 'job_type'].forEach((key) => {
         const partner_params = {
@@ -65,7 +65,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', function(done) {
+    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       ['user_id', 'job_id', 'job_type'].forEach((key) => {
         const partner_params = {
@@ -81,7 +81,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should ensure that images exist', function(done) {
+    it('should ensure that images exist', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -94,7 +94,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that images is an array', function(done) {
+    it('should ensure that images is an array', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -107,7 +107,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that images is an array and that it is not empty', function(done) {
+    it('should ensure that images is an array and that it is not empty', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -120,7 +120,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that images is an array and that it has a selfie', function(done) {
+    it('should ensure that images is an array and that it has a selfie', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -133,7 +133,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that id_info is correctly filled out', function(done) {
+    it('should ensure that id_info is correctly filled out', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -155,7 +155,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should ensure that job type 1 has an id card image if there is no id_info', function(done) {
+    it('should ensure that job type 1 has an id card image if there is no id_info', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -169,7 +169,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that optional fields are booleans', function(done) {
+    it('should ensure that optional fields are booleans', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -186,7 +186,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should be able to send a job', function(done) {
+    it('should be able to send a job', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -225,7 +225,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should be able to send a job with a signature', function(done) {
+    it('should be able to send a job with a signature', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
       const partner_params = {
         user_id: '1',
@@ -266,7 +266,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should call IDApi.new().submit_job if the job type is 5', function(done) {
+    it('should call IDApi.new().submit_job if the job type is 5', (done) => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -323,7 +323,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', function(done) {
+    it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', (done) => {
       const instance = new WebApi('001', null, '1234', 0);
       const partner_params = {
         user_id: '1',
@@ -381,7 +381,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should raise an error when a network call fails', function(done) {
+    it('should raise an error when a network call fails', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -416,7 +416,7 @@ describe('WebApi', function() {
       done();
     });
 
-    it('should return a response from job_status if that flag is set to true', function(done) {
+    it('should return a response from job_status if that flag is set to true', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -466,7 +466,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should set all the job_status flags correctly', function(done) {
+    it('should set all the job_status flags correctly', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -526,7 +526,7 @@ describe('WebApi', function() {
       }).catch(console.error);
     });
 
-    it('should poll job_status until job_complete is true', function(done) {
+    it('should poll job_status until job_complete is true', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -583,8 +583,8 @@ describe('WebApi', function() {
       }).catch(console.error);
     }).timeout(5000);
 
-    describe('documentVerification - JT6', function() {
-      it('should require the provision of ID Card images', function(done) {
+    describe('documentVerification - JT6', () => {
+      it('should require the provision of ID Card images', (done) => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = {
           user_id: '1',
@@ -606,7 +606,7 @@ describe('WebApi', function() {
           });
       });
 
-      it('should require the provision of country in id_info', function(done) {
+      it('should require the provision of country in id_info', (done) => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = {
           user_id: '1',
@@ -629,7 +629,7 @@ describe('WebApi', function() {
           });
       });
 
-      it('should require the provision of id_type in id_info', function(done) {
+      it('should require the provision of id_type in id_info', (done) => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = {
           user_id: '1',
@@ -652,7 +652,7 @@ describe('WebApi', function() {
           });
       });
 
-      it('should send the `use_enrolled_image` field when option is provided', function(done) {
+      it('should send the `use_enrolled_image` field when option is provided', (done) => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = {
           user_id: '1',
@@ -690,7 +690,7 @@ describe('WebApi', function() {
         done();
       });
 
-      it('should not require a selfie image when `use_enrolled_image` option is selected', function(done) {
+      it('should not require a selfie image when `use_enrolled_image` option is selected', (done) => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = {
           user_id: '1',
@@ -729,8 +729,8 @@ describe('WebApi', function() {
     });
   });
 
-  describe('#get_job_status', function() {
-    it('should call Utilities.new().get_job_status', function(done) {
+  describe('#get_job_status', () => {
+    it('should call Utilities.new().get_job_status', (done) => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -779,8 +779,8 @@ describe('WebApi', function() {
     });
   });
 
-  describe('#get_web_token', function() {
-    it('should ensure it is called with params', function(done) {
+  describe('#get_web_token', () => {
+    it('should ensure it is called with params', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const promise = instance.get_web_token();
       promise.catch((err) => {
@@ -789,7 +789,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure the params are in an object', function(done) {
+    it('should ensure the params are in an object', (done) => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const promise = instance.get_web_token('requestParams');
       promise.catch((err) => {
@@ -798,7 +798,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should ensure that all required params are sent', function(done) {
+    it('should ensure that all required params are sent', (done) => {
       const requestParams = {
         user_id: '1',
         job_id: '1',
@@ -824,7 +824,7 @@ describe('WebApi', function() {
       });
     });
 
-    it('should return a token when all required params are set', function(done) {
+    it('should return a token when all required params are set', (done) => {
       const requestParams = {
         user_id: '1',
         job_id: '1',
@@ -853,8 +853,8 @@ describe('WebApi', function() {
       });
     });
 
-    describe('handle callback url', function() {
-      it('should ensure that a callback URL exists', function(done) {
+    describe('handle callback url', () => {
+      it('should ensure that a callback URL exists', (done) => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const promise = instance.get_web_token({});
         promise.catch((err) => {
@@ -864,7 +864,7 @@ describe('WebApi', function() {
         });
       });
 
-      it('should work with a callback_url param', function(done) {
+      it('should work with a callback_url param', (done) => {
         const requestParams = {
           user_id: '1',
           job_id: '1',
@@ -895,7 +895,7 @@ describe('WebApi', function() {
         });
       });
 
-      it('should fallback to the default callback URL', function(done) {
+      it('should fallback to the default callback URL', (done) => {
         const defaultCallbackURL = 'https://smileidentity.com/callback';
         const requestParams = {
           user_id: '1',

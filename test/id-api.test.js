@@ -6,9 +6,9 @@ const { IDApi } = require('..');
 
 const pair = keypair();
 
-describe('IDapi', function() {
-  describe('#new', function() {
-    it('should instantiate and set the global variables', function(done) {
+describe('IDapi', () => {
+  describe('#new', () => {
+    it('should instantiate and set the global variables', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       assert.equal(instance.partner_id, '001');
       assert.equal(instance.api_key, Buffer.from(pair.public).toString('base64'));
@@ -17,8 +17,8 @@ describe('IDapi', function() {
     });
   });
 
-  describe('#submit_job', function() {
-    it('should ensure that the partner_params are present', function(done) {
+  describe('#submit_job', () => {
+    it('should ensure that the partner_params are present', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job(null, {}).catch((err) => {
         assert.equal(err.message, 'Please ensure that you send through partner params');
@@ -26,7 +26,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should ensure that the partner_params are an object', function(done) {
+    it('should ensure that the partner_params are an object', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job('not partner params', {}).catch((err) => {
         assert.equal(err.message, 'Partner params needs to be an object');
@@ -34,7 +34,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should ensure that the partner_params contain user_id, job_id and job_type', function(done) {
+    it('should ensure that the partner_params contain user_id, job_id and job_type', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       ['user_id', 'job_id', 'job_type'].forEach((key) => {
         const partner_params = {
@@ -50,7 +50,7 @@ describe('IDapi', function() {
       done();
     });
 
-    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', function(done) {
+    it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       ['user_id', 'job_id', 'job_type'].forEach((key) => {
         const partner_params = {
@@ -66,7 +66,7 @@ describe('IDapi', function() {
       done();
     });
 
-    it('should ensure that the id_info is an object', function(done) {
+    it('should ensure that the id_info is an object', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, '').catch((err) => {
         assert.equal(err.message, 'ID Info needs to be an object');
@@ -74,7 +74,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should ensure that the id_info object is not empty or nil', function(done) {
+    it('should ensure that the id_info object is not empty or nil', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, {}).catch((err) => {
         assert.equal(err.message, 'Please make sure that id_info not empty or nil');
@@ -82,7 +82,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should ensure that the id_info object contains a valid id_number as a string', function(done) {
+    it('should ensure that the id_info object contains a valid id_number as a string', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, { id_number: '' }).catch((err) => {
         assert.equal(err.message, 'Please provide an id_number in the id_info payload');
@@ -90,7 +90,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should ensure that the the job id is set to 5', function(done) {
+    it('should ensure that the the job id is set to 5', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -103,7 +103,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should be able to send a job', function(done) {
+    it('should be able to send a job', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -173,7 +173,7 @@ describe('IDapi', function() {
       });
     });
 
-    it('should raise an error when a network call fails', function(done) {
+    it('should raise an error when a network call fails', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -209,7 +209,7 @@ describe('IDapi', function() {
       done();
     });
 
-    it('should use the signature instead of sec_key when provided an optional parameter', function(done) {
+    it('should use the signature instead of sec_key when provided an optional parameter', (done) => {
       const instance = new IDApi('001', '1234', 0);
       const partner_params = {
         user_id: '1',
