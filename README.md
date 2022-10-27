@@ -1,7 +1,5 @@
 # Smile Identity Node.js Server SDK
 
-[![Build Status](https://travis-ci.com/smileidentity/smile-identity-core-js.svg?token=zyz9yHUXZ1bSkqNUZtZR&branch=master)](https://travis-ci.com/smileidentity/smile-identity-core-js)
-
 The official Smile Identity gem exposes four classes namely; the Web Api class, the ID Api class, the Signature class and the Utilities class.
 
 ## Note: This is a server-side library
@@ -533,8 +531,8 @@ Your response will return a promise with JSON containing the below:
 ### generate_sec_key method
 
 ```javascript
-$ connection = new Signature(partner_id, api_key);
-$ sec_key = connection.generate_sec_key(timestamp)
+const connection = new Signature(partner_id, api_key);
+const sec_key = connection.generate_sec_key(timestamp)
 // where timestamp is optional
 
 ```
