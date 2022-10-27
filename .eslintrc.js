@@ -7,12 +7,13 @@ module.exports = {
   extends: [
     'airbnb-base',
     'plugin:jsdoc/recommended',
+    'plugin:mocha/recommended',
     '@sinonjs/eslint-config',
   ],
   parserOptions: {
     ecmaVersion: 13,
   },
-  plugins: ['jsdoc'],
+  plugins: ['jsdoc', 'mocha'],
   rules: {
     camelcase: 0,
     'compat/compat': 0,
