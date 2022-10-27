@@ -11,7 +11,7 @@
   "author": "beaglebets",
   "license": "MIT",
   "dependencies": {
-    "jszip": "^3.6.0"
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "eslint": "^8.26.0",
@@ -19,10 +19,10 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsdoc": "^39.3.25",
     "eslint-plugin-mocha": "^10.1.0",
-    "keypair": "^1.0.3",
+    "keypair": "^1.0.4",
     "mocha": "^10.1.0",
-    "nock": "^10.0.6",
-    "nyc": "^14.1.1"
+    "nock": "^13.2.9",
+    "nyc": "^15.1.0"
   },
   "directories": {
     "test": "test"
