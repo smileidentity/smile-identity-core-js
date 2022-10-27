@@ -51,13 +51,13 @@ describe('Utilities', function () {
         .isDone();
       new Utilities('001', Buffer.from(pair.public).toString('base64'), 0)
         .get_job_status(partner_params.user_id, partner_params.job_id, options)
-        .then((job_status, err) => {
+        .then((job_status) => {
           assert.equal(job_status.sec_key, jobStatusResponse.sec_key);
           assert.equal(job_status.job_complete, true);
           done();
         }).catch((err) => {
           assert.equal(null, err);
-          console.log(err);
+          console.error(err);
         });
     });
 
@@ -100,13 +100,13 @@ describe('Utilities', function () {
         .isDone();
       new Utilities('001', '1234', 0)
         .get_job_status(partner_params.user_id, partner_params.job_id, options)
-        .then((job_status, err) => {
+        .then((job_status) => {
           assert.equal(job_status.signature, jobStatusResponse.signature);
           assert.equal(job_status.job_complete, true);
           done();
         }).catch((err) => {
           assert.equal(null, err);
-          console.log(err);
+          console.error(err);
         });
     });
 

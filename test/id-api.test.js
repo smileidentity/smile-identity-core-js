@@ -198,7 +198,7 @@ describe('IDapi', function () {
         })
         .isDone();
 
-      instance.submit_job(partner_params, id_info).then((resp) => {
+      instance.submit_job(partner_params, id_info).then(() => {
         assert.equal(false);
       }).catch((err) => {
         // todo: figure out how to get nook to act like an error response would in real life
