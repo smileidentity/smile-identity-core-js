@@ -49,7 +49,10 @@ class WebApi {
         }
       },
       validateReturnData: function () {
-        if ((!_private.data.callback_url || _private.data.callback_url.length === 0) && !_private.data.return_job_status) {
+        if (
+          (!_private.data.callback_url || _private.data.callback_url.length === 0) 
+          && !_private.data.return_job_status
+        ) {
           throw new Error('Please choose to either get your response via the callback or job status query');
         }
       },
@@ -314,7 +317,6 @@ class WebApi {
       },
       uploadFile: function (signedUrl, info_json, SmileJobID) {
         // upload zip file to s3 using the signed link obtained from the upload lambda
-        var json = '';
         var options = url.parse(signedUrl);
         options.headers = {
           'Content-Type': 'application/zip',

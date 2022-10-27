@@ -58,7 +58,7 @@ class IDApi {
           throw new Error('ID Info needs to be an object');
         }
 
-        if (!idInfo || Object.keys(idInfo).length == 0) {
+        if (!idInfo || Object.keys(idInfo).length === 0) {
           throw new Error('Please make sure that id_info not empty or nil');
         }
 
@@ -69,10 +69,16 @@ class IDApi {
         _private.data.id_info = idInfo;
       },
       determineSecKey: function () {
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(_private.data.timestamp);
+        return new Signature(
+          _private.data.partner_id,
+          _private.data.api_key,
+        ).generate_sec_key(_private.data.timestamp);
       },
       determineSignature: function () {
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(_private.data.timestamp);
+        return new Signature(
+          _private.data.partner_id,
+          _private.data.api_key,
+        ).generate_signature(_private.data.timestamp);
       },
       configureJson: function () {
         var body = {
@@ -93,7 +99,7 @@ class IDApi {
         var path = `/${_private.data.url.split('/')[1]}/id_verification`;
         var host = _private.data.url.split('/')[0];
         var body = _private.configureJson();
-        var options = {
+        var reqOptions = {
           hostname: host,
           path: path,
           method: 'POST',
@@ -101,7 +107,7 @@ class IDApi {
             'Content-Type': 'application/json',
           },
         };
-        const req = https.request(options, function (resp) {
+        const req = https.request(reqOptions, function (resp) {
           resp.setEncoding('utf8');
           resp.on('data', function (chunk) {
             json += chunk;
@@ -109,7 +115,8 @@ class IDApi {
 
           resp.on('end', function () {
             if (resp.statusCode === 200) {
-              return _private.data.resolve(JSON.parse(json));
+              _private.data.resolve(JSON.parse(json));
+              return;
             }
             var err = JSON.parse(json);
             _private.data.reject(new Error(`${err.code}:${err.error}`));
