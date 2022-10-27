@@ -51,6 +51,7 @@ class WebApi {
           _private.checkBoolean('return_job_status', options.return_job_status);
           _private.checkBoolean('return_history', options.return_history);
           _private.checkBoolean('return_images', options.return_images);
+          _private.checkBoolean('use_enrolled_image', options.use_enrolled_image);
         }
       },
       validateReturnData: function() {
@@ -64,6 +65,14 @@ class WebApi {
         }
         if(!_private.data.images.some(hasImage) && (!_private.data.id_info['entered'] || _private.data.id_info['entered'].toString() !== 'true')) {
           throw new Error("You are attempting to complete a job type 1 without providing an id card image or id info");
+        }
+      },
+      validateDocumentVerification: function() {
+        var hasIDImage = function(imageData) {
+          return imageData['image_type_id'] === 1 || imageData['image_type_id'] === 3;
+        }
+        if(!_private.data.images.some(hasIDImage)) {
+          throw new Error("You are attempting to complete a Document Verification job without providing an id card image");
         }
       },
       partnerParams: function(partnerParams) {
@@ -84,7 +93,7 @@ class WebApi {
         _private.data.partner_params = partnerParams;
       },
       images: function(images) {
-        var hasImage = function(imageData) {
+        var hasSelfieImage = function(imageData) {
           return imageData['image_type_id'] === 0 || imageData['image_type_id'] === 2;
         }
         if (!images) {
@@ -95,17 +104,31 @@ class WebApi {
           throw new Error('Image details needs to be an array');
         }
 
-        // all job types require at least a selfie
-        if (images.length === 0 || !images.some(hasImage)) {
+        // most job types require at least a selfie,
+        // JT6 does not when `use_enrolled_image` flag is passed
+        if (images.length === 0 ||
+          !(
+            images.some(hasSelfieImage) ||
+            (options.use_enrolled_image && parseInt(partner_params.job_type, 10) === 6)
+          )
+        ) {
           throw new Error('You need to send through at least one selfie image');
         }
 
         _private.data.images = images;
       },
       idInfo: function(id_info) {
-
         if(!('entered' in id_info) || id_info['entered'].toString() === 'false') {
           id_info['entered'] = 'false';
+
+          // ACTION: document verification jobs do not check for `country` and `id_type`
+          if (_private.data.partner_params['job_type'] === 6) {
+            ['country', 'id_type'].forEach(key => {
+              if (!id_info[key] || id_info[key].length === 0) {
+                throw new Error(`Please make sure that ${key} is included in the id_info`);
+              }
+            });
+          }
         }
 
         if ('entered' in id_info && id_info['entered'].toString() === 'true') {
@@ -139,6 +162,7 @@ class WebApi {
       configurePrepUploadJson: function() {
         var body =  {
           file_name: 'selfie.zip',
+          use_enrolled_image: _private.data.use_enrolled_image,
           timestamp: _private.data.timestamp,
           smile_client_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
@@ -355,6 +379,9 @@ class WebApi {
           if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
             _private.validateEnrollWithID();
           }
+          if (parseInt(_private.data.partner_params.job_type, 10) === 6) {
+            _private.validateDocumentVerification();
+          }
           _private.setupRequests();
         }
 
@@ -402,7 +429,7 @@ class WebApi {
 				user_id: requestParams.user_id,
 				job_id: requestParams.job_id,
 				product: requestParams.product,
-				callback_url: requestParams.callback_url,
+				callback_url: requestParams.callback_url || this.default_callback,
 				partner_id: this.partner_id,
 				signature,
 				timestamp,

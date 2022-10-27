@@ -668,6 +668,151 @@ describe('WebApi', () => {
         done();
       }).catch((err) => console.log(err));
     }).timeout(5000);
+
+    describe('documentVerification - JT6', () => {
+      it('should require the provision of ID Card images', (done) => {
+        let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 6
+        };
+
+        instance.submit_job(
+          partner_params,
+          [
+            {image_type_id: 0, image: 'path/to/image.jpg'},
+          ],
+          {country: 'NG', id_type: 'NIN'},
+          {return_job_status: true, use_enrolled_image: true}
+        )
+        .catch((err) => {
+          assert.equal(err.message, "You are attempting to complete a Document Verification job without providing an id card image");
+          done();
+        });
+      });
+
+      it('should require the provision of country in id_info', (done) => {
+        let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 6
+        };
+
+        instance.submit_job(
+          partner_params,
+          [
+            {image_type_id: 0, image: 'path/to/image.jpg'},
+            {image_type_id: 1, image: 'path/to/image.jpg'},
+          ],
+          {id_type: 'NIN'},
+          {return_job_status: true, use_enrolled_image: true}
+        )
+        .catch((err) => {
+          assert.equal(err.message, "Please make sure that country is included in the id_info");
+          done();
+        });
+      });
+
+      it('should require the provision of id_type in id_info', (done) => {
+        let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 6
+        };
+
+        instance.submit_job(
+          partner_params,
+          [
+            {image_type_id: 0, image: 'path/to/image.jpg'},
+            {image_type_id: 1, image: 'path/to/image.jpg'},
+          ],
+          {country: 'NG'},
+          {return_job_status: true, use_enrolled_image: true}
+        )
+        .catch((err) => {
+          assert.equal(err.message, "Please make sure that id_type is included in the id_info");
+          done();
+        });
+      });
+
+      it('should send the `use_enrolled_image` field when option is provided', (done) => {
+        let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 6
+        };
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload', (body) => {
+            assert.equal(body.use_enrolled_image, true);
+          })
+          .reply(200, {
+            upload_url: 'https://some_url.com',
+          })
+          .isDone();
+        nock('https://some_url.com')
+          .put('/') // todo: find a way to unzip and test info.json
+          .reply(200)
+          .isDone();
+
+        instance.submit_job(
+          partner_params,
+          [
+            {image_type_id: 0, image: 'path/to/image.jpg'},
+            {image_type_id: 1, image: 'path/to/image.jpg'},
+          ],
+          {country: 'NG', id_type: 'NIN'},
+          {return_job_status: true, use_enrolled_image: true}
+        )
+          .then(resp => {
+            assert.deepEqual(resp, { success: true });
+          })
+          .catch(e => console.error(e.message));
+
+        done();
+      });
+
+      it('should not require a selfie image when `use_enrolled_image` option is selected', (done) => {
+        let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        let partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: 6
+        };
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload', (body) => {
+            assert.equal(body.use_enrolled_image, true);
+          })
+          .reply(200, {
+            upload_url: 'https://some_url.com',
+          })
+          .isDone();
+        nock('https://some_url.com')
+          .put('/') // todo: find a way to unzip and test info.json
+          .reply(200)
+          .isDone();
+
+        instance.submit_job(
+          partner_params,
+          [
+            {image_type_id: 1, image: 'path/to/image.jpg'},
+          ],
+          {country: 'NG', id_type: 'NIN'},
+          {return_job_status: true, use_enrolled_image: true}
+        )
+          .then(resp => {
+            assert.deepEqual(resp, { success: true });
+          })
+          .catch(e => console.error(e.message));
+
+        done();
+      });
+    });
   });
 
   describe('#get_job_status', () => {
@@ -773,7 +918,7 @@ describe('WebApi', () => {
 			const requestParams = {
 				user_id: '1',
 				job_id: '1',
-				product: 'ekyc_smartselfie',
+				product: 'biometric_kyc',
 			};
 
 			const tokenResponse = {
@@ -806,6 +951,7 @@ describe('WebApi', () => {
 				let promise = instance.get_web_token({});
 				promise.catch(err => {
 					assert.equal(err.message, 'Callback URL is required for this method');
+
 					done();
 				});
 			});
@@ -834,6 +980,37 @@ describe('WebApi', () => {
 					.isDone();
 
 				let instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+				let promise = instance.get_web_token(requestParams);
+				promise.then(resp => {
+					assert.equal(resp.token, '42');
+					done();
+				});
+			});
+
+			it('should fallback to the default callback URL', (done) => {
+				const defaultCallbackURL = 'https://smileidentity.com/callback';
+				const requestParams = {
+					user_id: '1',
+					job_id: '1',
+					product: 'ekyc_smartselfie'
+				};
+
+				const tokenResponse = {
+					token: 42
+				};
+
+				nock('https://testapi.smileidentity.com')
+					.post('/v1/token',(body) => {
+						assert.equal(body.job_id, requestParams.job_id);
+						assert.equal(body.user_id, requestParams.user_id);
+						assert.equal(body.product, requestParams.product);
+						assert.equal(body.callback_url, defaultCallbackURL);
+						return true;
+					})
+					.reply(200, tokenResponse)
+					.isDone();
+
+				let instance = new WebApi('001', defaultCallbackURL, Buffer.from(pair.public).toString('base64'), 0);
 				let promise = instance.get_web_token(requestParams);
 				promise.then(resp => {
 					assert.equal(resp.token, '42');
