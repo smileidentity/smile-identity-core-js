@@ -13,6 +13,9 @@ Add eslint and lint the entire codebase.
 - Run tests in github actions against multiple node versions. Remove travis.
 - disable npm publish trigger on push to master.
 
+### Removed
+Drop support for Node 10.
+
 ## [1.0.1] - 2019-11-02
 ### Fixed
 .git files are once again being ignored with an npm version bump
