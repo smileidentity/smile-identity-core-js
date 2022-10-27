@@ -26,10 +26,10 @@ class WebApi {
 
   submit_job(partner_params, image_details, id_info, options = {}) {
     // define the data and functions we will need
-    var _private = {
+    const _private = {
       data: {
-        callback_url: options && options.optional_callback || this.default_callback,
-        timestamp: options && options.signature ? new Date().toISOString() : Date.now(),
+        callback_url: (options && options.optional_callback) || this.default_callback,
+        timestamp: (options && options.signature) ? new Date().toISOString() : Date.now(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,
@@ -57,17 +57,13 @@ class WebApi {
         }
       },
       validateEnrollWithID() {
-        const hasImage = function (imageData) {
-          return imageData.image_type_id === 1 || imageData.image_type_id === 3;
-        };
+        const hasImage = (imageData) => [1, 3].includes(imageData.image_type_id);
         if (!_private.data.images.some(hasImage) && (!_private.data.id_info.entered || _private.data.id_info.entered.toString() !== 'true')) {
           throw new Error('You are attempting to complete a job type 1 without providing an id card image or id info');
         }
       },
       validateDocumentVerification() {
-        const hasIDImage = function (imageData) {
-          return imageData.image_type_id === 1 || imageData.image_type_id === 3;
-        };
+        const hasIDImage = (imageData) => [1, 3].includes(imageData.image_type_id);
         if (!_private.data.images.some(hasIDImage)) {
           throw new Error('You are attempting to complete a Document Verification job without providing an id card image');
         }
@@ -90,9 +86,7 @@ class WebApi {
         _private.data.partner_params = partnerParams;
       },
       images(images) {
-        const hasSelfieImage = function (imageData) {
-          return imageData.image_type_id === 0 || imageData.image_type_id === 2;
-        };
+        const hasSelfieImage = (imageData) => [0, 2].includes(imageData.image_type_id);
         if (!images) {
           throw new Error('Please ensure that you send through image details');
         }
@@ -299,7 +293,7 @@ class WebApi {
       QueryJobStatus(counter = 0) {
         // call job status for the result of the job
         const timeout = counter < 4 ? 2000 : 4000;
-        counter++;
+        counter += 1;
         new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.sid_server)
           .get_job_status(
             _private.data.partner_params.user_id,

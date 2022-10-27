@@ -19,7 +19,7 @@ class IDApi {
   }
 
   submit_job(partner_params, id_info, options = {}) {
-    var _private = {
+    const _private = {
       data: {
         timestamp: options.signature ? new Date().toISOString() : Date.now(),
         url: this.url,
