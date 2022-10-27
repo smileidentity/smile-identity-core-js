@@ -50,7 +50,7 @@ class WebApi {
       },
       validateReturnData: function () {
         if (
-          (!_private.data.callback_url || _private.data.callback_url.length === 0) 
+          (!_private.data.callback_url || _private.data.callback_url.length === 0)
           && !_private.data.return_job_status
         ) {
           throw new Error('Please choose to either get your response via the callback or job status query');
@@ -150,11 +150,17 @@ class WebApi {
       },
       determineSecKey: function (timestamp) {
         // calculate an outgoing signature
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_sec_key(timestamp || _private.data.timestamp);
+        return new Signature(
+          _private.data.partner_id,
+          _private.data.api_key,
+        ).generate_sec_key(timestamp || _private.data.timestamp);
       },
       determineSignature: function (timestamp) {
         // calculate an outgoing signature
-        return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(timestamp || _private.data.timestamp);
+        return new Signature(
+          _private.data.partner_id,
+          _private.data.api_key,
+        ).generate_signature(timestamp || _private.data.timestamp);
       },
       configurePrepUploadJson: function () {
         var body = {
@@ -198,7 +204,14 @@ class WebApi {
               var prepUploadResponse = JSON.parse(json);
               var infoJson = _private.configureInfoJson(prepUploadResponse);
 
-              _private.zipUpFile(infoJson, () => _private.uploadFile(prepUploadResponse.upload_url, infoJson, prepUploadResponse.smile_job_id));
+              _private.zipUpFile(
+                infoJson,
+                () => _private.uploadFile(
+                  prepUploadResponse.upload_url,
+                  infoJson,
+                  prepUploadResponse.smile_job_id,
+                ),
+              );
             } else {
               var err = JSON.parse(json);
               _private.data.reject(new Error(`${err.code}:${err.error}`));
@@ -252,7 +265,7 @@ class WebApi {
         return info;
       },
       configureImagePayload: function () {
-        // differentiate between image files and base64 images bbased on the image_type_id
+        // differentiate between image files and base64 images based on the image_type_id
         var images = [];
         _private.data.images.forEach((i) => {
           if ([0, 1].indexOf(parseInt(i.image_type_id, 10)) > -1) {
@@ -347,7 +360,12 @@ class WebApi {
       },
       setupIDApiRequest: function () {
         const idapiOptions = options ? options : {};
-        const promise = new IDApi(_private.data.partner_id, _private.data.api_key, _private.data.sid_server, {}).submit_job(_private.data.partner_params, _private.data.id_info, idapiOptions);
+        const promise = new IDApi(
+          _private.data.partner_id,
+          _private.data.api_key,
+          _private.data.sid_server,
+          {},
+        ).submit_job(_private.data.partner_params, _private.data.id_info, idapiOptions);
 
         promise.then((idApiResp) => _private.data.resolve(idApiResp)).catch((err) => {
           throw _private.data.reject(err);
@@ -378,9 +396,6 @@ class WebApi {
       }
     });
     return result;
-    result.then((resp) => resp).catch((err) => {
-      throw err;
-    });
   }
 
   get_job_status(partner_params, options) {
@@ -409,7 +424,10 @@ class WebApi {
       });
 
       const timestamp = new Date().toISOString();
-      const signature = new Signature(this.partner_id, this.api_key).generate_signature(timestamp).signature;
+      const signature = new Signature(
+        this.partner_id,
+        this.api_key,
+      ).generate_signature(timestamp).signature;
 
       const body = JSON.stringify({
         user_id: requestParams.user_id,
