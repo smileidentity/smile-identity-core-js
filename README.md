@@ -1,26 +1,31 @@
-# SmileIdentityCore
-[![Build Status](https://travis-ci.com/smileidentity/smile-identity-core-js.svg?token=zyz9yHUXZ1bSkqNUZtZR&branch=master)](https://travis-ci.com/smileidentity/smile-identity-core-js)    
+# Smile Identity Node.js Server SDK
+
+[![Build Status](https://travis-ci.com/smileidentity/smile-identity-core-js.svg?token=zyz9yHUXZ1bSkqNUZtZR&branch=master)](https://travis-ci.com/smileidentity/smile-identity-core-js)
 
 The official Smile Identity gem exposes four classes namely; the Web Api class, the ID Api class, the Signature class and the Utilities class.
 
-## Note: This is a server-side library.
+## Note: This is a server-side library
 
 The **Web Api Class** allows you as the Partner to validate a user’s identity against the relevant Identity Authorities/Third Party databases that Smile Identity has access to using ID information provided by your customer/user (including photo for compare). It has the following public methods:
-- submit_job
-- get_job_status
-- get_web_token
+
+- `submit_job`
+- `get_job_status`
+- `get_web_token`
 
 The **ID Api Class** lets you performs basic KYC Services including verifying an ID number as well as retrieve a user's Personal Information. It has the following public methods:
-- submit_job
+
+- `submit_job`
 
 The **Signature Class** allows you as the Partner to generate a sec_key or a signature to interact with our servers. It has the following public methods:
-- generate_sec_key
-- confirm_sec_key
-- generate_signature
-- confirm_signature
+
+- `generate_sec_key`
+- `confirm_sec_key`
+- `generate_signature`
+- `confirm_signature`
 
 The **Utilities Class** allows you as the Partner to have access to our general Utility functions to gain access to your data. It has the following public methods:
-- get_job_status
+
+- `get_job_status`
 
 This package **requires node 6.x or higher**
 
@@ -35,64 +40,68 @@ Please note that you will have to be a Smile Identity Partner to be able to quer
 
 Install it to your system as:
 
-```
+```shell
 npm install smile-identity-core
 ```
 
 Require the package:
-```
+
+```javascript
 const smileIdentityCore = require("smile-identity-core");
 ```
 
 and pull in any of the necessary class that you'd be using:
 
-```
+```javascript
 const WebApi = smileIdentityCore.WebApi;
 const IDApi = smileIdentityCore.IDApi;
 const Signature = smileIdentityCore.Signature;
 const Utilities = smileIdentityCore.Utilities;
 ```
 
-#### Security
+## Security
 
 We accept 2 forms of security to communicate with our servers. The `sec_key` is the legacy means of communicating with our servers. This uses the v1 api key. The `signature` field is our new improved means of signing requests. To calculate a signature you need to generate a v2 api key. _Generating a v2
 api key does not invalidate existing v1 keys so you can safely upgrade._ The library will default to calculating the legacy `sec_key` so your existing code will continue to behave as expected. To use the new `signature` form of security pass the boolean `signature: true` in the options object to any of our classes except Signature, where you would instead call the `generate_signature` function instead of the `generate_sec_key` function.
 
-#### Web Api Class
+## Web Api Class
 
-##### submit_job method
+### submit_job method
 
-```
-$ connection = new WebApi(partner_id, default_callback, api_key, sid_server);
-
-$ response = connection.submit_job(partner_params, image_details, id_info, options);
+```javascript
+const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+const response = connection.submit_job(partner_params, image_details, id_info, options);
 ```
 
 The **response will be a promise**. Please note that if you do not need to pass through id_info or options, you may omit calling those class and send through nil in submit_job, as follows:
 
+```javascript
+const response = connection.submit_job(partner_params, images, null, null);
 ```
-$ response = connection.submit_job(partner_params, images, null, null);
-```
+
 or
-```
-$ response = connection.submit_job(partner_params, images, {}, {});
+
+```javascript
+const response = connection.submit_job(partner_params, images, {}, {});
 ```
 
 In the case of a Job Type 5 you can simply omit the the images and options keys. Remember that the response is immediate, so there is no need to query the job_status. There is also no enrollment so no images are required. The response for a job type 5 can be found in the response section below.
 
-```
-$ response = connection.submit_job(partner_params, null, id_info, null);
+```javascript
+const response = connection.submit_job(partner_params, null, id_info, null);
 ```
 
 **Response:**
 
 Should you choose to *set return_job_status to false*, the response will be a JSON containing:
-```
-{success: true, smile_job_id: smile_job_id}
+
+```json
+{"success": true, "smile_job_id": smile_job_id}
 ```
 
 However, if you have *set return_job_status to true (with image_links and history)* then you will receive a promise that will return a JSON Object response like below:
-```
+
+```json
 {
    "job_success":true,
    "result":{
@@ -168,7 +177,8 @@ However, if you have *set return_job_status to true (with image_links and histor
 ```
 
 You can also *view your response asynchronously at the callback* that you have set, it will look as follows:
-```
+
+```json
 {
    "job_success":true,
    "result":{
@@ -244,7 +254,8 @@ You can also *view your response asynchronously at the callback* that you have s
 ```
 
 If you have queried a job type 5, your response be a promise that will return JSON that will contain the following:
-```
+
+```json
 {
    "JSONVersion":"1.0.0",
    "SmileJobID":"0000001105",
@@ -276,7 +287,7 @@ If you have queried a job type 5, your response be a promise that will return JS
 
 It will return undefined if you chose to set return_job_status to false, however if you have set options. return_job_status to true then you will receive a response like below:
 
-```
+```json
 {
   "timestamp": "2018-03-13T21:04:11.193Z",
   "signature": "<your signature>",
@@ -295,12 +306,14 @@ It will return undefined if you chose to set return_job_status to false, however
     },
     "ConfidenceValue": "100",
     "IsMachineResult": "true",
-  }
+  },
   "code": "2302"
 }
 ```
+
 You can also view your response asynchronously at the callback that you have set, it will look as follows:
-```
+
+```json
 {
   "ResultCode": "1220",
   "ResultText": "Authenticated",
@@ -317,8 +330,10 @@ You can also view your response asynchronously at the callback that you have set
   "IsMachineResult": "true"
 }
 ```
+
 If an error occurs, the Web Api package will throw an error. Be sure to catch any error that occurs as in this example:
-```
+
+```javascript
 const connection = new webApi(partner_id, default_callback, api_key, sid_server);
 const response = connection.submit_job(partner_params, image_details, id_info, options);
 response.then((result) => {
@@ -328,33 +343,36 @@ response.then((result) => {
 });
 ```
 
-##### get_job_status method
+### get_job_status method
+
 Sometimes, you may want to get a particular job status at a later time. You may use the get_job_status function to do this:
 
-You will already have your Web Api class initialised as follows:
+You will already have your Web Api class initialized as follows:
+
 ```javascript
-  connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
 ```
 
 Thereafter, simply call get_job_status with the correct parameters:
-```javascript
-  response = connection.get_job_status(partner_params, options)
 
-  where options is {return_history: true | false, return_image_links: true | false}
+```javascript
+// NOTE: options is { return_history: true | false, return_image_links: true | false}
+const response = connection.get_job_status(partner_params, options)
+
 ```
 
 Please note that if you do not need to pass through options if you will not be using them, you may omit pass through an empty hash or nil instead:
-```javascript
-response = connection.get_job_status(partner_params, options);
-// where options is {return_history: true | false, return_images: true | false}
 
+```javascript
+// NOTE: options is {return_history: true | false, return_images: true | false}
+response = connection.get_job_status(partner_params, options);
 ```
 
 **Response**
 
 Your response will return a promise that contains a JSON Object below (with image_links and history included):
 
-```
+```json
 {
    "job_success":true,
    "result":{
@@ -453,6 +471,7 @@ structure:
 ```
 
 Thereafter, call `get_web_token` with the correct parameters:
+
 ```javascript
   response = connection.get_web_token(requestParams)
 ```
@@ -460,24 +479,27 @@ Thereafter, call `get_web_token` with the correct parameters:
 **Response**
 
 Your response will return a promise that contains a JSON Object below:
-```
+
+```json
 {
 	"token": <token_string>
 }
 ```
 
-#### ID Api Class
+## ID Api Class
 
-##### submit_job method
-```
-$ const connection = new IDApi(partner_id, api_key, sid_server);
-$ const response = connection.submit_job(partner_params, id_info, options);
+### submit_job method
+
+```javascript
+const connection = new IDApi(partner_id, api_key, sid_server);
+const response = connection.submit_job(partner_params, id_info, options);
 ```
 
 **Response**
 
 Your response will return a promise with JSON containing the below:
-```
+
+```json
 {
    "JSONVersion":"1.0.0",
    "SmileJobID":"0000001105",
@@ -506,9 +528,9 @@ Your response will return a promise with JSON containing the below:
 }
 ```
 
-#### Signature Class
+## Signature Class
 
-##### generate_sec_key method
+### generate_sec_key method
 
 ```javascript
 $ connection = new Signature(partner_id, api_key);
@@ -519,31 +541,30 @@ $ sec_key = connection.generate_sec_key(timestamp)
 
 The response will be an object:
 
-```
+```json
 {
-  sec_key: "<the generated sec key>",
-  timestamp: 1563283420
+  "sec_key": "<the generated sec key>",
+  "timestamp": 1563283420
 }
 ```
 
-##### confirm_sec_key method
+### confirm_sec_key method
 
 You can also confirm the signature that you receive when you interacting with our servers, simply use the confirm_sec_key method which returns a boolean:
 
 ```javascript
-$ connection = new Signature(partner_id, api_key);
-$ sec_key = connection.confirm_sec_key(sec_key, timestamp)
+const connection = new Signature(partner_id, api_key);
+const sec_key = connection.confirm_sec_key(sec_key, timestamp)
 ```
 
-#### Utilities Class
+### Utilities Class
 
 You may want to receive more information about a job. This is built into Web Api if you choose to set return_job_status as true in the options hash. However, you also have the option to build the functionality yourself by using the Utilities class. Please note that if you are querying a job immediately after submitting it, you will need to poll it for the duration of the job.
 
 ```javascript
-utilities_connection = new Utilities('partner_id', 'api_key' , sid_server)
-
+// NOTE: options is {return_history: true | false, return_image_links: true | false}
+const utilities_connection = new Utilities('partner_id', 'api_key' , sid_server)
 utilities_connection.get_job_status('user_id', 'job_id', options)
-// where options is {return_history: true | false, return_image_links: true | false}
 ```
 
 ## Development
@@ -566,9 +587,9 @@ To publish a new version, first update the version number in the package.json fi
 
 We strongly suggest updating the github tag to match the npm published version. You can do this as follows:
 
-```
-$ git tag -a <tagname which is the npm version number> -m '<message>'
-$ git push origin <tag>
+```bash
+git tag -a <tagname which is the npm version number> -m '<message>'
+git push origin <tag>
 ```
 
 The gist of it is as follows:
