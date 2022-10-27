@@ -82,7 +82,7 @@ describe('IDapi', function () {
       });
     });
 
-    it('should ensure that the id_info object is not empty or nil', function (done) {
+    it('should ensure that the id_info object contains a valid id_number as a string', function (done) {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, { id_number: '' }).catch((err) => {
         assert.equal(err.message, 'Please provide an id_number in the id_info payload');
