@@ -1,8 +1,8 @@
 const fs = require('fs');
 const https = require('https');
-const jszip = require('jszip');
 const path = require('path');
 const url = require('url');
+const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
@@ -114,29 +114,29 @@ class WebApi {
 
         _private.data.images = images;
       },
-      idInfo: function (id_info) {
-        if (!('entered' in id_info) || id_info.entered.toString() === 'false') {
-          id_info.entered = 'false';
+      idInfo: function (idInfo) {
+        if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
+          idInfo.entered = 'false';
 
           // ACTION: document verification jobs do not check for `country` and `id_type`
           if (_private.data.partner_params.job_type === 6) {
             ['country', 'id_type'].forEach((key) => {
-              if (!id_info[key] || id_info[key].length === 0) {
+              if (!idInfo[key] || idInfo[key].length === 0) {
                 throw new Error(`Please make sure that ${key} is included in the id_info`);
               }
             });
           }
         }
 
-        if ('entered' in id_info && id_info.entered.toString() === 'true') {
+        if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
           ['country', 'id_type', 'id_number'].forEach((key) => {
-            if (!id_info[key] || id_info[key].length === 0) {
+            if (!idInfo[key] || idInfo[key].length === 0) {
               throw new Error(`Please make sure that ${key} is included in the id_info`);
             }
           });
         }
 
-        _private.data.id_info = id_info;
+        _private.data.id_info = idInfo;
       },
       checkBoolean: function (key, bool) {
         if (!bool) {
@@ -182,18 +182,16 @@ class WebApi {
       setupRequests: function () {
         // make the first call to the upload lambda
         var json = '';
-        var path = `/${_private.data.url.split('/')[1]}/upload`;
-        var host = _private.data.url.split('/')[0];
         var body = _private.configurePrepUploadJson();
-        var options = {
-          hostname: host,
-          path: path,
+        var reqOptions = {
+          hostname: _private.data.url.split('/')[0],
+          path: `/${_private.data.url.split('/')[1]}/upload`,
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
         };
-        const req = https.request(options, function (resp) {
+        const req = https.request(reqOptions, function (resp) {
           resp.setEncoding('utf8');
           resp.on('data', function (chunk) {
             json += chunk;
@@ -286,15 +284,15 @@ class WebApi {
       },
       zipUpFile: function (info_json, callback) {
         // create zip file in memory
-        var zip = new jszip();
+        var zip = new JSzip();
         zip.file('info.json', JSON.stringify(info_json));
         _private.data.images.forEach((image) => {
           if ([0, 1].indexOf(parseInt(image.image_type_id, 10)) > -1) {
             zip.file(path.basename(image.image), fs.readFileSync(image.image));
           }
         });
-        zip.generateAsync({ type: 'uint8array' }).then(function (zip) {
-          _private.data.zip = zip;
+        zip.generateAsync({ type: 'uint8array' }).then(function (zipFile) {
+          _private.data.zip = zipFile;
           callback();
         });
       },
@@ -314,15 +312,17 @@ class WebApi {
           ).then((body) => {
             if (!body.job_complete) {
               if (counter > 21) {
-                return _private.data.reject(new Error('Timeout waiting for job status response.'));
+                _private.data.reject(new Error('Timeout waiting for job status response.'));
+                return;
               }
               setTimeout(function () {
                 _private.QueryJobStatus(counter);
               }, timeout);
             } else {
-              return _private.data.resolve(body);
+              _private.data.resolve(body);
+              return;
             }
-          }).catch((err) => {
+          }).catch(() => {
             setTimeout(function () {
               _private.QueryJobStatus(counter);
             }, timeout);
@@ -330,24 +330,24 @@ class WebApi {
       },
       uploadFile: function (signedUrl, info_json, SmileJobID) {
         // upload zip file to s3 using the signed link obtained from the upload lambda
-        var options = url.parse(signedUrl);
-        options.headers = {
+        var reqOptions = url.parse(signedUrl);
+        reqOptions.headers = {
           'Content-Type': 'application/zip',
           'Content-Length': `${_private.data.zip.length}`,
         };
-        options.method = 'PUT';
-        const req = https.request(options, (resp) => {
+        reqOptions.method = 'PUT';
+        const req = https.request(reqOptions, (resp) => {
           resp.setEncoding('utf8');
-          resp.on('data', (chunk) => {
-            json += chunk;
-          });
+          resp.on('data', () => {});
 
           resp.on('end', () => {
             if (resp.statusCode === 200) {
               if (_private.data.return_job_status) {
-                return _private.QueryJobStatus();
+                _private.QueryJobStatus();
+                return;
               }
-              return _private.data.resolve({ success: true, smile_job_id: SmileJobID });
+              _private.data.resolve({ success: true, smile_job_id: SmileJobID });
+              return;
             }
             _private.data.reject(new Error(`Zip upload status code: ${resp.statusCode}`));
           });
@@ -440,11 +440,9 @@ class WebApi {
       });
 
       let json = '';
-      const path = `/${this.url.split('/')[1]}/token`;
-      const host = this.url.split('/')[0];
       const options = {
-        hostname: host,
-        path: path,
+        hostname: this.url.split('/')[0],
+        path: `/${this.url.split('/')[1]}/token`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
