@@ -21,11 +21,10 @@ The **Signature Class** allows you as the Partner to generate a sec_key or a sig
 - `generate_signature`
 - `confirm_signature`
 
-The **Utilities Class** allows you as the Partner to have access to our general Utility functions to gain access to your data. It has the following public methods:
+The **Utilities Class** allows you as the Partner to use our general Utility functions to gain access to your data. It has the following public methods:
 
 - `get_job_status`
 
-This package **requires node 6.x or higher**
 
 ## Documentation
 
@@ -35,8 +34,10 @@ Please note that you will have to be a Smile Identity Partner to be able to quer
 
 ## Usage
 
+> **Note**
+> This package **requires node 6.x or higher**
 
-Install it to your system as:
+Install it on your system as:
 
 ```shell
 npm install smile-identity-core
@@ -71,7 +72,7 @@ const connection = new WebApi(partner_id, default_callback, api_key, sid_server)
 const response = connection.submit_job(partner_params, image_details, id_info, options);
 ```
 
-The **response will be a promise**. Please note that if you do not need to pass through id_info or options, you may omit calling those class and send through nil in submit_job, as follows:
+The **response will be a promise**. Please note that both  **id_info** and **options** are optional. You may omit them by passing null as the values in submit_job, as follows:
 
 ```javascript
 const response = connection.submit_job(partner_params, images, null, null);
@@ -91,13 +92,13 @@ const response = connection.submit_job(partner_params, null, id_info, null);
 
 **Response:**
 
-Should you choose to *set return_job_status to false*, the response will be a JSON containing:
+Should you choose to _set return_job_status to false_, the response will be a JSON containing:
 
 ```json
 {"success": true, "smile_job_id": smile_job_id}
 ```
 
-However, if you have *set return_job_status to true (with image_links and history)* then you will receive a promise that will return a JSON Object response like below:
+However, if you have _set return_job_status to true (with image_links and history)_ then you will receive a promise that will return a JSON Object response like below:
 
 ```json
 {
@@ -174,7 +175,7 @@ However, if you have *set return_job_status to true (with image_links and histor
 }
 ```
 
-You can also *view your response asynchronously at the callback* that you have set, it will look as follows:
+You can also _view your response asynchronously at the callback_ that you have set, it will look as follows:
 
 ```json
 {
@@ -282,8 +283,7 @@ If you have queried a job type 5, your response be a promise that will return JS
 }
 ```
 
-
-It will return undefined if you chose to set return_job_status to false, however if you have set options. return_job_status to true then you will receive a response like below:
+You will receive undefined if chose to set return_job_status to false, however if you set options return_job_status to true then you will receive a response like below:
 
 ```json
 {
@@ -345,7 +345,7 @@ response.then((result) => {
 
 Sometimes, you may want to get a particular job status at a later time. You may use the get_job_status function to do this:
 
-You will already have your Web Api class initialized as follows:
+Initialized the Web Api class as follows:
 
 ```javascript
 const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
@@ -359,7 +359,7 @@ const response = connection.get_job_status(partner_params, options)
 
 ```
 
-Please note that if you do not need to pass through options if you will not be using them, you may omit pass through an empty hash or nil instead:
+Please note that the options parameter is optional you may omit it by passing in an empty hash or null:
 
 ```javascript
 // NOTE: options is {return_history: true | false, return_images: true | false}
@@ -368,7 +368,7 @@ response = connection.get_job_status(partner_params, options);
 
 **Response**
 
-Your response will return a promise that contains a JSON Object below (with image_links and history included):
+Your response will return a promise that contains a JSON Object (with image_links and history included). Below is a sample response:
 
 ```json
 {
@@ -443,13 +443,16 @@ Your response will return a promise that contains a JSON Object below (with imag
    },
    "timestamp":"2019-10-10T12:32:04.622Z"
 }
+```
 
 ##### get_web_token method
+
 You may want to use our hosted web integration, and create a session. The `get_web_token` function enables this.
 
 You have your Web Api class initialised as follows:
+
 ```javascript
-  connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+connection = new WebApi(partner_id, default_callback, api_key, sid_server);
 ```
 
 Next, you'll need to create your request object. This should take the following
@@ -457,14 +460,14 @@ structure:
 
 ```json
 {
-	// String: required
-	"user_id": 'user-1',
-	// String: required
-	"job_id": 'job-1',
-	// String: required one of 'authentication', 'basic_kyc', 'smartselfie', 'biometric_kyc', 'enhanced_kyc', 'document_verification'
-	"product": 'authentication',
-	// String: required, optional if callback url was set during instantiation of the class
-	"callback_url": "https://smileidentity.com/callback"
+ // String: required
+ "user_id": 'user-1',
+ // String: required
+ "job_id": 'job-1',
+ // String: required one of 'authentication', 'basic_kyc', 'smartselfie', 'biometric_kyc', 'enhanced_kyc', 'document_verification'
+ "product": 'authentication',
+ // String: required, optional if callback url was set during instantiation of the class
+ "callback_url": "https://smileidentity.com/callback"
 }
 ```
 
@@ -480,7 +483,7 @@ Your response will return a promise that contains a JSON Object below:
 
 ```json
 {
-	"token": <token_string>
+ "token": <token_string>
 }
 ```
 
@@ -534,7 +537,6 @@ Your response will return a promise with JSON containing the below:
 const connection = new Signature(partner_id, api_key);
 const sec_key = connection.generate_sec_key(timestamp)
 // where timestamp is optional
-
 ```
 
 The response will be an object:
@@ -548,7 +550,7 @@ The response will be an object:
 
 ### confirm_sec_key method
 
-You can also confirm the signature that you receive when you interacting with our servers, simply use the confirm_sec_key method which returns a boolean:
+You can also confirm the signature that you receive when you interact with our servers. Simply use the confirm_sec_key method which returns a boolean:
 
 ```javascript
 const connection = new Signature(partner_id, api_key);
@@ -573,7 +575,7 @@ To release a new version, update the version number in `package.json`, and then 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/smileidentity/smile-identity-core-js
+Bug reports and pull requests are welcome on GitHub at <https://github.com/smileidentity/smile-identity-core-js>
 
 ## Deploying
 
