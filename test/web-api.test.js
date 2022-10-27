@@ -308,10 +308,9 @@ describe('WebApi', function () {
         sec_key: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
         timestamp: 1570612182124,
       };
-      const smile_job_id = '0000000111';
 
       nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', (body) => true)
+        .post('/v1/id_verification', () => true)
         .reply(200, IDApiResponse)
         .isDone();
 
@@ -367,10 +366,9 @@ describe('WebApi', function () {
         signature: new Signature('001', '1234').generate_signature(timestamp).signature,
         timestamp: timestamp,
       };
-      const smile_job_id = '0000000111';
 
       nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', (body) => true)
+        .post('/v1/id_verification', () => true)
         .reply(200, IDApiResponse)
         .isDone();
 
@@ -406,7 +404,7 @@ describe('WebApi', function () {
         .times(0)
         .reply(200);
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
+      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then(() => {
         // make sure this test fails if the job goes through
         assert.equal(false);
       }).catch((err) => {
@@ -525,7 +523,7 @@ describe('WebApi', function () {
       instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         done();
-      }).catch((e) => console.log(e));
+      }).catch(console.error);
     });
 
     it('should poll job_status until job_complete is true', function (done) {
@@ -582,7 +580,7 @@ describe('WebApi', function () {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         assert.equal(resp.job_complete, true);
         done();
-      }).catch((err) => console.log(err));
+      }).catch(console.error);
     }).timeout(5000);
 
     describe('documentVerification - JT6', function () {
@@ -783,8 +781,6 @@ describe('WebApi', function () {
 
   describe('#get_web_token', function () {
     it('should ensure it is called with params', function (done) {
-      const tokenResponse = new Error('Please ensure that you send through request params');
-
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const promise = instance.get_web_token();
       promise.catch((err) => {
@@ -794,8 +790,6 @@ describe('WebApi', function () {
     });
 
     it('should ensure the params are in an object', function (done) {
-      const tokenResponse = new Error('Request params needs to be an object');
-
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const promise = instance.get_web_token('requestParams');
       promise.catch((err) => {
@@ -861,8 +855,6 @@ describe('WebApi', function () {
 
     describe('handle callback url', function () {
       it('should ensure that a callback URL exists', function (done) {
-        const tokenResponse = new Error('Callback URL is required for this method');
-
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const promise = instance.get_web_token({});
         promise.catch((err) => {

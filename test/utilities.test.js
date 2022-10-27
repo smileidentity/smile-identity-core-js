@@ -121,16 +121,6 @@ describe('Utilities', function () {
         return_history: true,
       };
 
-      const timestamp = Date.now();
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(hash)).toString('base64');
-      const sec_key = [encrypted, hash].join('|');
-      const jobStatusResponse = {
-        error: 'oops',
-      };
       nock('https://testapi.smileidentity.com')
         .post('/v1/job_status', (body) => {
           assert.equal(body.job_id, partner_params.job_id);
