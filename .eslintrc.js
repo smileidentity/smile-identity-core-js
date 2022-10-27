@@ -5,10 +5,10 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    'airbnb-base',
     'plugin:jsdoc/recommended',
     'plugin:mocha/recommended',
     '@sinonjs/eslint-config',
+    'airbnb-base',
   ],
   parserOptions: {
     ecmaVersion: 13,

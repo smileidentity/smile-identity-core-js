@@ -27,11 +27,11 @@ class IDApi {
         api_key: this.api_key,
         sid_server: this.sid_server,
       },
-      validateInputs: function () {
+      validateInputs() {
         _private.partnerParams(partner_params);
         _private.idInfo(id_info);
       },
-      partnerParams: function (partnerParams) {
+      partnerParams(partnerParams) {
         if (!partnerParams) {
           throw new Error('Please ensure that you send through partner params');
         }
@@ -53,7 +53,7 @@ class IDApi {
 
         _private.data.partner_params = partnerParams;
       },
-      idInfo: function (idInfo) {
+      idInfo(idInfo) {
         if (typeof idInfo !== 'object') {
           throw new Error('ID Info needs to be an object');
         }
@@ -68,20 +68,20 @@ class IDApi {
 
         _private.data.id_info = idInfo;
       },
-      determineSecKey: function () {
+      determineSecKey() {
         return new Signature(
           _private.data.partner_id,
           _private.data.api_key,
         ).generate_sec_key(_private.data.timestamp);
       },
-      determineSignature: function () {
+      determineSignature() {
         return new Signature(
           _private.data.partner_id,
           _private.data.api_key,
         ).generate_signature(_private.data.timestamp);
       },
-      configureJson: function () {
-        var body = {
+      configureJson() {
+        const body = {
           timestamp: _private.data.timestamp,
           partner_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
@@ -94,45 +94,45 @@ class IDApi {
         }
         return JSON.stringify({ ...body, ..._private.data.id_info });
       },
-      setupRequests: function () {
-        var json = '';
-        var path = `/${_private.data.url.split('/')[1]}/id_verification`;
-        var host = _private.data.url.split('/')[0];
-        var body = _private.configureJson();
-        var reqOptions = {
+      setupRequests() {
+        let json = '';
+        const path = `/${_private.data.url.split('/')[1]}/id_verification`;
+        const host = _private.data.url.split('/')[0];
+        const body = _private.configureJson();
+        const reqOptions = {
           hostname: host,
-          path: path,
+          path,
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
         };
-        const req = https.request(reqOptions, function (resp) {
+        const req = https.request(reqOptions, (resp) => {
           resp.setEncoding('utf8');
-          resp.on('data', function (chunk) {
+          resp.on('data', (chunk) => {
             json += chunk;
           });
 
-          resp.on('end', function () {
+          resp.on('end', () => {
             if (resp.statusCode === 200) {
               _private.data.resolve(JSON.parse(json));
               return;
             }
-            var err = JSON.parse(json);
+            const err = JSON.parse(json);
             _private.data.reject(new Error(`${err.code}:${err.error}`));
           });
         });
         req.write(body);
         req.end();
 
-        req.on('error', function (err) {
+        req.on('error', (err) => {
           _private.data.reject(`${err.code}:${err.error}`);
         });
       },
     };
 
     // this section kicks everything off
-    var result = new Promise((resolve, reject) => {
+    const result = new Promise((resolve, reject) => {
       try {
         _private.data.resolve = resolve;
         _private.data.reject = reject;

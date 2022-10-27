@@ -7,9 +7,9 @@ const { Signature } = require('..');
 const pair = keypair();
 
 // test that the sec key is generated correctly
-describe('Signature', function () {
-  describe('#new', function () {
-    it('should set the partner_id and api_key values', function (done) {
+describe('Signature', function() {
+  describe('#new', function() {
+    it('should set the partner_id and api_key values', function(done) {
       const instance = new Signature('001', Buffer.from(pair.public).toString('base64'));
       assert.equal(instance.partnerID, '001');
       assert.equal(instance.apiKey, Buffer.from(pair.public).toString('base64'));
@@ -17,8 +17,8 @@ describe('Signature', function () {
     });
   });
 
-  describe('#generate_sec_key', function () {
-    it('should create a sec_key', function (done) {
+  describe('#generate_sec_key', function() {
+    it('should create a sec_key', function(done) {
       const timestamp = Date.now();
       const signature = new Signature('001', Buffer.from(pair.public).toString('base64')).generate_sec_key(timestamp);
       assert.equal(typeof (signature), 'object');
@@ -34,8 +34,8 @@ describe('Signature', function () {
     });
   });
 
-  describe('#confirm_sec_key', function () {
-    it('should be able to decode a valid sec_key', function (done) {
+  describe('#confirm_sec_key', function() {
+    it('should be able to decode a valid sec_key', function(done) {
       const timestamp = Date.now();
       const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
       const encrypted = crypto.privateEncrypt({
@@ -48,8 +48,8 @@ describe('Signature', function () {
     });
   });
 
-  describe('#generate_signature', function () {
-    it('should calculate a signature and use a timestamp if provided one', function (done) {
+  describe('#generate_signature', function() {
+    it('should calculate a signature and use a timestamp if provided one', function(done) {
       const timestamp = new Date().toISOString();
       const hmac = crypto.createHmac('sha256', '1234');
       hmac.update(timestamp, 'utf8');
@@ -63,8 +63,8 @@ describe('Signature', function () {
     });
   });
 
-  describe('#confirm_signature', function () {
-    it('should confirm an incoming signaute', function (done) {
+  describe('#confirm_signature', function() {
+    it('should confirm an incoming signaute', function(done) {
       const timestamp = new Date().toISOString();
       const hmac = crypto.createHmac('sha256', '1234');
       hmac.update(timestamp, 'utf8');

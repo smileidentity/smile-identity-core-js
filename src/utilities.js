@@ -18,26 +18,26 @@ class Utilities {
 
   get_job_status(user_id, job_id, optionFlags = {}) {
     return new Promise((resolve, reject) => {
-      var json = '';
-      var path = `/${this.url.split('/')[1]}/job_status`;
-      var host = this.url.split('/')[0];
-      var options = {
+      let json = '';
+      const path = `/${this.url.split('/')[1]}/job_status`;
+      const host = this.url.split('/')[0];
+      const options = {
         hostname: host,
-        path: path,
+        path,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       };
-      var req = https.request(options, (resp) => {
+      const req = https.request(options, (resp) => {
         resp.on('data', (chunk) => {
           json += chunk;
         });
 
         resp.on('end', () => {
-          var body = JSON.parse(json);
+          const body = JSON.parse(json);
           if (resp.statusCode === 200) {
-            var valid;
+            let valid;
             if (optionFlags.signature) {
               valid = new Signature(
                 this.partner_id,
@@ -55,22 +55,22 @@ class Utilities {
             }
             resolve(body);
           } else {
-            var err = JSON.parse(json);
+            const err = JSON.parse(json);
             reject(new Error(`${err.code}:${err.error}`));
           }
         });
       });
-      var timestamp;
+      let timestamp;
       if (optionFlags.signature) {
         timestamp = new Date().toISOString();
       } else {
         timestamp = Date.now();
       }
       const reqBody = {
-        user_id: user_id,
-        job_id: job_id,
+        user_id,
+        job_id,
         partner_id: this.partner_id,
-        timestamp: timestamp,
+        timestamp,
         history: optionFlags.return_history,
         image_links: optionFlags.return_images,
       };

@@ -7,9 +7,9 @@ const { Utilities, Signature } = require('..');
 
 const pair = keypair();
 
-describe('Utilities', function () {
-  describe('#get_job_status', function () {
-    it('should be able to check job_status successfully', function (done) {
+describe('Utilities', function() {
+  describe('#get_job_status', function() {
+    it('should be able to check job_status successfully', function(done) {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -34,7 +34,7 @@ describe('Utilities', function () {
           ResultCode: '0810',
           ResultText: 'Awesome!',
         },
-        timestamp: timestamp,
+        timestamp,
         signature: sec_key,
       };
       nock('https://testapi.smileidentity.com')
@@ -61,7 +61,7 @@ describe('Utilities', function () {
         });
     });
 
-    it('should be able to use the signature instead of the sec_key when provided an option flag', function (done) {
+    it('should be able to use the signature instead of the sec_key when provided an option flag', function(done) {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -74,7 +74,7 @@ describe('Utilities', function () {
       };
 
       const timestamp = new Date().toISOString();
-      const signature = new Signature('001', '1234').generate_signature(timestamp).signature;
+      const { signature } = new Signature('001', '1234').generate_signature(timestamp);
 
       const jobStatusResponse = {
         job_success: true,
@@ -83,8 +83,8 @@ describe('Utilities', function () {
           ResultCode: '0810',
           ResultText: 'Awesome!',
         },
-        timestamp: timestamp,
-        signature: signature,
+        timestamp,
+        signature,
       };
       nock('https://testapi.smileidentity.com')
         .post('/v1/job_status', (body) => {
@@ -110,7 +110,7 @@ describe('Utilities', function () {
         });
     });
 
-    it('should raise an error if one occurs', function (done) {
+    it('should raise an error if one occurs', function(done) {
       const partner_params = {
         user_id: '1',
         job_id: '1',

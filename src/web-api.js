@@ -35,7 +35,7 @@ class WebApi {
         api_key: this.api_key,
         sid_server: this.sid_server,
       },
-      validateInputs: function () {
+      validateInputs() {
         // validate inputs and add them to our data store
         _private.partnerParams(partner_params);
         _private.idInfo(id_info);
@@ -48,7 +48,7 @@ class WebApi {
           _private.checkBoolean('use_enrolled_image', options.use_enrolled_image);
         }
       },
-      validateReturnData: function () {
+      validateReturnData() {
         if (
           (!_private.data.callback_url || _private.data.callback_url.length === 0)
           && !_private.data.return_job_status
@@ -56,23 +56,23 @@ class WebApi {
           throw new Error('Please choose to either get your response via the callback or job status query');
         }
       },
-      validateEnrollWithID: function () {
-        var hasImage = function (imageData) {
+      validateEnrollWithID() {
+        const hasImage = function (imageData) {
           return imageData.image_type_id === 1 || imageData.image_type_id === 3;
         };
         if (!_private.data.images.some(hasImage) && (!_private.data.id_info.entered || _private.data.id_info.entered.toString() !== 'true')) {
           throw new Error('You are attempting to complete a job type 1 without providing an id card image or id info');
         }
       },
-      validateDocumentVerification: function () {
-        var hasIDImage = function (imageData) {
+      validateDocumentVerification() {
+        const hasIDImage = function (imageData) {
           return imageData.image_type_id === 1 || imageData.image_type_id === 3;
         };
         if (!_private.data.images.some(hasIDImage)) {
           throw new Error('You are attempting to complete a Document Verification job without providing an id card image');
         }
       },
-      partnerParams: function (partnerParams) {
+      partnerParams(partnerParams) {
         if (!partnerParams) {
           throw new Error('Please ensure that you send through partner params');
         }
@@ -89,8 +89,8 @@ class WebApi {
         partnerParams.job_type = parseInt(partnerParams.job_type, 10);
         _private.data.partner_params = partnerParams;
       },
-      images: function (images) {
-        var hasSelfieImage = function (imageData) {
+      images(images) {
+        const hasSelfieImage = function (imageData) {
           return imageData.image_type_id === 0 || imageData.image_type_id === 2;
         };
         if (!images) {
@@ -114,7 +114,7 @@ class WebApi {
 
         _private.data.images = images;
       },
-      idInfo: function (idInfo) {
+      idInfo(idInfo) {
         if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
           idInfo.entered = 'false';
 
@@ -138,7 +138,7 @@ class WebApi {
 
         _private.data.id_info = idInfo;
       },
-      checkBoolean: function (key, bool) {
+      checkBoolean(key, bool) {
         if (!bool) {
           bool = false;
         }
@@ -148,22 +148,22 @@ class WebApi {
 
         _private.data[key] = bool;
       },
-      determineSecKey: function (timestamp) {
+      determineSecKey(timestamp) {
         // calculate an outgoing signature
         return new Signature(
           _private.data.partner_id,
           _private.data.api_key,
         ).generate_sec_key(timestamp || _private.data.timestamp);
       },
-      determineSignature: function (timestamp) {
+      determineSignature(timestamp) {
         // calculate an outgoing signature
         return new Signature(
           _private.data.partner_id,
           _private.data.api_key,
         ).generate_signature(timestamp || _private.data.timestamp);
       },
-      configurePrepUploadJson: function () {
-        var body = {
+      configurePrepUploadJson() {
+        const body = {
           file_name: 'selfie.zip',
           use_enrolled_image: _private.data.use_enrolled_image,
           timestamp: _private.data.timestamp,
@@ -179,11 +179,11 @@ class WebApi {
         }
         return JSON.stringify(body);
       },
-      setupRequests: function () {
+      setupRequests() {
         // make the first call to the upload lambda
-        var json = '';
-        var body = _private.configurePrepUploadJson();
-        var reqOptions = {
+        let json = '';
+        const body = _private.configurePrepUploadJson();
+        const reqOptions = {
           hostname: _private.data.url.split('/')[0],
           path: `/${_private.data.url.split('/')[1]}/upload`,
           method: 'POST',
@@ -191,16 +191,16 @@ class WebApi {
             'Content-Type': 'application/json',
           },
         };
-        const req = https.request(reqOptions, function (resp) {
+        const req = https.request(reqOptions, (resp) => {
           resp.setEncoding('utf8');
-          resp.on('data', function (chunk) {
+          resp.on('data', (chunk) => {
             json += chunk;
           });
 
-          resp.on('end', function () {
+          resp.on('end', () => {
             if (resp.statusCode === 200) {
-              var prepUploadResponse = JSON.parse(json);
-              var infoJson = _private.configureInfoJson(prepUploadResponse);
+              const prepUploadResponse = JSON.parse(json);
+              const infoJson = _private.configureInfoJson(prepUploadResponse);
 
               _private.zipUpFile(
                 infoJson,
@@ -211,7 +211,7 @@ class WebApi {
                 ),
               );
             } else {
-              var err = JSON.parse(json);
+              const err = JSON.parse(json);
               _private.data.reject(new Error(`${err.code}:${err.error}`));
             }
           });
@@ -220,13 +220,13 @@ class WebApi {
         req.write(body);
         req.end();
 
-        req.on('error', function (err) {
+        req.on('error', (err) => {
           _private.data.reject(`${err.code}:${err.error}`);
         });
       },
-      configureInfoJson: function (serverInformation) {
+      configureInfoJson(serverInformation) {
         // create the json file sent as part of the zip file
-        var info = {
+        const info = {
           package_information: {
             apiVersion: {
               buildNumber: 0,
@@ -262,9 +262,9 @@ class WebApi {
         };
         return info;
       },
-      configureImagePayload: function () {
+      configureImagePayload() {
         // differentiate between image files and base64 images based on the image_type_id
-        var images = [];
+        const images = [];
         _private.data.images.forEach((i) => {
           if ([0, 1].indexOf(parseInt(i.image_type_id, 10)) > -1) {
             images.push({
@@ -282,23 +282,23 @@ class WebApi {
         });
         return images;
       },
-      zipUpFile: function (info_json, callback) {
+      zipUpFile(info_json, callback) {
         // create zip file in memory
-        var zip = new JSzip();
+        const zip = new JSzip();
         zip.file('info.json', JSON.stringify(info_json));
         _private.data.images.forEach((image) => {
           if ([0, 1].indexOf(parseInt(image.image_type_id, 10)) > -1) {
             zip.file(path.basename(image.image), fs.readFileSync(image.image));
           }
         });
-        zip.generateAsync({ type: 'uint8array' }).then(function (zipFile) {
+        zip.generateAsync({ type: 'uint8array' }).then((zipFile) => {
           _private.data.zip = zipFile;
           callback();
         });
       },
-      QueryJobStatus: function (counter = 0) {
+      QueryJobStatus(counter = 0) {
         // call job status for the result of the job
-        var timeout = counter < 4 ? 2000 : 4000;
+        const timeout = counter < 4 ? 2000 : 4000;
         counter++;
         new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.sid_server)
           .get_job_status(
@@ -315,22 +315,21 @@ class WebApi {
                 _private.data.reject(new Error('Timeout waiting for job status response.'));
                 return;
               }
-              setTimeout(function () {
+              setTimeout(() => {
                 _private.QueryJobStatus(counter);
               }, timeout);
             } else {
               _private.data.resolve(body);
-              return;
             }
           }).catch(() => {
-            setTimeout(function () {
+            setTimeout(() => {
               _private.QueryJobStatus(counter);
             }, timeout);
           });
       },
-      uploadFile: function (signedUrl, info_json, SmileJobID) {
+      uploadFile(signedUrl, info_json, SmileJobID) {
         // upload zip file to s3 using the signed link obtained from the upload lambda
-        var reqOptions = url.parse(signedUrl);
+        const reqOptions = url.parse(signedUrl);
         reqOptions.headers = {
           'Content-Type': 'application/zip',
           'Content-Length': `${_private.data.zip.length}`,
@@ -358,8 +357,8 @@ class WebApi {
           _private.data.reject(err);
         });
       },
-      setupIDApiRequest: function () {
-        const idapiOptions = options ? options : {};
+      setupIDApiRequest() {
+        const idapiOptions = options || {};
         const promise = new IDApi(
           _private.data.partner_id,
           _private.data.api_key,
@@ -373,7 +372,7 @@ class WebApi {
       },
     };
     // this section kicks everything off
-    var result = new Promise((resolve, reject) => {
+    const result = new Promise((resolve, reject) => {
       try {
         _private.data.resolve = resolve;
         _private.data.reject = reject;
@@ -424,10 +423,10 @@ class WebApi {
       });
 
       const timestamp = new Date().toISOString();
-      const signature = new Signature(
+      const { signature } = new Signature(
         this.partner_id,
         this.api_key,
-      ).generate_signature(timestamp).signature;
+      ).generate_signature(timestamp);
 
       const body = JSON.stringify({
         user_id: requestParams.user_id,
@@ -462,7 +461,7 @@ class WebApi {
 
             resolve(tokenResponse);
           } else {
-            var err = JSON.parse(json);
+            const err = JSON.parse(json);
 
             reject(new Error(`${err.code}: ${err.error}`));
           }
@@ -472,7 +471,7 @@ class WebApi {
       req.write(body);
       req.end();
 
-      req.on('error', function (err) {
+      req.on('error', (err) => {
         reject(new Error(`${err.code}:${err.error}`));
       });
     });
