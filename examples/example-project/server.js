@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+
 const express = require('express');
 const { v4: UUID } = require('uuid');
 
