@@ -1,23 +1,16 @@
-/* eslint-disable import/no-unresolved */
+import express, { json, static as express_static } from 'express';
+import { v4 as UUID } from 'uuid';
+import { config } from 'dotenv';
+import { WebApi } from 'smile-identity-core';
 
-const express = require('express');
-const { v4: UUID } = require('uuid');
+config();
 
-if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line global-require
-  const dotenv = require('dotenv');
-
-  dotenv.config();
-}
-
-const SIDCore = require('smile-identity-core');
-
-const SIDWebAPI = SIDCore.WebApi;
+const SIDWebAPI = WebApi;
 
 const app = express();
 
-app.use(express.json({ limit: '500kb' }));
-app.use(express.static('public'));
+app.use(json({ limit: '500kb' }));
+app.use(express_static('public'));
 
 app.post('/', async (req, res) => {
   try {
