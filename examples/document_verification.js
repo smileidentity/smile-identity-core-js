@@ -1,7 +1,6 @@
 // See https://docs.smileidentity.com/server-to-server/javascript/products/document-verification for
 //  how to setup and retrieve configuation values for the WebApi class.
 
-// eslint-disable-next-line import/no-unresolved
 import { WebApi } from 'smile-identity-core';
 
 // Initialize
