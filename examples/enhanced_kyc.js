@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { IDApi } from 'smile-identity-core';
 
 // Initialize

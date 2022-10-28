@@ -1,8 +1,6 @@
-/* eslint-disable max-len */
 // See https://docs.smileidentity.com/server-to-server/javascript/products/biometric-kyc for
 //  how to setup and retrieve configuation values for the WebApi class.
 
-// eslint-disable-next-line import/no-unresolved
 import { WebApi } from 'smile-identity-core';
 
 // Initialize
@@ -25,14 +23,16 @@ const partner_params = {
 // 0 - Selfie image jpg or png (if you have the full path of the selfie)
 // 2 - Selfie image jpg or png base64 encoded (if you have the base64image string of the selfie)
 // 4 - Liveness image jpg or png (if you have the full path of the liveness image)
-// 6 - Liveness image jpg or png base64 encoded (if you have the base64image string of the liveness image)
+// 6 - Liveness image jpg or png base64 encoded (if you have the base64image string of the
+//     liveness image)
 // You may use the recommended web sdk to capture the images, read more here https://docs.smileidentity.com/web-mobile-web/javascript-sdk-beta
 const image_details = [
   {
     image_type_id: '<0 | 2>',
     image: '<full path to selfie image or base64image string>',
   },
-  { // Not required if you don't require proof of life (note photo of photo check will still be performed on the uploaded selfie)
+  { // Not required if you don't require proof of life (note photo of photo check will still
+    // be performed on the uploaded selfie)
     image_type_id: '<4 | 6>',
     image: '<full path to liveness image or base64 image string>',
   },
