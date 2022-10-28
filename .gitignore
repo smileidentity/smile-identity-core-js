@@ -1,4 +1,9 @@
-/node_modules
+# Logs
+logs
+*.log
+npm-debug.log*
+
+node_modules/
 /.nyc_output
 .env
-examples/example-project/node_modules/
+.DS_Store
