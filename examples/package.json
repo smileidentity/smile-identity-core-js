@@ -1,0 +1,25 @@
+{
+  "name": "smile-identity-server-examples",
+  "version": "0.0.1",
+  "description": "Smile Identity server examples",
+  "main": "server.js",
+  "scripts": {
+  },
+  "dependencies": {
+    "smile-identity-core": "latest",
+    "uuid": "^8.3.2"
+  },
+  "engines": {
+    "node": ">=6.x"
+  },
+  "repository": {
+    "url": "https://smileidentity.com/"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express",
+    "Smile Identity"
+  ]
+}
