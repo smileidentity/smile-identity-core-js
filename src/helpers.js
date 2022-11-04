@@ -17,7 +17,7 @@ const mapServerUri = (uriOrKey) => {
   }
 
   if (typeof uriOrKey === 'string') {
-    // Because server addresses do not have a protocol by default in our class 
+    // Because server addresses do not have a protocol by default in our class
     // constructors, we add a https to the beginning of the URI to validate it.
     // new URL() will throw an error if it is unable to parse the URI.
     // eslint-disable-next-line no-new
