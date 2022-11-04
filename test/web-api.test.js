@@ -273,7 +273,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: JOB_TYPE.BASIC_KYC,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -290,7 +290,7 @@ describe('WebApi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: JOB_TYPE.BASIC_KYC,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -330,7 +330,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: JOB_TYPE.BASIC_KYC,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -348,7 +348,7 @@ describe('WebApi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: JOB_TYPE.BASIC_KYC,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
