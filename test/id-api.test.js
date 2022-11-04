@@ -40,7 +40,7 @@ describe('IDapi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: JOB_TYPE.BASIC_KYC,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         };
         delete partner_params[key];
         instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
@@ -56,7 +56,7 @@ describe('IDapi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: JOB_TYPE.BASIC_KYC,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         };
         partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
@@ -108,7 +108,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: JOB_TYPE.BASIC_KYC,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -125,7 +125,7 @@ describe('IDapi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: JOB_TYPE.BASIC_KYC,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -178,7 +178,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: JOB_TYPE.BASIC_KYC,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -214,7 +214,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: JOB_TYPE.BASIC_KYC,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -231,7 +231,7 @@ describe('IDapi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: JOB_TYPE.BASIC_KYC,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
