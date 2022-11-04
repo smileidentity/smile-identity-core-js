@@ -27,7 +27,7 @@ describe('helpers', () => {
       2,
     ];
     invalidTestCases.forEach((testCase) => {
-      assert.throws(() => mapServerUri(testCase), TypeError('Invalid URL'), testCase);
+      assert.throws(() => mapServerUri(testCase), Error);
     });
   });
 });
