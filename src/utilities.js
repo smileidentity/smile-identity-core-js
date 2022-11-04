@@ -1,16 +1,13 @@
 const https = require('https');
 const Signature = require('./signature');
+const ENV = require('./constants/env')
 
 class Utilities {
   constructor(partner_id, api_key, sid_server) {
     this.partner_id = partner_id;
     this.api_key = api_key;
-    if (['0', '1'].includes(sid_server.toString())) {
-      const sid_server_mapping = {
-        0: 'testapi.smileidentity.com/v1',
-        1: 'api.smileidentity.com/v1',
-      };
-      this.url = sid_server_mapping[sid_server.toString()];
+    if (Object.keys(ENV.SID_SERVER_MAPPING).includes(sid_server.toString())) {
+      this.url = ENV.SID_SERVER_MAPPING[sid_server.toString()];
     } else {
       this.url = sid_server;
     }

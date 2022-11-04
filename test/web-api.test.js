@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const keypair = require('keypair');
 const nock = require('nock');
 
-const { WebApi, Signature } = require('..');
+const { WebApi, Signature, IMAGE_TYPE, JOB_TYPE } = require('..');
 
 const pair = keypair();
 
@@ -24,10 +24,10 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
       const instance = new WebApi('001', '', Buffer.from(pair.public).toString('base64'), 0);
-      instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, {}).catch((err) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], {}, {}).catch((err) => {
         assert.equal(err.message, 'Please choose to either get your response via the callback or job status query');
         done();
       });
@@ -55,7 +55,7 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 1,
+          job_type: JOB_TYPE.BIOMETRIC_KYC,
         };
         delete partner_params[key];
         instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
@@ -71,7 +71,7 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 1,
+          job_type: JOB_TYPE.BIOMETRIC_KYC,
         };
         partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
@@ -86,7 +86,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
       instance.submit_job(partner_params, null, {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'Please ensure that you send through image details');
@@ -99,7 +99,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
       instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'Image details needs to be an array');
@@ -112,7 +112,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
       instance.submit_job(partner_params, [], {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'You need to send through at least one selfie image');
@@ -125,9 +125,9 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
-      instance.submit_job(partner_params, [{ image_type_id: 1, image: 'path/to/image' }], {}, { return_job_status: true }).catch((err) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image' }], {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'You need to send through at least one selfie image');
         done();
       });
@@ -138,7 +138,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
       ['country', 'id_type', 'id_number'].forEach((key) => {
         const id_info = {
@@ -148,7 +148,7 @@ describe('WebApi', () => {
           entered: 'true',
         };
         delete id_info[key];
-        instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], id_info, { return_job_status: true }).catch((err) => {
+        instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], id_info, { return_job_status: true }).catch((err) => {
           assert.equal(err.message, `Please make sure that ${key} is included in the id_info`);
         });
       });
@@ -160,10 +160,10 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1,
+        job_type: JOB_TYPE.BIOMETRIC_KYC,
       };
 
-      instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, { return_job_status: true }).catch((err) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], {}, { return_job_status: true }).catch((err) => {
         assert.equal(err.message, 'You are attempting to complete a job type 1 without providing an id card image or id info');
         done();
       });
@@ -174,12 +174,12 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       ['return_job_status', 'return_images', 'return_history'].forEach((flag) => {
         const options = {};
         options[flag] = 'not a boolean';
-        instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, options).catch((err) => {
+        instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], {}, options).catch((err) => {
           assert.equal(err.message, `${flag} needs to be a boolean`);
         });
       });
@@ -191,7 +191,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {};
       const smile_job_id = '0000000111';
@@ -218,7 +218,7 @@ describe('WebApi', () => {
         .reply(200)
         .isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options).then((resp) => {
         assert.deepEqual(resp, { success: true, smile_job_id });
       });
 
@@ -230,7 +230,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         signature: true,
@@ -259,7 +259,7 @@ describe('WebApi', () => {
         .reply(200)
         .isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options).then((resp) => {
         assert.deepEqual(resp, { success: true, smile_job_id });
       });
 
@@ -271,7 +271,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5,
+        job_type: JOB_TYPE.BASIC_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -288,7 +288,7 @@ describe('WebApi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
+          job_type: JOB_TYPE.BASIC_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -328,7 +328,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5,
+        job_type: JOB_TYPE.BASIC_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -346,7 +346,7 @@ describe('WebApi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
+          job_type: JOB_TYPE.BASIC_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -386,7 +386,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         signature: true,
@@ -404,7 +404,7 @@ describe('WebApi', () => {
         .times(0)
         .reply(200);
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then(() => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options).then(() => {
         // make sure this test fails if the job goes through
         assert.equal(false);
       }).catch((err) => {
@@ -421,7 +421,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_job_status: true,
@@ -460,7 +460,7 @@ describe('WebApi', () => {
         .reply(200, jobStatusResponse)
         .isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options).then((resp) => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         done();
       });
@@ -471,7 +471,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_job_status: true,
@@ -520,7 +520,7 @@ describe('WebApi', () => {
         .reply(200, jobStatusResponse)
         .isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
+      instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options).then((resp) => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         done();
       }).catch(console.error);
@@ -531,7 +531,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_job_status: true,
@@ -575,7 +575,7 @@ describe('WebApi', () => {
         .reply(200, jobStatusResponse)
         .isDone();
 
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const promise = instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
       promise.then((resp) => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         assert.equal(resp.job_complete, true);
@@ -589,13 +589,13 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6,
+          job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
         instance.submit_job(
           partner_params,
           [
-            { image_type_id: 0, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -611,14 +611,14 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6,
+          job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
         instance.submit_job(
           partner_params,
           [
-            { image_type_id: 0, image: 'path/to/image.jpg' },
-            { image_type_id: 1, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -634,14 +634,14 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6,
+          job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
         instance.submit_job(
           partner_params,
           [
-            { image_type_id: 0, image: 'path/to/image.jpg' },
-            { image_type_id: 1, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
@@ -657,7 +657,7 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6,
+          job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
         nock('https://testapi.smileidentity.com')
@@ -676,8 +676,8 @@ describe('WebApi', () => {
         instance.submit_job(
           partner_params,
           [
-            { image_type_id: 0, image: 'path/to/image.jpg' },
-            { image_type_id: 1, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -695,7 +695,7 @@ describe('WebApi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6,
+          job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
         nock('https://testapi.smileidentity.com')
@@ -714,7 +714,7 @@ describe('WebApi', () => {
         instance.submit_job(
           partner_params,
           [
-            { image_type_id: 1, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -734,7 +734,7 @@ describe('WebApi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_images: true,
