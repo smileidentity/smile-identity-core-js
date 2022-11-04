@@ -1,9 +1,9 @@
 /**
  * Converts a numeric key to a smile server URI, or
- * returns the URI if it is already a URI.
+ * returns the URI if it is  parsable.
  *
- * @param {string|number} uriOrKey - The URI of a Smile ID server
- *  or a numeric key that represents it.
+ * @param {string|number} uriOrKey - The URI of a Smile ID server or a
+ * numeric key that represents it.
  * @returns {string} URI of smile server if in map, original input if URI.
  * @throws {TypeError} If the input is not a valid URI or key.
  */
@@ -17,9 +17,9 @@ const mapServerUri = (uriOrKey) => {
   }
 
   if (typeof uriOrKey === 'string') {
-    // validates that it is a valid URI. Throws an error if not. Because server addresses do
-    // not have a protocol by default, we add a dummy protocol to the beginning of
-    // the URI to validate it.
+    // Because server addresses do not have a protocol by default in our class 
+    // constructors, we add a https to the beginning of the URI to validate it.
+    // new URL() will throw an error if it is unable to parse the URI.
     // eslint-disable-next-line no-new
     new URL(uriOrKey.startsWith('https://') ? uriOrKey : `https://${uriOrKey}`);
     return uriOrKey;
