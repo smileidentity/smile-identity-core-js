@@ -6,7 +6,6 @@ const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
-const ENV = require('./constants/env');
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
@@ -14,8 +13,12 @@ class WebApi {
     this.default_callback = default_callback;
     this.sid_server = sid_server;
     this.api_key = api_key;
-    if (Object.keys(ENV.SID_SERVER_MAPPING).includes(sid_server.toString())) {
-      this.url = ENV.SID_SERVER_MAPPING[sid_server.toString()];
+    if (['0', '1'].includes(sid_server.toString())) {
+      const sid_server_mapping = {
+        0: 'testapi.smileidentity.com/v1',
+        1: 'api.smileidentity.com/v1',
+      };
+      this.url = sid_server_mapping[sid_server.toString()];
     } else {
       this.url = sid_server;
     }
