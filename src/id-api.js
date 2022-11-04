@@ -37,11 +37,15 @@ const validateIdInfo = (idInfo) => {
 
 const configureJson = (data, options) => {
   const body = {
-    timestamp: data.timestamp,
-    partner_id: data.partner_id,
-    partner_params: data.partner_params,
     language: 'javascript',
+    partner_id: data.partner_id,
+    partner_params: {
+      ...data.partner_params,
+      job_type: parseInt(data.partner_params.job_type, 10),
+    },
+    timestamp: data.timestamp,
   };
+
   const signature = new Signature(data.partner_id, data.api_key);
 
   if (options && options.signature) {
@@ -119,7 +123,6 @@ class IDApi {
     try {
       validatePartnerParams(partner_params);
       validateIdInfo(id_info);
-      data.partner_params.job_type = parseInt(partner_params.job_type, 10);
       return setupRequests(data, options);
     } catch (err) {
       return Promise.reject(err);
