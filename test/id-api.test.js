@@ -2,7 +2,7 @@ const assert = require('assert');
 const keypair = require('keypair');
 const nock = require('nock');
 
-const { IDApi } = require('..');
+const { IDApi, JOB_TYPE } = require('..');
 
 const pair = keypair();
 

@@ -3,7 +3,9 @@ const crypto = require('crypto');
 const keypair = require('keypair');
 const nock = require('nock');
 
-const { WebApi, Signature, IMAGE_TYPE, JOB_TYPE } = require('..');
+const {
+  WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
+} = require('..');
 
 const pair = keypair();
 

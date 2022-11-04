@@ -1,6 +1,6 @@
 const https = require('https');
 const Signature = require('./signature');
-const ENV = require('./constants/env')
+const ENV = require('./constants/env');
 
 class Utilities {
   constructor(partner_id, api_key, sid_server) {
