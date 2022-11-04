@@ -13,6 +13,7 @@ Add support for Node 18.
 - Split tests into multiple files.
 - Run tests in github actions against multiple node versions. Remove travis.
 - disable npm publish trigger on push to master.
+- Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
 
 ### Removed
 Drop support for Node 10.
