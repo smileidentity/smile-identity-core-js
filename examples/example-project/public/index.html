@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Server Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        max-width: 100%;
+        min-height: 100%;
+      }
+
+      smart-camera-web {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 40ch;
+        padding: 1rem;
+        width: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <smart-camera-web capture-id="back"> </smart-camera-web>
+
+    <script src="https://cdn.smileidentity.com/js/v1.0.0-beta.7/smart-camera-web.js"></script>
+
+    <script>
+      const SCW = document.querySelector("smart-camera-web");
+
+      const postContent = async (data) => {
+        const options = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        };
+
+        try {
+          const response = await fetch("/", options);
+          const json = await response.json();
+
+          return json;
+        } catch (e) {
+          throw e;
+        }
+      };
+
+      SCW.addEventListener("imagesComputed", async (e) => {
+        try {
+          const response = await postContent(e.detail);
+
+          console.log(response);
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    </script>
+  </body>
+</html>
