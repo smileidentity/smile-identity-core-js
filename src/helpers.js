@@ -4,7 +4,8 @@
  *
  * @param {string|number} uriOrKey - The URI of a Smile ID server
  *  or a numeric key that represents it.
- * @returns {string} URI of smile server if in map, otherwise the original input.
+ * @returns {string} URI of smile server if in map, original input if URI.
+ * @throws {TypeError} If the input is not a valid URI or key.
  */
 const mapServerUri = (uriOrKey) => {
   const sidServerMapping = {
