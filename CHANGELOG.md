@@ -14,6 +14,7 @@ Add `index.js` tests.
 - Split tests into multiple files.
 - Run tests in github actions against multiple node versions. Remove travis.
 - disable npm publish trigger on push to master.
+- Updated documentation in README.md to reflect other smile SDK docs.
 
 ### Removed
 Drop support for Node 10.
