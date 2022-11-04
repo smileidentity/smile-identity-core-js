@@ -2,7 +2,7 @@ const assert = require('assert');
 const smileIdentityCore = require('..');
 
 describe('smile-identity-core', () => {
-  it('should export a function that returns an object', () => {
+  it('should export an object', () => {
     assert.equal(typeof smileIdentityCore, 'object');
   });
 
@@ -14,11 +14,8 @@ describe('smile-identity-core', () => {
     assert.equal(Object.keys(smileIdentityCore).length, 4);
   });
 
-  it('should not run in the browser', () => {
-    assert.equal(typeof window, 'undefined');
-  });
-
-  it('should run in node', () => {
+  it('should run in node and not in the browser', () => {
     assert.equal(typeof process, 'object');
+    assert.equal(typeof window, 'undefined');
   });
 });
