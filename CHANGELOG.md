@@ -13,7 +13,8 @@ Add `index.js` tests.
 ### Changed
 - Split tests into multiple files.
 - Run tests in github actions against multiple node versions. Remove travis.
-- disable npm publish trigger on push to master.
+- Disable npm publish trigger on push to master.
+- Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
 - Updated documentation in README.md to reflect other smile SDK docs.
 - Refactor IDApi class.
 
