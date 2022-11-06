@@ -1,13 +1,6 @@
 const packageJson = require('../package.json');
 
-/**
- * Defines the sdk language and version.
- *
- * @returns {{
- * sdk: string,
- * sdk_version: string,
- * }} The sdk language and version.
- */
+/** @type {{sdk: string, sdk_version: string}} */
 const sdkVersionInfo = {
   sdk: 'javascript',
   sdk_version: packageJson.version,
