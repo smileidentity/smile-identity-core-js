@@ -7,7 +7,6 @@ const { Utilities, Signature } = require('..');
 const pair = keypair();
 
 describe('Utilities', () => {
-
   beforeAll(() => {
     nock.disableNetConnect();
   });
