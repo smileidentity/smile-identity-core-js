@@ -2,11 +2,12 @@ const assert = require('assert');
 const { getSdkVersionInfo, mapServerUri } = require('../src/helpers');
 
 describe('helpers', () => {
-
   it('getSdkVersionInfo', () => {
     const sdkVersionInfo = getSdkVersionInfo();
-    assert.equal(sdkVersionInfo.sdk, 'node');
+    assert.equal(typeof sdkVersionInfo, 'object');
+    assert.equal(sdkVersionInfo.sdk, 'javascript');
     assert.ok(sdkVersionInfo.sdk_version.match(/^\d+\.\d+\.\d+$/));
+    assert.ok(sdkVersionInfo.sdk_version.match(/^1\./)); // assert that we are at version 1
     assert(Object.keys(sdkVersionInfo).length === 2);
   });
 

@@ -6,9 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-Add eslint and lint the entire codebase.
-Add support for Node 18.
-Add `index.js` tests.
+- Add eslint and lint the entire codebase.
+- Add support for Node 18.
+- Add `index.js` tests.
+- Report `sdk` and `sdk_version` fields to smile.
 
 ### Changed
 - Split tests into multiple files.
@@ -18,11 +19,11 @@ Add `index.js` tests.
 - Updated documentation in README.md to reflect other smile SDK docs.
 
 ### Removed
-Drop support for Node 10.
+- Drop support for Node 10.
 
 ## [1.0.1] - 2019-11-02
 ### Fixed
-.git files are once again being ignored with an npm version bump
+- .git files are once again being ignored with an npm version bump
 
 ## [1.0.0] - 2019-10-18
 ### Added
