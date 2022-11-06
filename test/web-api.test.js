@@ -9,87 +9,87 @@ const pair = keypair();
 describe('WebApi', () => {
   describe('#new', () => {
     it('should instantiate and set the global variables', () => {
+      expect.assertions(4);
       const instance = new WebApi('001', 'https://a_callback.com', Buffer.from(pair.public).toString('base64'), 0);
       expect(instance.partner_id).toEqual('001');
       expect(instance.api_key).toEqual(Buffer.from(pair.public).toString('base64'));
       expect(instance.default_callback).toEqual('https://a_callback.com');
       expect(instance.url).toEqual('testapi.smileidentity.com/v1');
-      expect.assertions(4);
     });
   });
 
   describe('#submit_job', () => {
     it('should ensure that a method of getting data back has been selected', async () => {
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      expect.assertions(1);
       const instance = new WebApi('001', '', Buffer.from(pair.public).toString('base64'), 0);
+      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, {});
       await expect(promise).rejects.toThrow(new Error('Please choose to either get your response via the callback or job status query'));
-      expect.assertions(1);
     });
 
     it('should ensure that the partner_params are present', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const promise = instance.submit_job(null, {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Please ensure that you send through partner params'));
-      expect.assertions(1);
     });
 
     it('should ensure that the partner_params are an object', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const promise = instance.submit_job('not partner params', {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Partner params needs to be an object'));
-      expect.assertions(1);
     });
 
     ['user_id', 'job_id', 'job_type'].forEach((key) => {
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       delete partner_params[key];
       it('should ensure that the partner_params contain user_id, job_id and job_type', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
-        expect.assertions(1);
       });
 
       it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
-        expect.assertions(1);
       });
     });
 
     it('should ensure that images exist', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, null, {}, { return_job_status: true });
 
       await expect(promise).rejects.toThrow(new Error('Please ensure that you send through image details'));
-      expect.assertions(1);
     });
 
     it('should ensure that images is an array', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Image details needs to be an array'));
-      expect.assertions(1);
     });
 
     it('should ensure that images is an array and that it is not empty', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You need to send through at least one selfie image'));
-      expect.assertions(1);
     });
 
     it('should ensure that images is an array and that it has a selfie', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [{ image_type_id: 1, image: 'path/to/image' }], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You need to send through at least one selfie image'));
-      expect.assertions(1);
     });
 
     ['country', 'id_type', 'id_number'].forEach((key) => {
@@ -101,35 +101,36 @@ describe('WebApi', () => {
       };
       delete id_info[key];
       it('should ensure that id_info is correctly filled out', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
         const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], id_info, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the id_info`));
-        expect.assertions(1);
       });
     });
 
     it('should ensure that job type 1 has an id card image if there is no id_info', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You are attempting to complete a job type 1 without providing an id card image or id info'));
-      expect.assertions(1);
     });
 
     ['return_job_status', 'return_images', 'return_history'].forEach((flag) => {
       const options = {};
       options[flag] = 'not a boolean';
       it('should ensure that optional fields are booleans', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
         const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, options);
         await expect(promise).rejects.toThrow(new Error(`${flag} needs to be a boolean`));
-        expect.assertions(1);
       });
     });
 
     it('should be able to send a job', async () => {
+      expect.assertions(9);
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
 
@@ -155,10 +156,10 @@ describe('WebApi', () => {
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
       expect(response).toEqual({ success: true, smile_job_id });
-      expect.assertions(9);
     });
 
     it('should be able to send a job with a signature', async () => {
+      expect.assertions(9);
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
 
@@ -186,10 +187,10 @@ describe('WebApi', () => {
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
       expect(response).toEqual({ success: true, smile_job_id });
-      expect.assertions(9);
     });
 
     it('should call IDApi.new().submit_job if the job type is 5', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
@@ -237,10 +238,10 @@ describe('WebApi', () => {
         'Country', 'IDType', 'IDNumber', 'ExpirationDate',
         'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
       ].sort());
-      expect.assertions(1);
     });
 
     it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', null, '1234', 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const options = { signature: true };
@@ -290,10 +291,10 @@ describe('WebApi', () => {
         'Country', 'IDType', 'IDNumber', 'ExpirationDate',
         'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
       ].sort());
-      expect.assertions(1);
     });
 
     it('should raise an error when a network call fails', async () => {
+      expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { signature: true };
@@ -323,10 +324,10 @@ describe('WebApi', () => {
       // todo: figure out how to get nook to act like an error response would in real life
       // err.message in this case should be '2204:unauthorized'
       expect(error).toBe('undefined:undefined');
-      expect.assertions(2);
     });
 
     it('should return a response from job_status if that flag is set to true', async () => {
+      expect.assertions(1);
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_job_status: true };
@@ -358,10 +359,10 @@ describe('WebApi', () => {
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
       expect(response.sec_key).toBe(jobStatusResponse.sec_key);
-      expect.assertions(1);
     });
 
     it('should set all the job_status flags correctly', async () => {
+      expect.assertions(7);
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = {
@@ -405,10 +406,10 @@ describe('WebApi', () => {
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
       expect(response.sec_key).toBe(jobStatusResponse.sec_key);
-      expect.assertions(7);
     });
 
     it('should poll job_status until job_complete is true', async () => {
+      expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_job_status: true };
@@ -444,11 +445,11 @@ describe('WebApi', () => {
 
       expect(response.sec_key).toBe(jobStatusResponse.sec_key);
       expect(response.job_complete).toBe(true);
-      expect.assertions(2);
     });
 
     describe('documentVerification - JT6', () => {
       it('should require the provision of ID Card images', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -458,11 +459,11 @@ describe('WebApi', () => {
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         );
-        expect.assertions(1);
         await expect(promise).rejects.toThrow(new Error('You are attempting to complete a Document Verification job without providing an id card image'));
       });
 
       it('should require the provision of country in id_info', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -475,11 +476,11 @@ describe('WebApi', () => {
           { id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         );
-        expect.assertions(1);
         await expect(promise).rejects.toThrow(new Error('Please make sure that country is included in the id_info'));
       });
 
       it('should require the provision of id_type in id_info', async () => {
+        expect.assertions(1);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -492,11 +493,10 @@ describe('WebApi', () => {
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
         );
-        expect.assertions(1);
         await expect(promise).rejects.toThrow(new Error('Please make sure that id_type is included in the id_info'));
       });
 
-      it.skip('should send the `use_enrolled_image` field when option is provided', async () => {
+      it('should send the `use_enrolled_image` field when option is provided', async () => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -520,7 +520,7 @@ describe('WebApi', () => {
         expect.assertions(2);
       });
 
-      it.skip('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
+      it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -549,6 +549,9 @@ describe('WebApi', () => {
 
   describe('#get_job_status', () => {
     it('should call Utilities.new().get_job_status', async () => {
+      expect.assertions(8);
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_images: true, return_history: true };
       const timestamp = Date.now();
@@ -577,10 +580,8 @@ describe('WebApi', () => {
         expect(body.history).toBe(true);
         return true;
       }).reply(200, jobStatusResponse).isDone();
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const response = await instance.get_job_status(partner_params, options);
 
-      expect.assertions(8);
       expect(response.sec_key).toEqual(jobStatusResponse.sec_key);
       expect(response.job_complete).toEqual(true);
     });
@@ -588,18 +589,20 @@ describe('WebApi', () => {
 
   describe('#get_web_token', () => {
     it('should ensure it is called with params', async () => {
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       expect.assertions(1);
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.get_web_token()).rejects.toThrow(new Error('Please ensure that you send through request params'));
     });
 
     it('should ensure the params are in an object', async () => {
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       expect.assertions(1);
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.get_web_token('requestParams')).rejects.toThrow(new Error('Request params needs to be an object'));
     });
 
     it('should ensure that all required params are sent', async () => {
+      expect.assertions(4);
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const requestParams = { user_id: '1', job_id: '1' };
 
       const tokenResponse = new Error('product is required to get a web token');
@@ -611,12 +614,12 @@ describe('WebApi', () => {
         return true;
       }).reply(412, tokenResponse).isDone();
 
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      expect.assertions(4);
-      await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error('product is required to get a web token'));
+      await expect(instance.get_web_token(requestParams)).rejects.toThrow(tokenResponse);
     });
 
     it('should return a token when all required params are set', async () => {
+      expect.assertions(4);
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const requestParams = { user_id: '1', job_id: '1', product: 'biometric_kyc' };
       const tokenResponse = { token: '42' };
 
@@ -627,20 +630,20 @@ describe('WebApi', () => {
         return true;
       }).reply(200, tokenResponse).isDone();
 
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      expect.assertions(4);
       const response = await instance.get_web_token(requestParams);
       expect(response.token).toEqual(tokenResponse.token);
     });
 
     describe('handle callback url', () => {
       it('should ensure that a callback URL exists', async () => {
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         expect.assertions(1);
+        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         await expect(instance.get_web_token({})).rejects.toThrow(new Error('Callback URL is required for this method'));
       });
 
       it('should work with a callback_url param', async () => {
+        expect.assertions(5);
+        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const requestParams = {
           user_id: '1',
           job_id: '1',
@@ -658,14 +661,14 @@ describe('WebApi', () => {
           return true;
         }).reply(200, tokenResponse).isDone();
 
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
-        expect.assertions(5);
         const response = await instance.get_web_token(requestParams);
         expect(response.token).toEqual(tokenResponse.token);
       });
 
       it('should fallback to the default callback URL', async () => {
+        expect.assertions(5);
         const defaultCallbackUrl = 'https://smileidentity.com/callback';
+        const instance = new WebApi('001', defaultCallbackUrl, Buffer.from(pair.public).toString('base64'), 0);
         const requestParams = { user_id: '1', job_id: '1', product: 'ekyc_smartselfie' };
 
         const tokenResponse = { token: 42 };
@@ -678,8 +681,6 @@ describe('WebApi', () => {
           return true;
         }).reply(200, tokenResponse).isDone();
 
-        const instance = new WebApi('001', defaultCallbackUrl, Buffer.from(pair.public).toString('base64'), 0);
-        expect.assertions(5);
         const response = await instance.get_web_token(requestParams);
         expect(response.token).toEqual(tokenResponse.token);
       });
