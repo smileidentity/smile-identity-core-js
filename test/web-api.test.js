@@ -7,6 +7,11 @@ const { WebApi, Signature } = require('..');
 const pair = keypair();
 
 describe('WebApi', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    nock.enableNetConnect();
+  });
+
   describe('#new', () => {
     it('should instantiate and set the global variables', () => {
       expect.assertions(4);
@@ -305,7 +310,7 @@ describe('WebApi', () => {
       }).isDone();
 
       // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').times(0).reply(200);
+      nock('https://some_url.com').put('/').reply(200).isDone();
 
       const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
 
@@ -497,6 +502,7 @@ describe('WebApi', () => {
       });
 
       it('should send the `use_enrolled_image` field when option is provided', async () => {
+        expect.assertions(2);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -517,10 +523,10 @@ describe('WebApi', () => {
           { return_job_status: true, use_enrolled_image: true },
         );
         expect(response).toEqual({ success: true });
-        expect.assertions(2);
       });
 
       it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
+        expect.assertions(2);
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
@@ -540,7 +546,6 @@ describe('WebApi', () => {
           { return_job_status: true, use_enrolled_image: true },
         );
 
-        expect.assertions(2);
         expect(response).toEqual({ success: true });
         expect(uploadBody.use_enrolled_image).toBe(true);
       });
@@ -600,21 +605,14 @@ describe('WebApi', () => {
       await expect(instance.get_web_token('requestParams')).rejects.toThrow(new Error('Request params needs to be an object'));
     });
 
-    it('should ensure that all required params are sent', async () => {
-      expect.assertions(4);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      const requestParams = { user_id: '1', job_id: '1' };
-
-      const tokenResponse = new Error('product is required to get a web token');
-
-      nock('https://testapi.smileidentity.com').post('/v1/token', (body) => {
-        expect(body.job_id).toEqual(requestParams.job_id);
-        expect(body.user_id).toEqual(requestParams.user_id);
-        expect(body.product).toBeUndefined();
-        return true;
-      }).reply(412, tokenResponse).isDone();
-
-      await expect(instance.get_web_token(requestParams)).rejects.toThrow(tokenResponse);
+    ['user_id', 'job_id', 'product'].forEach((param) => {
+      const requestParams = { user_id: '1', job_id: '1', product: 'biometric_kyc' };
+      it(`should ensure the ${param} is provided`, async () => {
+        expect.assertions(1);
+        const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+        delete requestParams[param];
+        await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error(`${param} is required to get a web token`));
+      });
     });
 
     it('should return a token when all required params are set', async () => {
