@@ -6,8 +6,22 @@ const { IDApi } = require('..');
 const pair = keypair();
 
 describe('IDapi', () => {
+  beforeAll(() => {
+    nock.disableNetConnect();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    nock.cleanAll();
+  });
+
+  afterAll(() => {
+    nock.enableNetConnect();
+  });
+
   describe('#new', () => {
     it('should instantiate and set the global variables', () => {
+      expect.assertions(3);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       expect(instance.partner_id).toEqual('001');
       expect(instance.api_key).toEqual(Buffer.from(pair.public).toString('base64'));
@@ -17,11 +31,13 @@ describe('IDapi', () => {
 
   describe('#submit_job', () => {
     it('should ensure that the partner_params are present', async () => {
+      expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.submit_job(null, {})).rejects.toThrow(new Error('Please ensure that you send through partner params'));
     });
 
     it('should ensure that the partner_params are an object', async () => {
+      expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.submit_job('not partner params', {})).rejects.toThrow(new Error('Partner params needs to be an object'));
     });
@@ -31,38 +47,45 @@ describe('IDapi', () => {
       partner_params[key] = '';
 
       it(`should ensure that partner_params contains ${key}`, async () => {
+        expect.assertions(1);
         const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
         await expect(instance.submit_job(partner_params, {}, {}, { return_job_status: true })).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
 
       it(`should ensure that in partner_params, ${key} is not an empty string`, async () => {
+        expect.assertions(1);
         const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
         await expect(instance.submit_job(partner_params, {}, {}, { return_job_status: true })).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
     });
 
     it('should ensure that the id_info is an object', async () => {
+      expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, '')).rejects.toThrow(new Error('ID Info needs to be an object'));
     });
 
     it('should ensure that the id_info object is not empty or nil', async () => {
+      expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, {})).rejects.toThrow(new Error('Please make sure that id_info not empty or nil'));
     });
 
     it('should ensure that the id_info object contains a valid id_number as a string', async () => {
+      expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       await expect(instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, { id_number: '' })).rejects.toThrow(new Error('Please provide an id_number in the id_info payload'));
     });
 
     it('should ensure that the the job id is set to 5', async () => {
+      expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       await expect(instance.submit_job(partner_params, null)).rejects.toThrow(new Error('Please ensure that you are setting your job_type to 5 to query ID Api'));
     });
 
     it('should be able to send a job', async () => {
+      expect.assertions(15);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
         first_name: 'John',
@@ -100,7 +123,7 @@ describe('IDapi', () => {
         timestamp: 1570612182124,
       };
 
-      nock('https://testapi.smileidentity.com').post('/v1/id_verification', (body) => {
+      const scope = nock('https://testapi.smileidentity.com').post('/v1/id_verification', (body) => {
         expect(body.partner_id).toEqual('001');
         expect(body.sec_key).not.toEqual(undefined);
         expect(body.timestamp).not.toEqual(undefined);
@@ -115,7 +138,7 @@ describe('IDapi', () => {
         expect(body.id_number).toEqual(id_info.id_number);
         expect(body.phone_number).toEqual(id_info.phone_number);
         return true;
-      }).reply(200, IDApiResponse).isDone();
+      }).reply(200, IDApiResponse);
 
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
 
@@ -126,10 +149,11 @@ describe('IDapi', () => {
         'Country', 'IDType', 'IDNumber', 'ExpirationDate',
         'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
       ].sort());
-      expect.assertions(14);
+      expect(scope.isDone()).toBe(true);
     });
 
     it('should raise an error when a network call fails', async () => {
+      expect.assertions(3);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
@@ -142,10 +166,10 @@ describe('IDapi', () => {
         phone_number: '0726789065',
       };
 
-      nock('https://testapi.smileidentity.com').post('/v1/id_verification').replyWithError(400, {
+      const scope = nock('https://testapi.smileidentity.com').post('/v1/id_verification').replyWithError(400, {
         code: '2204',
         error: 'unauthorized',
-      }).isDone();
+      });
 
       let response;
       let error;
@@ -158,10 +182,11 @@ describe('IDapi', () => {
       // err.message in this case should be '2204:unauthorized'
       expect(error).toEqual('undefined:undefined');
       expect(response).toEqual(undefined);
-      expect.assertions(2);
+      expect(scope.isDone()).toBe(true);
     });
 
     it('should use the signature instead of sec_key when provided an optional parameter', async () => {
+      expect.assertions(14);
       const instance = new IDApi('001', '1234', 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
@@ -173,7 +198,7 @@ describe('IDapi', () => {
         id_number: '00000000000',
         phone_number: '0726789065',
       };
-      const IDApiResponse = {
+      const idApiResponse = {
         JSONVersion: '1.0.0',
         SmileJobID: '0000001096',
         PartnerParams: {
@@ -215,7 +240,7 @@ describe('IDapi', () => {
         expect(body.id_number).toEqual(id_info.id_number);
         expect(body.phone_number).toEqual(id_info.phone_number);
         return true;
-      }).reply(200, IDApiResponse).isDone();
+      }).reply(200, idApiResponse);
 
       const response = await instance.submit_job(partner_params, id_info, { signature: true });
 
@@ -225,8 +250,6 @@ describe('IDapi', () => {
         'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName',
         'DOB', 'Photo', 'signature', 'timestamp',
       ].sort());
-
-      expect.assertions(14);
     });
   });
 });
