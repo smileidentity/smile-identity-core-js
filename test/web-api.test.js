@@ -326,16 +326,10 @@ describe('WebApi', () => {
       expect.assertions(2);
     });
 
-    it.skip('should return a response from job_status if that flag is set to true', async () => {
+    it('should return a response from job_status if that flag is set to true', async () => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 4,
-      };
-      const options = {
-        return_job_status: true,
-      };
+      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const options = { return_job_status: true };
 
       const timestamp = Date.now();
       const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
@@ -355,33 +349,21 @@ describe('WebApi', () => {
         signature: sec_key,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload')
-        .reply(200, {
-          upload_url: 'https://some_url.com',
-        })
-        .isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200)
-        .isDone();
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status')
-        .reply(200, jobStatusResponse)
-        .isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
+        upload_url: 'https://some_url.com',
+      }).isDone();
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').reply(200).isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse).isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
-        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
-      });
+      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      expect(response.sec_key).toBe(jobStatusResponse.sec_key);
+      expect.assertions(1);
     });
 
-    it.skip('should set all the job_status flags correctly', async () => {
+    it('should set all the job_status flags correctly', async () => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 4,
-      };
+      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = {
         return_job_status: true,
         return_images: true,
@@ -406,44 +388,30 @@ describe('WebApi', () => {
         signature: sec_key,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload')
-        .reply(200, {
-          upload_url: 'https://some_url.com',
-        })
-        .isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200)
-        .isDone();
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status', (body) => {
-          assert.equal(body.job_id, partner_params.job_id);
-          assert.equal(body.user_id, partner_params.user_id);
-          assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
-          assert.equal(body.image_links, true);
-          assert.equal(body.history, true);
-          return true;
-        })
-        .reply(200, jobStatusResponse)
-        .isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
+        upload_url: 'https://some_url.com',
+      }).isDone();
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').reply(200).isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
+        expect(body.job_id).toBe(partner_params.job_id);
+        expect(body.user_id).toBe(partner_params.user_id);
+        expect(body.timestamp).not.toBe(undefined);
+        expect(body.sec_key).not.toBe(undefined);
+        expect(body.image_links).toBe(true);
+        expect(body.history).toBe(true);
+        return true;
+      }).reply(200, jobStatusResponse).isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then((resp) => {
-        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
-      }).catch(console.error);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      expect(response.sec_key).toBe(jobStatusResponse.sec_key);
+      expect.assertions(7);
     });
 
-    it.skip('should poll job_status until job_complete is true', async () => {
+    it('should poll job_status until job_complete is true', async () => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 4,
-      };
-      const options = {
-        return_job_status: true,
-      };
+      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const options = { return_job_status: true };
 
       const timestamp = Date.now();
       const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
@@ -463,32 +431,21 @@ describe('WebApi', () => {
         signature: sec_key,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload')
-        .reply(200, {
-          upload_url: 'https://some_url.com',
-        })
-        .isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200)
-        .isDone();
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status')
-        .reply(200, jobStatusResponse)
-        .isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
+        upload_url: 'https://some_url.com',
+      }).isDone();
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').reply(200).isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse).isDone();
       jobStatusResponse.job_complete = true;
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status')
-        .reply(200, jobStatusResponse)
-        .isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse).isDone();
 
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
-      promise.then((resp) => {
-        assert.equal(resp.sec_key, jobStatusResponse.sec_key);
-        assert.equal(resp.job_complete, true);
-      }).catch(console.error);
-    }); // .timeout(5000);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+
+      expect(response.sec_key).toBe(jobStatusResponse.sec_key);
+      expect(response.job_complete).toBe(true);
+      expect.assertions(2);
+    });
 
     describe.skip('documentVerification - JT6', () => {
       it('should require the provision of ID Card images', async () => {
