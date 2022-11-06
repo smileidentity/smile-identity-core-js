@@ -1,7 +1,15 @@
 const assert = require('assert');
-const { mapServerUri } = require('../src/helpers');
+const { getSdkVersionInfo, mapServerUri } = require('../src/helpers');
 
 describe('helpers', () => {
+
+  it('getSdkVersionInfo', () => {
+    const sdkVersionInfo = getSdkVersionInfo();
+    assert.equal(sdkVersionInfo.sdk, 'node');
+    assert.ok(sdkVersionInfo.sdk_version.match(/^\d+\.\d+\.\d+$/));
+    assert(Object.keys(sdkVersionInfo).length === 2);
+  });
+
   it('mapServerUri', () => {
     const testCases = [
       { input: '0', expected: 'testapi.smileidentity.com/v1' },

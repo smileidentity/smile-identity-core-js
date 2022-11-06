@@ -1,3 +1,18 @@
+const packageJson = require('../package.json');
+
+/**
+ * Returns the sdk language and version.
+ *
+ * @returns {{
+ * sdk: string,
+ * sdk_version: string,
+ * }} The sdk language and version.
+ */
+const getSdkVersionInfo = () => ({
+  sdk: 'node',
+  sdk_version: packageJson.version,
+});
+
 /**
  * Converts a numeric key to a smile server URI, or
  * returns the original URI.
@@ -18,5 +33,6 @@ const mapServerUri = (uriOrKey) => {
 };
 
 module.exports = {
+  getSdkVersionInfo,
   mapServerUri,
 };
