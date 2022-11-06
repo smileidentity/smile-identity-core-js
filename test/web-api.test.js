@@ -530,10 +530,8 @@ describe('WebApi', () => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
-        let uploadBody;
-
         nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
-          uploadBody = body;
+          expect(body.use_enrolled_image).toBe(true);
         }).reply(200, { upload_url: 'https://some_url.com' }).isDone();
 
         // todo: find a way to unzip and test info.json
@@ -547,7 +545,6 @@ describe('WebApi', () => {
         );
 
         expect(response).toEqual({ success: true });
-        expect(uploadBody.use_enrolled_image).toBe(true);
       });
     });
   });
