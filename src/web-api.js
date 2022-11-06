@@ -2,7 +2,7 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const url = require('url');
-const JSzip = require('jszip');
+const JSZip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
@@ -271,7 +271,7 @@ class WebApi {
       },
       zipUpFile(info_json, callback) {
         // create zip file in memory
-        const zip = new JSzip();
+        const zip = new JSZip();
         zip.file('info.json', JSON.stringify(info_json));
         _private.data.images.forEach((image) => {
           if ([0, 1].indexOf(parseInt(image.image_type_id, 10)) > -1) {
