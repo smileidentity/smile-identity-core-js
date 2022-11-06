@@ -1,4 +1,3 @@
-const assert = require('assert');
 const crypto = require('crypto');
 const keypair = require('keypair');
 const nock = require('nock');
@@ -8,8 +7,12 @@ const { Utilities, Signature } = require('..');
 const pair = keypair();
 
 describe('Utilities', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('#get_job_status', () => {
-    it('should be able to check job_status successfully', (done) => {
+    it('should be able to check job_status successfully', async () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -37,31 +40,28 @@ describe('Utilities', () => {
         timestamp,
         signature: sec_key,
       };
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status', (body) => {
-          assert.equal(body.job_id, partner_params.job_id);
-          assert.equal(body.user_id, partner_params.user_id);
-          assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
-          assert.equal(body.image_links, true);
-          assert.equal(body.history, true);
-          return true;
-        })
-        .reply(200, jobStatusResponse)
-        .isDone();
-      new Utilities('001', Buffer.from(pair.public).toString('base64'), 0)
-        .get_job_status(partner_params.user_id, partner_params.job_id, options)
-        .then((job_status) => {
-          assert.equal(job_status.sec_key, jobStatusResponse.sec_key);
-          assert.equal(job_status.job_complete, true);
-          done();
-        }).catch((err) => {
-          assert.equal(null, err);
-          console.error(err);
-        });
+      nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
+        expect(body.job_id).toEqual(partner_params.job_id);
+        expect(body.user_id).toEqual(partner_params.user_id);
+        expect(body.timestamp).not.toEqual(undefined);
+        expect(body.sec_key).not.toEqual(undefined);
+        expect(body.image_links).toEqual(true);
+        expect(body.history).toEqual(true);
+        return true;
+      }).reply(200, jobStatusResponse).isDone();
+
+      const utilities = new Utilities('001', Buffer.from(pair.public).toString('base64'), 0);
+      const jobStatus = await utilities.get_job_status(
+        partner_params.user_id,
+        partner_params.job_id,
+        options,
+      );
+      expect(jobStatus.sec_key).toEqual(jobStatusResponse.sec_key);
+      expect(jobStatus.job_complete).toEqual(true);
+      expect.assertions(8);
     });
 
-    it('should be able to use the signature instead of the sec_key when provided an option flag', (done) => {
+    it('should be able to use the signature instead of the sec_key when provided an option flag', async () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -86,31 +86,28 @@ describe('Utilities', () => {
         timestamp,
         signature,
       };
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status', (body) => {
-          assert.equal(body.job_id, partner_params.job_id);
-          assert.equal(body.user_id, partner_params.user_id);
-          assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.signature, undefined);
-          assert.equal(body.image_links, true);
-          assert.equal(body.history, true);
-          return true;
-        })
-        .reply(200, jobStatusResponse)
-        .isDone();
-      new Utilities('001', '1234', 0)
-        .get_job_status(partner_params.user_id, partner_params.job_id, options)
-        .then((job_status) => {
-          assert.equal(job_status.signature, jobStatusResponse.signature);
-          assert.equal(job_status.job_complete, true);
-          done();
-        }).catch((err) => {
-          assert.equal(null, err);
-          console.error(err);
-        });
+      nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
+        expect(body.job_id).toEqual(partner_params.job_id);
+        expect(body.user_id).toEqual(partner_params.user_id);
+        expect(body.timestamp).not.toEqual(undefined);
+        expect(body.signature).not.toEqual(undefined);
+        expect(body.image_links).toEqual(true);
+        expect(body.history).toEqual(true);
+        return true;
+      }).reply(200, jobStatusResponse).isDone();
+
+      const utilities = new Utilities('001', '1234', 0);
+      const jobStatus = await utilities.get_job_status(
+        partner_params.user_id,
+        partner_params.job_id,
+        options,
+      );
+      expect(jobStatus.signature).toEqual(jobStatusResponse.signature);
+      expect(jobStatus.job_complete).toEqual(true);
+      expect.assertions(8);
     });
 
-    it('should raise an error if one occurs', (done) => {
+    it('should raise an error if one occurs', async () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -121,29 +118,27 @@ describe('Utilities', () => {
         return_history: true,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/job_status', (body) => {
-          assert.equal(body.job_id, partner_params.job_id);
-          assert.equal(body.user_id, partner_params.user_id);
-          assert.notEqual(body.timestamp, undefined);
-          assert.notEqual(body.sec_key, undefined);
-          assert.equal(body.image_links, true);
-          assert.equal(body.history, true);
-          return true;
-        })
-        .replyWithError(400, {
-          code: '2204',
-          error: 'unauthorized',
-        })
-        .isDone();
-      new Utilities('001', Buffer.from(pair.public).toString('base64'), 0)
-        .get_job_status(partner_params.user_id, partner_params.job_id, options)
-        .then((job_status) => {
-          assert.equal(null, job_status);
-        }).catch((err) => {
-          assert.equal(err.message, 'Error: 400');
-          done();
-        });
+      nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
+        expect(body.job_id).toEqual(partner_params.job_id);
+        expect(body.user_id).toEqual(partner_params.user_id);
+        expect(body.timestamp).not.toEqual(undefined);
+        expect(body.sec_key).not.toEqual(undefined);
+        expect(body.image_links).toEqual(true);
+        expect(body.history).toEqual(true);
+        return true;
+      }).replyWithError(400, {
+        code: '2204',
+        error: 'unauthorized',
+      }).isDone();
+
+      const utilities = new Utilities('001', Buffer.from(pair.public).toString('base64'), 0);
+      const jobStatus = await utilities.get_job_status(
+        partner_params.user_id,
+        partner_params.job_id,
+        options,
+      );
+      await expect(jobStatus).rejects.toThrow(new Error('Error: 400'));
+      expect.assertions(7);
     });
   });
 });
