@@ -1,4 +1,3 @@
-const assert = require('assert');
 const { mapServerUri } = require('../src/helpers');
 
 describe('helpers', () => {
@@ -18,7 +17,7 @@ describe('helpers', () => {
     ];
 
     testCases.forEach((testCase) => {
-      assert.equal(mapServerUri(testCase.input), testCase.expected);
+      expect(mapServerUri(testCase.input)).toEqual(testCase.expected);
     });
   });
 });
