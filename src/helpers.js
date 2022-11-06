@@ -1,11 +1,5 @@
 const packageJson = require('../package.json');
 
-/** @type {{sdk: string, sdk_version: string}} */
-const sdkVersionInfo = {
-  sdk: 'javascript',
-  sdk_version: packageJson.version,
-};
-
 /**
  * Converts a numeric key to a smile server URI, or
  * returns the original URI.
@@ -25,7 +19,13 @@ const mapServerUri = (uriOrKey) => {
   return uriOrKey;
 };
 
+/** @type {{sdk: string, sdk_version: string}} */
+const sdkVersionInfo = {
+  sdk: 'javascript',
+  sdk_version: packageJson.version,
+};
+
 module.exports = {
-  sdkVersionInfo,
   mapServerUri,
+  sdkVersionInfo,
 };

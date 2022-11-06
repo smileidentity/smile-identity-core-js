@@ -1,6 +1,6 @@
 const https = require('https');
 const Signature = require('./signature');
-const { sdkVersionInfo, mapServerUri } = require('./helpers');
+const { mapServerUri, sdkVersionInfo } = require('./helpers');
 
 class IDApi {
   constructor(partner_id, api_key, sid_server) {

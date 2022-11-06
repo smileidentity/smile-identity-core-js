@@ -6,7 +6,7 @@ const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
-const { sdkVersionInfo, mapServerUri } = require('./helpers');
+const { mapServerUri, sdkVersionInfo } = require('./helpers');
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
