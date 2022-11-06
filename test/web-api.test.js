@@ -189,7 +189,7 @@ describe('WebApi', () => {
       expect.assertions(9);
     });
 
-    it.skip('should call IDApi.new().submit_job if the job type is 5', async () => {
+    it('should call IDApi.new().submit_job if the job type is 5', async () => {
       const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
@@ -228,26 +228,22 @@ describe('WebApi', () => {
         timestamp: 1570612182124,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', () => true)
-        .reply(200, IDApiResponse)
-        .isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/id_verification', () => true).reply(200, IDApiResponse).isDone();
 
-      const promise = instance.submit_job(partner_params, null, id_info, null);
-      promise.then((resp) => {
-        assert.deepEqual(Object.keys(resp).sort(), [
-          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
-        ].sort());
-      });
+      const response = await instance.submit_job(partner_params, null, id_info, null);
+      expect(Object.keys(response).sort()).toEqual([
+        'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType',
+        'ResultText', 'ResultCode', 'IsFinalResult', 'Actions',
+        'Country', 'IDType', 'IDNumber', 'ExpirationDate',
+        'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
+      ].sort());
+      expect.assertions(1);
     });
 
-    it.skip('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', async () => {
+    it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', async () => {
       const instance = new WebApi('001', null, '1234', 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 5,
-      };
+      const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
+      const options = { signature: true };
       const id_info = {
         first_name: 'John',
         last_name: 'Doe',
@@ -285,50 +281,49 @@ describe('WebApi', () => {
         timestamp,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', () => true)
-        .reply(200, IDApiResponse)
-        .isDone();
+      nock('https://testapi.smileidentity.com').post('/v1/id_verification', () => true).reply(200, IDApiResponse).isDone();
 
-      const promise = instance.submit_job(partner_params, null, id_info, { signature: true });
-      promise.then((resp) => {
-        assert.deepEqual(Object.keys(resp).sort(), [
-          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
-        ].sort());
-      });
+      const response = await instance.submit_job(partner_params, null, id_info, options);
+      expect(Object.keys(response).sort()).toEqual([
+        'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType',
+        'ResultText', 'ResultCode', 'IsFinalResult', 'Actions',
+        'Country', 'IDType', 'IDNumber', 'ExpirationDate',
+        'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
+      ].sort());
+      expect.assertions(1);
     });
 
-    it.skip('should raise an error when a network call fails', async () => {
+    it('should raise an error when a network call fails', async () => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: 4,
-      };
-      const options = {
-        signature: true,
-      };
+      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const options = { signature: true };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload')
-        .replyWithError(400, {
-          code: '2204',
-          error: 'unauthorized',
-        })
-        .isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .times(0)
-        .reply(200);
+      nock('https://testapi.smileidentity.com').post('/v1/upload').replyWithError(400, {
+        code: '2204',
+        error: 'unauthorized',
+      }).isDone();
 
-      instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options).then(() => {
-        // make sure this test fails if the job goes through
-        assert.equal(false);
-      }).catch((err) => {
-        // todo: figure out how to get nook to act like an error response would in real life
-        // err.message in this case should be '2204:unauthorized'
-        assert.equal(err.message, undefined);
-      });
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').times(0).reply(200);
+
+      const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+
+      let response;
+      let error;
+
+      try {
+        response = await promise;
+      } catch (err) {
+        error = err;
+      }
+
+      // make sure this test fails if the job goes through
+      expect(response).toBeUndefined();
+
+      // todo: figure out how to get nook to act like an error response would in real life
+      // err.message in this case should be '2204:unauthorized'
+      expect(error).toBe('undefined:undefined');
+      expect.assertions(2);
     });
 
     it.skip('should return a response from job_status if that flag is set to true', async () => {
@@ -439,7 +434,7 @@ describe('WebApi', () => {
       }).catch(console.error);
     });
 
-    xit('should poll job_status until job_complete is true', async () => {
+    it.skip('should poll job_status until job_complete is true', async () => {
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -493,7 +488,7 @@ describe('WebApi', () => {
         assert.equal(resp.sec_key, jobStatusResponse.sec_key);
         assert.equal(resp.job_complete, true);
       }).catch(console.error);
-    }) // .timeout(5000);
+    }); // .timeout(5000);
 
     describe.skip('documentVerification - JT6', () => {
       it('should require the provision of ID Card images', async () => {
