@@ -6,7 +6,7 @@ const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
-const { getSdkVersionInfo, mapServerUri } = require('./helpers');
+const { sdkVersionInfo, mapServerUri } = require('./helpers');
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
@@ -164,7 +164,7 @@ class WebApi {
         } else {
           body.sec_key = _private.determineSecKey().sec_key;
         }
-        return JSON.stringify({ ...body, ...getSdkVersionInfo() });
+        return JSON.stringify({ ...body, ...sdkVersionInfo });
       },
       setupRequests() {
         // make the first call to the upload lambda

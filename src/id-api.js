@@ -1,6 +1,6 @@
 const https = require('https');
 const Signature = require('./signature');
-const { getSdkVersionInfo, mapServerUri } = require('./helpers');
+const { sdkVersionInfo, mapServerUri } = require('./helpers');
 
 class IDApi {
   constructor(partner_id, api_key, sid_server) {
@@ -84,7 +84,7 @@ class IDApi {
         } else {
           body.sec_key = _private.determineSecKey().sec_key;
         }
-        return JSON.stringify({ ...body, ..._private.data.id_info, ...getSdkVersionInfo() });
+        return JSON.stringify({ ...body, ..._private.data.id_info, ...sdkVersionInfo });
       },
       setupRequests() {
         let json = '';
