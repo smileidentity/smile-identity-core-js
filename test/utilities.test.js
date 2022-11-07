@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const keypair = require('keypair');
 const nock = require('nock');
 
-const { Utilities, Signature } = require('..');
+const { Utilities, Signature, JOB_TYPE } = require('..');
 
 const pair = keypair();
 
@@ -13,7 +13,7 @@ describe('Utilities', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_images: true,
@@ -65,7 +65,7 @@ describe('Utilities', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_images: true,
@@ -114,7 +114,7 @@ describe('Utilities', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       const options = {
         return_images: true,

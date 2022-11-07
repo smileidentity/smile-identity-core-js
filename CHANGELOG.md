@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add eslint and lint the entire codebase.
 - Add support for Node 18.
 - Add `index.js` tests.
-- Report `sdk` and `sdk_version` fields to smile.
+- Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`.
+- Add report `sdk` and `sdk_version` fields to smile.
 
 ### Changed
 - Split tests into multiple files.
