@@ -2,7 +2,7 @@ const assert = require('assert');
 const keypair = require('keypair');
 const nock = require('nock');
 
-const { IDApi } = require('..');
+const { IDApi, JOB_TYPE } = require('..');
 
 const pair = keypair();
 
@@ -40,7 +40,7 @@ describe('IDapi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 5,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         };
         delete partner_params[key];
         instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
@@ -56,7 +56,7 @@ describe('IDapi', () => {
         const partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 5,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         };
         partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
@@ -95,7 +95,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4,
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
       };
       instance.submit_job(partner_params, null).catch((err) => {
         assert.equal(err.message, 'Please ensure that you are setting your job_type to 5 to query ID Api');
@@ -108,7 +108,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -125,7 +125,7 @@ describe('IDapi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -178,7 +178,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -214,7 +214,7 @@ describe('IDapi', () => {
       const partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5,
+        job_type: JOB_TYPE.ENHANCED_KYC,
       };
       const id_info = {
         first_name: 'John',
@@ -231,7 +231,7 @@ describe('IDapi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
