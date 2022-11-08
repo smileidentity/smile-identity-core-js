@@ -20,7 +20,7 @@ Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`
 
 ### Removed
 - Drop support for Node 10.
-- Remove `sec_key` based authentication.
+- Remove `sec_key` based authentication. Functions `Signature.generate_sec_key` and `Signature.confirm_sec_key` should be replaced with `Signature.generate_signature` and `Signature.confirm_signature` respectively.
 
 ## [1.0.1] - 2019-11-02
 ### Fixed
