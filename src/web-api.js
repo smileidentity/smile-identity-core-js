@@ -135,13 +135,6 @@ class WebApi {
 
         _private.data[key] = bool;
       },
-      determineSecKey(timestamp) {
-        // calculate an outgoing signature
-        return new Signature(
-          _private.data.partner_id,
-          _private.data.api_key,
-        ).generate_sec_key(timestamp || _private.data.timestamp);
-      },
       determineSignature(timestamp) {
         // calculate an outgoing signature
         return new Signature(
@@ -158,12 +151,8 @@ class WebApi {
           partner_params: _private.data.partner_params,
           model_parameters: {},
           callback_url: _private.data.callback_url,
+          signature: _private.determineSignature().signature,
         };
-        if (options && options.signature) {
-          body.signature = _private.determineSignature().signature;
-        } else {
-          body.sec_key = _private.determineSecKey().sec_key;
-        }
         return JSON.stringify(body);
       },
       setupRequests() {
@@ -223,7 +212,7 @@ class WebApi {
             language: 'javascript',
           },
           misc_information: {
-            sec_key: _private.data.sec_key,
+            signature: _private.data.signature,
             retry: 'false',
             partner_params: _private.data.partner_params,
             timestamp: _private.data.timestamp,

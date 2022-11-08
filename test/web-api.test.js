@@ -201,7 +201,7 @@ describe('WebApi', () => {
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload', (body) => {
           assert.equal(body.smile_client_id, '001');
-          assert.notEqual(body.sec_key, undefined);
+          assert.notEqual(body.signature, undefined);
           assert.notEqual(body.timestamp, undefined);
           assert.equal(body.file_name, 'selfie.zip');
           assert.equal(body.partner_params.user_id, partner_params.user_id);
@@ -307,7 +307,7 @@ describe('WebApi', () => {
         FullName: 'some  person',
         DOB: 'NaN-NaN-NaN',
         Photo: 'Not Available',
-        sec_key: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
+        signature: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
         timestamp: 1570612182124,
       };
 
@@ -319,7 +319,7 @@ describe('WebApi', () => {
       const promise = instance.submit_job(partner_params, null, id_info, null);
       promise.then((resp) => {
         assert.deepEqual(Object.keys(resp).sort(), [
-          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
+          'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
         ].sort());
         done();
       });

@@ -60,12 +60,6 @@ class IDApi {
 
         _private.data.id_info = idInfo;
       },
-      determineSecKey() {
-        return new Signature(
-          _private.data.partner_id,
-          _private.data.api_key,
-        ).generate_sec_key(_private.data.timestamp);
-      },
       determineSignature() {
         return new Signature(
           _private.data.partner_id,
@@ -78,12 +72,8 @@ class IDApi {
           partner_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
           language: 'javascript',
+          signature: _private.determineSignature().signature,
         };
-        if (options && options.signature) {
-          body.signature = _private.determineSignature().signature;
-        } else {
-          body.sec_key = _private.determineSecKey().sec_key;
-        }
         return JSON.stringify({ ...body, ..._private.data.id_info });
       },
       setupRequests() {
