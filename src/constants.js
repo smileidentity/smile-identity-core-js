@@ -36,17 +36,13 @@ const JOB_TYPE = {
   SMART_SELFIE_REGISTRATION: 2,
   /** SMART_SELFIE_AUTHENTICATION Used to identify your existing users. */
   SMART_SELFIE_AUTHENTICATION: 4,
-  /**
-   * ENHANCED_KYC query the Identity Information for an individual using their
-   * ID number from one of our supported.
-   */
+  /** ENHANCED_KYC query the Identity Information for an individual using their
+   * ID number from one of our supported. */
   ENHANCED_KYC: 5,
   /** DOCUMENT_VERIFICATION Detailed user information retrieved from the ID issuing authority. */
   DOCUMENT_VERIFICATION: 6,
-  /**
-   * BUSINESS_VERIFICATION Verify the authenticity of Document IDs of your users
-   * and confirm it belongs to the user using facial biometrics.
-   */
+  /** BUSINESS_VERIFICATION Verify the authenticity of Document IDs of your users
+   * and confirm it belongs to the user using facial biometrics. */
   BUSINESS_VERIFICATION: 7,
 };
 
