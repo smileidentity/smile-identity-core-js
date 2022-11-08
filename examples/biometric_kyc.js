@@ -1,6 +1,6 @@
 /**
  * See https://docs.smileidentity.com/server-to-server/javascript/products/biometric-kyc
- *  for how to setup and retrieve configuration values for the WebApi class.
+ * for how to setup and retrieve configuration values for the WebApi class.
  */
 
 import { WebApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
@@ -8,9 +8,11 @@ import { WebApi } from 'smile-identity-core'; // eslint-disable-line import/no-u
 // Initialize
 // Login to the Smile Identity Portal to view your partner id.
 const partner_id = '<Your partner ID>';
+// Copy your API key from the Smile Identity portal.
+const api_key = '<Your API key>';
+// Use '0' for the sandbox server, use '1' for production server.
+const sid_server = '<0 or 1>';
 const default_callback = '<Put your default callback url here>';
-const api_key = '<Your API key>'; // Copy your API key from the Smile Identity portal.
-const sid_server = '<0 or 1>'; // Use '0' for the sandbox server, use '1' for production server.
 
 const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
 
@@ -21,15 +23,19 @@ const partner_params = {
   job_type: 1,
 };
 
-// Create image list
-// image_type_id Integer
-// 0 - Selfie image jpg or png (if you have the full path of the selfie)
-// 2 - Selfie image jpg or png base64 encoded (if you have the base64image string of the selfie)
-// 4 - Liveness image jpg or png (if you have the full path of the liveness image)
-// 6 - Liveness image jpg or png base64 encoded (if you have the base64image string of the
-//     liveness image)
-// You may use the recommended web sdk to capture the images, read more
-// here https://docs.smileidentity.com/web-mobile-web/javascript-sdk-beta
+/**
+ * Create image list.
+ *
+ * image_type_id Integer
+ * 0 - Selfie image jpg or png (if you have the full path of the selfie).
+ * 2 - Selfie image jpg or png base64 encoded (if you have the base64image string of the selfie).
+ * 4 - Liveness image jpg or png (if you have the full path of the liveness image).
+ * 6 - Liveness image jpg or png base64 encoded (if you have the base64image string of the
+ *     liveness image).
+ *
+ * You may use the recommended web sdk to capture the images, read more
+ * here https://docs.smileidentity.com/web-mobile-web/javascript-sdk-beta
+ */
 const image_details = [
   {
     image_type_id: '<0 | 2>',
