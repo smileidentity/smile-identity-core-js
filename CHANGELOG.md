@@ -19,7 +19,8 @@ Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`
 - Updated documentation in README.md to reflect other smile SDK docs.
 
 ### Removed
-Drop support for Node 10.
+- Drop support for Node 10.
+- Remove `sec_key` based authentication.
 
 ## [1.0.1] - 2019-11-02
 ### Fixed
