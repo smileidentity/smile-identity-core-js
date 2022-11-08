@@ -1,4 +1,4 @@
-import { IDApi } from 'smile-identity-core';
+import { IDApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
 
 // Initialize
 const partner_id = '<Your partner ID>'; // login to the Smile Identity portal to view your partner id

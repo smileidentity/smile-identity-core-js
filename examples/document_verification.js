@@ -1,7 +1,7 @@
 // See https://docs.smileidentity.com/server-to-server/javascript/products/document-verification for
-//  how to setup and retrieve configuation values for the WebApi class.
+//  how to setup and retrieve configuration values for the WebApi class.
 
-import { WebApi } from 'smile-identity-core';
+import { WebApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
 
 // Initialize
 const partner_id = '<Your partner ID>'; // login to the Smile Identity portal to view your partner id
