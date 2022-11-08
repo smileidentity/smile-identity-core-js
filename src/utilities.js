@@ -45,12 +45,7 @@ class Utilities {
           }
         });
       });
-      let timestamp;
-      if (optionFlags.signature) {
-        timestamp = new Date().toISOString();
-      } else {
-        timestamp = Date.now();
-      }
+      const timestamp = new Date().toISOString();
       const reqBody = {
         user_id,
         job_id,

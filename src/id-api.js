@@ -10,10 +10,10 @@ class IDApi {
     this.url = mapServerUri(sid_server);
   }
 
-  submit_job(partner_params, id_info, options = {}) {
+  submit_job(partner_params, id_info) {
     const _private = {
       data: {
-        timestamp: options.signature ? new Date().toISOString() : Date.now(),
+        timestamp: new Date().toISOString(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,

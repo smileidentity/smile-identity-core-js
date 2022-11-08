@@ -22,7 +22,7 @@ class WebApi {
     const _private = {
       data: {
         callback_url: (options && options.optional_callback) || this.default_callback,
-        timestamp: (options && options.signature) ? new Date().toISOString() : Date.now(),
+        timestamp: new Date().toISOString(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,
@@ -283,7 +283,7 @@ class WebApi {
             {
               return_history: _private.data.return_history,
               return_images: _private.data.return_images,
-              signature: options ? options.signature : false,
+              signature: options.signature,
             },
           ).then((body) => {
             if (!body.job_complete) {
@@ -334,13 +334,12 @@ class WebApi {
         });
       },
       setupIDApiRequest() {
-        const idapiOptions = options || {};
         const promise = new IDApi(
           _private.data.partner_id,
           _private.data.api_key,
           _private.data.sid_server,
           {},
-        ).submit_job(_private.data.partner_params, _private.data.id_info, idapiOptions);
+        ).submit_job(_private.data.partner_params, _private.data.id_info);
 
         promise.then((idApiResp) => _private.data.resolve(idApiResp)).catch((err) => {
           throw _private.data.reject(err);

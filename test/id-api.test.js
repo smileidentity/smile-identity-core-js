@@ -43,7 +43,7 @@ describe('IDapi', () => {
           job_type: JOB_TYPE.ENHANCED_KYC,
         };
         delete partner_params[key];
-        instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
+        instance.submit_job(partner_params, {}).catch((err) => {
           assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
         });
       });
@@ -59,7 +59,7 @@ describe('IDapi', () => {
           job_type: JOB_TYPE.ENHANCED_KYC,
         };
         partner_params[key] = '';
-        instance.submit_job(partner_params, {}, {}, { return_job_status: true }).catch((err) => {
+        instance.submit_job(partner_params, {}).catch((err) => {
           assert.equal(err.message, `Please make sure that ${key} is included in the partner params`);
         });
       });
