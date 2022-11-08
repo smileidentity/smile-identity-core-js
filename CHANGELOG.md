@@ -17,6 +17,7 @@ Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`
 - Disable npm publish trigger on push to master.
 - Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
 - Updated documentation in README.md to reflect other smile SDK docs.
+- Remove `options` argument from `IDApi.submit_job`. This argument is no longer used now that `sec_key` is no longer supported.
 
 ### Removed
 - Drop support for Node 10.
