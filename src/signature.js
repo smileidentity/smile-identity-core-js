@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 
 /**
- *
+ * Generate a signature for the given input.
+ * 
  * @param {string} partnerID - Smile partner ID. This is a unique identifier
  * for your Smile account.
  * @param {string} apiKey - Smile API Key. Found in the Smile Dashboard.
