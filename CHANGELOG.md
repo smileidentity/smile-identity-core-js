@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for Node 18.
 - Add `index.js` tests.
 - Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`.
-- Add report `sdk` and `sdk_version` fields to smile.
+- Add report `source_sdk` and `source_sdk_version` fields to smile.
 
 ### Changed
 - Split tests into multiple files.

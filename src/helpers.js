@@ -19,10 +19,10 @@ const mapServerUri = (uriOrKey) => {
   return uriOrKey;
 };
 
-/** @type {{sdk: string, sdk_version: string}} */
+/** @type {{source_sdk: string, source_sdk_version: string}} */
 const sdkVersionInfo = {
-  sdk: 'javascript',
-  sdk_version: packageJson.version,
+  source_sdk: 'node',
+  source_sdk_version: packageJson.version,
 };
 
 module.exports = {

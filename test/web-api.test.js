@@ -209,8 +209,8 @@ describe('WebApi', () => {
           assert.equal(body.partner_params.job_id, partner_params.job_id);
           assert.equal(body.partner_params.job_type, partner_params.job_type);
           assert.equal(body.callback_url, 'https://a_callback.cb');
-          assert.equal(body.sdk, 'javascript');
-          assert.equal(body.sdk_version, packageJson.version);
+          assert.equal(body.source_sdk, 'node');
+          assert.equal(body.source_sdk_version, packageJson.version);
           return true;
         })
         .reply(200, {
@@ -252,8 +252,8 @@ describe('WebApi', () => {
           assert.equal(body.partner_params.job_id, partner_params.job_id);
           assert.equal(body.partner_params.job_type, partner_params.job_type);
           assert.equal(body.callback_url, 'https://a_callback.cb');
-          assert.equal(body.sdk, 'javascript');
-          assert.equal(body.sdk_version, packageJson.version);
+          assert.equal(body.source_sdk, 'node');
+          assert.equal(body.source_sdk_version, packageJson.version);
           return true;
         })
         .reply(200, {
