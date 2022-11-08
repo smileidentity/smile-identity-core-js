@@ -456,7 +456,7 @@ class WebApi {
 
 module.exports = WebApi;
 
-// configure prep upload payload (determine the sec key)
+// configure prep upload payload (determine the signature)
 // send prep upload request
 // get prep upload response (new link)
 // set the info.json
