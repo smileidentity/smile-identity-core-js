@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { mapServerUri, sdkVersionInfo } = require('../src/helpers');
+const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('../src/helpers');
 
 describe('helpers', () => {
   it('mapServerUri', () => {
@@ -28,5 +28,28 @@ describe('helpers', () => {
     assert.ok(sdkVersionInfo.source_sdk_version.match(/^\d+\.\d+\.\d+$/));
     assert.ok(sdkVersionInfo.source_sdk_version.match(/^1\./)); // assert that we are at version 1
     assert(Object.keys(sdkVersionInfo).length === 2);
+  });
+
+  it('validatePartnerParams', () => {
+    const testCases = [
+      { input: null, expected: 'Please ensure that you send through partner params' },
+      { input: undefined, expected: 'Please ensure that you send through partner params' },
+      { input: '{ "user_id": "123" }', expected: 'Partner params needs to be an object' },
+      { input: {}, expected: 'Please make sure that user_id is included in the partner params' },
+      { input: { job_id: '123' }, expected: 'Please make sure that user_id is included in the partner params' },
+      { input: { user_id: '123' }, expected: 'Please make sure that job_id is included in the partner params' },
+      { input: { user_id: '123', job_id: '123' }, expected: 'Please make sure that job_type is included in the partner params' },
+      { input: { user_id: '123', job_id: '123', job_type: '123' }, expected: null },
+    ];
+
+    testCases.forEach((testCase) => {
+      let error = { message: null };
+      try {
+        validatePartnerParams(testCase.input);
+      } catch (err) {
+        error = err;
+      }
+      assert.equal(error.message, testCase.expected, JSON.stringify(testCase.input));
+    });
   });
 });
