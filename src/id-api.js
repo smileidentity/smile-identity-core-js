@@ -1,26 +1,6 @@
 const https = require('https');
 const Signature = require('./signature');
-const { mapServerUri, sdkVersionInfo } = require('./helpers');
-
-const validatePartnerParams = (partnerParams) => {
-  if (!partnerParams) {
-    throw new Error('Please ensure that you send through partner params');
-  }
-
-  if (typeof partnerParams !== 'object') {
-    throw new Error('Partner params needs to be an object');
-  }
-
-  ['user_id', 'job_id', 'job_type'].forEach((key) => {
-    if (!partnerParams[key]) {
-      throw new Error(`Please make sure that ${key} is included in the partner params`);
-    }
-  });
-
-  if (parseInt(partnerParams.job_type, 10) !== 5) {
-    throw new Error('Please ensure that you are setting your job_type to 5 to query ID Api');
-  }
-};
+const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
 
 const validateIdInfo = (idInfo) => {
   if (typeof idInfo !== 'object') {
@@ -107,6 +87,11 @@ class IDApi {
 
     try {
       validatePartnerParams(partner_params);
+
+      if (parseInt(partner_params.job_type, 10) !== 5) {
+        throw new Error('Please ensure that you are setting your job_type to 5 to query ID Api');
+      }
+
       validateIdInfo(id_info);
       return setupRequests(data);
     } catch (err) {
