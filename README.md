@@ -24,8 +24,6 @@ The `Signature` class has the following public methods:
 
 - `generate_signature` - generate a signature which is then passed as a signature param when making requests to the Smile Identity server.
 - `confirm_signature` - ensure a response is truly from the Smile Identity server by confirming the incoming signature.
-- `generate_sec_key` - generate a sec_key which is then passed as a sec_key param when making requests to the Smile Identity server.
-- `confirm_sec_key` - ensure a response is truly from the Smile Identity server by confirming the incoming sec_key.
 
 The `Utilities` Class allows you as the Partner to have access to our general Utility functions to gain access to your data. It has the following public methods:
 
