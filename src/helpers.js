@@ -21,7 +21,7 @@ const mapServerUri = (uriOrKey) => {
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */
 const sdkVersionInfo = {
-  source_sdk: 'node',
+  source_sdk: 'javascript',
   source_sdk_version: packageJson.version,
 };
 
