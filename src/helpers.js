@@ -25,7 +25,24 @@ const sdkVersionInfo = {
   source_sdk_version: packageJson.version,
 };
 
+const validatePartnerParams = (partnerParams) => {
+  if (!partnerParams) {
+    throw new Error('Please ensure that you send through partner params');
+  }
+
+  if (typeof partnerParams !== 'object') {
+    throw new Error('Partner params needs to be an object');
+  }
+
+  ['user_id', 'job_id', 'job_type'].forEach((key) => {
+    if (!partnerParams[key]) {
+      throw new Error(`Please make sure that ${key} is included in the partner params`);
+    }
+  });
+};
+
 module.exports = {
   mapServerUri,
   sdkVersionInfo,
+  validatePartnerParams,
 };
