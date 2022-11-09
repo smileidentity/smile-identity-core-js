@@ -1,9 +1,11 @@
 const path = require('path');
-const crypto = require('crypto');
 const keypair = require('keypair');
 const nock = require('nock');
+const packageJson = require('../package.json');
 
-const { WebApi, Signature } = require('..');
+const {
+  WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
+} = require('..');
 
 const pair = keypair();
 
@@ -21,12 +23,14 @@ describe('WebApi', () => {
     nock.enableNetConnect();
   });
 
+  const mockApiKey = Buffer.from(pair.public).toString('base64');
+
   describe('#new', () => {
     it('should instantiate and set the global variables', () => {
       expect.assertions(4);
-      const instance = new WebApi('001', 'https://a_callback.com', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.com', mockApiKey, 0);
       expect(instance.partner_id).toEqual('001');
-      expect(instance.api_key).toEqual(Buffer.from(pair.public).toString('base64'));
+      expect(instance.api_key).toEqual(mockApiKey);
       expect(instance.default_callback).toEqual('https://a_callback.com');
       expect(instance.url).toEqual('testapi.smileidentity.com/v1');
     });
@@ -35,7 +39,7 @@ describe('WebApi', () => {
   describe('#submit_job', () => {
     it('should ensure that a method of getting data back has been selected', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', '', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', '', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, {});
       await expect(promise).rejects.toThrow(new Error('Please choose to either get your response via the callback or job status query'));
@@ -43,14 +47,14 @@ describe('WebApi', () => {
 
     it('should ensure that the partner_params are present', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const promise = instance.submit_job(null, {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Please ensure that you send through partner params'));
     });
 
     it('should ensure that the partner_params are an object', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const promise = instance.submit_job('not partner params', {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Partner params needs to be an object'));
     });
@@ -60,14 +64,14 @@ describe('WebApi', () => {
       delete partner_params[key];
       it('should ensure that the partner_params contain user_id, job_id and job_type', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
 
       it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
@@ -75,7 +79,7 @@ describe('WebApi', () => {
 
     it('should ensure that images exist', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, null, {}, { return_job_status: true });
 
@@ -84,7 +88,7 @@ describe('WebApi', () => {
 
     it('should ensure that images is an array', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Image details needs to be an array'));
@@ -92,7 +96,7 @@ describe('WebApi', () => {
 
     it('should ensure that images is an array and that it is not empty', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You need to send through at least one selfie image'));
@@ -100,7 +104,7 @@ describe('WebApi', () => {
 
     it('should ensure that images is an array and that it has a selfie', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [{ image_type_id: 1, image: 'path/to/image' }], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You need to send through at least one selfie image'));
@@ -116,7 +120,7 @@ describe('WebApi', () => {
       delete id_info[key];
       it('should ensure that id_info is correctly filled out', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
         const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], id_info, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the id_info`));
@@ -125,7 +129,7 @@ describe('WebApi', () => {
 
     it('should ensure that job type 1 has an id card image if there is no id_info', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
       const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You are attempting to complete a job type 1 without providing an id card image or id info'));
@@ -136,7 +140,7 @@ describe('WebApi', () => {
       options[flag] = 'not a boolean';
       it('should ensure that optional fields are booleans', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
         const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, options);
         await expect(promise).rejects.toThrow(new Error(`${flag} needs to be a boolean`));
@@ -145,7 +149,7 @@ describe('WebApi', () => {
 
     it('should be able to send a job', async () => {
       expect.assertions(9);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
 
       const options = {};
@@ -205,7 +209,7 @@ describe('WebApi', () => {
 
     it('should call IDApi.new().submit_job if the job type is 5', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
         first_name: 'John',
@@ -255,10 +259,12 @@ describe('WebApi', () => {
     });
 
     it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', async () => {
-      expect.assertions(1);
-      const instance = new WebApi('001', null, '1234', 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
-      const options = { signature: true };
+      const instance = new WebApi('001', null, mockApiKey, 0);
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.ENHANCED_KYC,
+      };
       const id_info = {
         first_name: 'John',
         last_name: 'Doe',
@@ -275,7 +281,7 @@ describe('WebApi', () => {
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -292,13 +298,12 @@ describe('WebApi', () => {
         FullName: 'some  person',
         DOB: 'NaN-NaN-NaN',
         Photo: 'Not Available',
-        signature: new Signature('001', '1234').generate_signature(timestamp).signature,
-        timestamp,
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 
       nock('https://testapi.smileidentity.com').post('/v1/id_verification', () => true).reply(200, IDApiResponse).isDone();
 
-      const response = await instance.submit_job(partner_params, null, id_info, options);
+      const response = await instance.submit_job(partner_params, null, id_info);
       expect(Object.keys(response).sort()).toEqual([
         'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType',
         'ResultText', 'ResultCode', 'IsFinalResult', 'Actions',
@@ -309,9 +314,8 @@ describe('WebApi', () => {
 
     it('should raise an error when a network call fails', async () => {
       expect.assertions(2);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
-      const options = { signature: true };
 
       nock('https://testapi.smileidentity.com').post('/v1/upload').replyWithError(400, {
         code: '2204',
@@ -321,7 +325,7 @@ describe('WebApi', () => {
       // todo: find a way to unzip and test info.json
       nock('https://some_url.com').put('/').reply(200).isDone();
 
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {});
 
       let response;
       let error;
@@ -342,17 +346,12 @@ describe('WebApi', () => {
 
     it('should return a response from job_status if that flag is set to true', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_job_status: true };
 
-      const timestamp = Date.now();
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(hash)).toString('base64');
-      const sec_key = [encrypted, hash].join('|');
+      const timestamp = new Date().toISOString();
+
       const jobStatusResponse = {
         job_success: true,
         job_complete: true,
@@ -360,8 +359,7 @@ describe('WebApi', () => {
           ResultCode: '0810',
           ResultText: 'Awesome!',
         },
-        timestamp,
-        signature: sec_key,
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 
       nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
@@ -377,7 +375,7 @@ describe('WebApi', () => {
 
     it('should set all the job_status flags correctly', async () => {
       expect.assertions(7);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = {
         return_job_status: true,
@@ -385,13 +383,8 @@ describe('WebApi', () => {
         return_history: true,
       };
 
-      const timestamp = Date.now();
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(hash)).toString('base64');
-      const sec_key = [encrypted, hash].join('|');
+      const timestamp = new Date().toISOString();
+
       const jobStatusResponse = {
         job_success: true,
         job_complete: true,
@@ -399,8 +392,7 @@ describe('WebApi', () => {
           ResultCode: '0810',
           ResultText: 'Awesome!',
         },
-        timestamp,
-        signature: sec_key,
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 
       nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
@@ -424,17 +416,11 @@ describe('WebApi', () => {
 
     it('should poll job_status until job_complete is true', async () => {
       expect.assertions(2);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_job_status: true };
 
-      const timestamp = Date.now();
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(hash)).toString('base64');
-      const sec_key = [encrypted, hash].join('|');
+      const timestamp = new Date().toISOString();
       const jobStatusResponse = {
         job_success: false,
         job_complete: false,
@@ -442,8 +428,7 @@ describe('WebApi', () => {
           ResultCode: '0810',
           ResultText: 'Awesome!',
         },
-        timestamp,
-        signature: sec_key,
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 
       nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
@@ -464,7 +449,7 @@ describe('WebApi', () => {
     describe('documentVerification - JT6', () => {
       it('should require the provision of ID Card images', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
         const promise = instance.submit_job(
@@ -478,14 +463,14 @@ describe('WebApi', () => {
 
       it('should require the provision of country in id_info', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
         const promise = instance.submit_job(
           partner_params,
           [
-            { image_type_id: 0, image: 'path/to/image.jpg' },
-            { image_type_id: 1, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -495,14 +480,14 @@ describe('WebApi', () => {
 
       it('should require the provision of id_type in id_info', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
         const promise = instance.submit_job(
           partner_params,
           [
-            { image_type_id: 0, image: 'path/to/image.jpg' },
-            { image_type_id: 1, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
           ],
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
@@ -512,7 +497,7 @@ describe('WebApi', () => {
 
       it('should send the `use_enrolled_image` field to the callback_url when option is provided', async () => {
         expect.assertions(9);
-        const instance = new WebApi('001', 'https://fake-callback-url.com', Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', 'https://fake-callback-url.com', mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
         const postScope = nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
           expect(body.use_enrolled_image).toBe(true);
@@ -539,10 +524,9 @@ describe('WebApi', () => {
       });
 
       it.only('should send the `use_enrolled_image` field when option is provided', async () => {
-        //expect.assertions(4);
-        const apiKey = Buffer.from(pair.public).toString('base64');
-        const timestamp = new Date().toISOString();
-        const instance = new WebApi('001', apiKey, 0);
+        // expect.assertions(4);
+        const { signature, timestamp } = new Signature('001', mockApiKey).generate_signature();
+        const instance = new WebApi('001', mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
         const postScope = nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
           expect(body.use_enrolled_image).toBe(true);
@@ -551,6 +535,7 @@ describe('WebApi', () => {
           expect(body.file_name).toBe('selfie.zip');
           expect(typeof body.signature).toBe('string');
           expect(typeof body.timestamp).toBe('number');
+          expect(body.timestamp).toBe(timestamp);
           return true;
         }).reply(200, { upload_url: 'https://some_url.com' });
         const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');
@@ -561,7 +546,7 @@ describe('WebApi', () => {
           partner_params,
           [{ image_type_id: 0, image: fixturePath }, { image_type_id: 1, image: fixturePath }],
           { country: 'NG', id_type: 'NIN' },
-          { return_job_status: true, use_enrolled_image: true, signature: new Signature(apiKey, timestamp).generate_signature().signature },
+          { return_job_status: true, use_enrolled_image: true, signature },
         );
         expect(response).toEqual({ success: true });
         expect(postScope.isDone()).toBe(true);
@@ -571,7 +556,7 @@ describe('WebApi', () => {
 
       it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
         /*
@@ -600,17 +585,11 @@ describe('WebApi', () => {
   describe('#get_job_status', () => {
     it('should call Utilities.new().get_job_status', async () => {
       expect.assertions(8);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
 
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_images: true, return_history: true };
-      const timestamp = Date.now();
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(hash)).toString('base64');
-      const sec_key = [encrypted, hash].join('|');
+      const timestamp = new Date().toISOString();
       const jobStatusResponse = {
         job_success: true,
         job_complete: true,
@@ -618,21 +597,20 @@ describe('WebApi', () => {
           ResultCode: '0810',
           ResultText: 'Awesome!',
         },
-        timestamp,
-        signature: sec_key,
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
       nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
         expect(body.job_id).toEqual(partner_params.job_id);
         expect(body.user_id).toEqual(partner_params.user_id);
         expect(body.timestamp).not.toBeUndefined();
-        expect(body.sec_key).not.toBeUndefined();
+        expect(body.signature).not.toBeUndefined();
         expect(body.image_links).toBe(true);
         expect(body.history).toBe(true);
         return true;
       }).reply(200, jobStatusResponse).isDone();
       const response = await instance.get_job_status(partner_params, options);
 
-      expect(response.sec_key).toEqual(jobStatusResponse.sec_key);
+      expect(response.signature).toEqual(jobStatusResponse.signature);
       expect(response.job_complete).toEqual(true);
     });
   });
@@ -640,13 +618,13 @@ describe('WebApi', () => {
   describe('#get_web_token', () => {
     it('should ensure it is called with params', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       await expect(instance.get_web_token()).rejects.toThrow(new Error('Please ensure that you send through request params'));
     });
 
     it('should ensure the params are in an object', async () => {
       expect.assertions(1);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       await expect(instance.get_web_token('requestParams')).rejects.toThrow(new Error('Request params needs to be an object'));
     });
 
@@ -654,7 +632,7 @@ describe('WebApi', () => {
       const requestParams = { user_id: '1', job_id: '1', product: 'biometric_kyc' };
       it(`should ensure the ${param} is provided`, async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
         delete requestParams[param];
         await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error(`${param} is required to get a web token`));
       });
@@ -662,7 +640,7 @@ describe('WebApi', () => {
 
     it('should return a token when all required params are set', async () => {
       expect.assertions(4);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const requestParams = { user_id: '1', job_id: '1', product: 'biometric_kyc' };
       const tokenResponse = { token: '42' };
 
@@ -680,13 +658,13 @@ describe('WebApi', () => {
     describe('handle callback url', () => {
       it('should ensure that a callback URL exists', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         await expect(instance.get_web_token({})).rejects.toThrow(new Error('Callback URL is required for this method'));
       });
 
       it('should work with a callback_url param', async () => {
         expect.assertions(5);
-        const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', null, mockApiKey, 0);
         const requestParams = {
           user_id: '1',
           job_id: '1',
@@ -711,7 +689,7 @@ describe('WebApi', () => {
       it('should fallback to the default callback URL', async () => {
         expect.assertions(5);
         const defaultCallbackUrl = 'https://smileidentity.com/callback';
-        const instance = new WebApi('001', defaultCallbackUrl, Buffer.from(pair.public).toString('base64'), 0);
+        const instance = new WebApi('001', defaultCallbackUrl, mockApiKey, 0);
         const requestParams = { user_id: '1', job_id: '1', product: 'ekyc_smartselfie' };
 
         const tokenResponse = { token: 42 };

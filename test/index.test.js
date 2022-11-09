@@ -10,7 +10,11 @@ describe('smile-identity-core', () => {
     expect(smileIdentityCore.Utilities).toBeInstanceOf(Function);
     expect(smileIdentityCore.WebApi).toBeInstanceOf(Function);
     expect(smileIdentityCore.IDApi).toBeInstanceOf(Function);
-    expect(Object.keys(smileIdentityCore)).toHaveLength(4);
+    expect(smileIdentityCore.IMAGE_TYPE).toBeInstanceOf(Object);
+    expect(smileIdentityCore.JOB_TYPE).toBeInstanceOf(Object);
+    expect(Object.keys(smileIdentityCore)).toHaveLength(6);
+    expect(Object.keys(smileIdentityCore.IMAGE_TYPE)).toHaveLength(8);
+    expect(Object.keys(smileIdentityCore.JOB_TYPE)).toHaveLength(6);
   });
 
   it('should run in node and not in the browser', () => {

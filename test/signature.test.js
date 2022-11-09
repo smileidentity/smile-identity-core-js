@@ -27,38 +27,6 @@ describe('Signature', () => {
     });
   });
 
-  describe('#generate_sec_key', () => {
-    it('should create a sec_key', () => {
-      expect.assertions(4);
-      const timestamp = Date.now();
-      const signature = signer.generate_sec_key(timestamp);
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const decrypted = crypto.privateDecrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(signature.sec_key.split('|')[0], 'base64')).toString();
-
-      expect(hash).toEqual(signature.sec_key.split('|')[1]);
-      expect(typeof signature).toEqual('object');
-      expect(timestamp).toEqual(signature.timestamp);
-      expect(decrypted).toEqual(hash);
-    });
-  });
-
-  describe('#confirm_sec_key', () => {
-    it('should be able to decode a valid sec_key', () => {
-      expect.assertions(1);
-      const timestamp = Date.now();
-      const hash = crypto.createHash('sha256').update(`${1}:${timestamp}`).digest('hex');
-      const encrypted = crypto.privateEncrypt({
-        key: Buffer.from(pair.private),
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      }, Buffer.from(hash)).toString('base64');
-      const secKey = [encrypted, hash].join('|');
-      expect(signer.confirm_sec_key(timestamp, secKey)).toEqual(true);
-    });
-  });
-
   describe('#generate_signature', () => {
     it('should calculate a signature and use a timestamp if provided one', () => {
       expect.assertions(1);
@@ -68,6 +36,53 @@ describe('Signature', () => {
       const output = hmac.digest().toString('base64');
       const result = signer.generate_signature(timestamp);
       expect(result).toEqual({ signature: output, timestamp });
+    });
+  });
+
+  it('should generate a signature with a default timestamp', () => {
+    const timestamp = new Date().getTime();
+    const result = signer.generate_signature(timestamp);
+    expect(result.signature).toEqual(expect.any(String));
+    expect(result.timestamp).toEqual(expect.any(Number));
+    expect(result.timestamp).toBeLessThanOrEqual(new Date().getTime());
+  });
+
+  const validTimestampFormats = [
+    '2018-01-01T00:00:00.000Z',
+    '2018-01-01T00:00:00.000+00:00',
+    '2018-01-01T00:00:00.000+0000',
+    new Date().toISOString(),
+    Date.now(),
+    new Date().getTime(),
+  ];
+
+  validTimestampFormats.forEach((timestamp) => {
+    it(`should generate a signature for valid timestamp ${timestamp}`, () => {
+      expect.assertions(1);
+      const result = signer.generate_signature(timestamp);
+      const isoTimestamp = typeof timestamp === 'number' ? new Date(timestamp).toISOString() : timestamp;
+      const hmac = crypto.createHmac('sha256', mockApiKey);
+      hmac.update(isoTimestamp, 'utf8').update('001', 'utf8').update('sid_request', 'utf8');
+      const output = hmac.digest().toString('base64');
+      expect(result).toEqual({ signature: output, timestamp });
+    });
+  });
+
+  const invalidTimestampFormats = [NaN, '', '2018-00-01T00:00:00.000'];
+
+  invalidTimestampFormats.forEach((timestamp) => {
+    it(`should throw an error for invalid timestamp ${timestamp}`, () => {
+      expect.assertions(2);
+      let error;
+      let result;
+
+      try {
+        result = signer.generate_signature(timestamp);
+      } catch (e) {
+        error = e;
+      }
+      expect(result).toBeUndefined();
+      expect(error).toEqual(new Error('Invalid time value'));
     });
   });
 

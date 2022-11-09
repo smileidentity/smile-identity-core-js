@@ -6,7 +6,7 @@ const JSZip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
-const { mapServerUri } = require('./helpers');
+const { mapServerUri, sdkVersionInfo } = require('./helpers');
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
@@ -22,7 +22,7 @@ class WebApi {
     const _private = {
       data: {
         callback_url: (options && options.optional_callback) || this.default_callback,
-        timestamp: (options && options.signature) ? new Date().toISOString() : Date.now(),
+        timestamp: new Date().toISOString(),
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,
@@ -135,13 +135,6 @@ class WebApi {
 
         _private.data[key] = bool;
       },
-      determineSecKey(timestamp) {
-        // calculate an outgoing signature
-        return new Signature(
-          _private.data.partner_id,
-          _private.data.api_key,
-        ).generate_sec_key(timestamp || _private.data.timestamp);
-      },
       determineSignature(timestamp) {
         // calculate an outgoing signature
         return new Signature(
@@ -150,21 +143,17 @@ class WebApi {
         ).generate_signature(timestamp || _private.data.timestamp);
       },
       configurePrepUploadJson() {
-        const body = {
-          file_name: 'selfie.zip',
-          use_enrolled_image: _private.data.use_enrolled_image,
-          timestamp: _private.data.timestamp,
-          smile_client_id: _private.data.partner_id,
-          partner_params: _private.data.partner_params,
-          model_parameters: {},
+        return JSON.stringify({
           callback_url: _private.data.callback_url,
-        };
-        if (options && options.signature) {
-          body.signature = _private.determineSignature().signature;
-        } else {
-          body.sec_key = _private.determineSecKey().sec_key;
-        }
-        return JSON.stringify(body);
+          file_name: 'selfie.zip',
+          model_parameters: {},
+          partner_params: _private.data.partner_params,
+          signature: _private.determineSignature().signature,
+          smile_client_id: _private.data.partner_id,
+          timestamp: _private.data.timestamp,
+          use_enrolled_image: _private.data.use_enrolled_image,
+          ...sdkVersionInfo,
+        });
       },
       setupRequests() {
         // make the first call to the upload lambda
@@ -223,7 +212,7 @@ class WebApi {
             language: 'javascript',
           },
           misc_information: {
-            sec_key: _private.data.sec_key,
+            signature: _private.data.signature,
             retry: 'false',
             partner_params: _private.data.partner_params,
             timestamp: _private.data.timestamp,
@@ -294,7 +283,7 @@ class WebApi {
             {
               return_history: _private.data.return_history,
               return_images: _private.data.return_images,
-              signature: options ? options.signature : false,
+              signature: options.signature,
             },
           ).then((body) => {
             if (!body.job_complete) {
@@ -345,13 +334,12 @@ class WebApi {
         });
       },
       setupIDApiRequest() {
-        const idapiOptions = options || {};
         const promise = new IDApi(
           _private.data.partner_id,
           _private.data.api_key,
           _private.data.sid_server,
           {},
-        ).submit_job(_private.data.partner_params, _private.data.id_info, idapiOptions);
+        ).submit_job(_private.data.partner_params, _private.data.id_info);
 
         promise.then((idApiResp) => _private.data.resolve(idApiResp)).catch((err) => {
           throw _private.data.reject(err);
@@ -467,7 +455,7 @@ class WebApi {
 
 module.exports = WebApi;
 
-// configure prep upload payload (determine the sec key)
+// configure prep upload payload (determine the signature)
 // send prep upload request
 // get prep upload response (new link)
 // set the info.json

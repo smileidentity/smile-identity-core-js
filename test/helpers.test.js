@@ -1,4 +1,4 @@
-const { mapServerUri } = require('../src/helpers');
+const { mapServerUri, sdkVersionInfo } = require('../src/helpers');
 
 describe('helpers', () => {
   it('mapServerUri', () => {
@@ -19,5 +19,13 @@ describe('helpers', () => {
     testCases.forEach((testCase) => {
       expect(mapServerUri(testCase.input)).toEqual(testCase.expected);
     });
+  });
+
+  it('sdkVersionInfo', () => {
+    expect(typeof sdkVersionInfo).toEqual('object');
+    expect(sdkVersionInfo.source_sdk).toEqual('javascript');
+    expect(sdkVersionInfo.source_sdk_version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(sdkVersionInfo.source_sdk_version).toMatch(/^1\./); // assert that we are at version 1
+    expect(Object.keys(sdkVersionInfo).length).toEqual(2);
   });
 });

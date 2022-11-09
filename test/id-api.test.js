@@ -1,7 +1,8 @@
 const keypair = require('keypair');
 const nock = require('nock');
+const packageJson = require('../package.json');
 
-const { IDApi } = require('..');
+const { IDApi, Signature } = require('..');
 
 const pair = keypair();
 
@@ -85,7 +86,7 @@ describe('IDapi', () => {
     });
 
     it('should be able to send a job', async () => {
-      expect.assertions(15);
+      expect.assertions(17);
       const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
       const id_info = {
         first_name: 'John',
@@ -96,7 +97,10 @@ describe('IDapi', () => {
         id_number: '00000000000',
         phone_number: '0726789065',
       };
-      const IDApiResponse = {
+      const timestamp = new Date().toISOString();
+      const mockApiKey = Buffer.from(pair.public).toString('base64');
+
+      const idApiResponse = {
         JSONVersion: '1.0.0',
         SmileJobID: '0000001096',
         PartnerParams: {
@@ -119,14 +123,14 @@ describe('IDapi', () => {
         FullName: 'some  person',
         DOB: 'NaN-NaN-NaN',
         Photo: 'Not Available',
-        sec_key: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
-        timestamp: 1570612182124,
+        signature: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 
       const scope = nock('https://testapi.smileidentity.com').post('/v1/id_verification', (body) => {
         expect(body.partner_id).toEqual('001');
-        expect(body.sec_key).not.toEqual(undefined);
-        expect(body.timestamp).not.toEqual(undefined);
+        expect(typeof body.signature).toEqual('string');
+        expect(typeof body.timestamp).toEqual('string');
         expect(body.partner_params.user_id).toEqual(partner_params.user_id);
         expect(body.partner_params.job_id).toEqual(partner_params.job_id);
         expect(body.partner_params.job_type).toEqual(partner_params.job_type);
@@ -137,17 +141,19 @@ describe('IDapi', () => {
         expect(body.id_type).toEqual(id_info.id_type);
         expect(body.id_number).toEqual(id_info.id_number);
         expect(body.phone_number).toEqual(id_info.phone_number);
+        expect(body.source_sdk).toEqual('javascript');
+        expect(body.source_sdk_version).toEqual(packageJson.version);
         return true;
-      }).reply(200, IDApiResponse);
+      }).reply(200, idApiResponse);
 
-      const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new IDApi('001', mockApiKey, 0);
 
       const response = await instance.submit_job(partner_params, id_info);
       expect(Object.keys(response).sort()).toEqual([
         'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType',
         'ResultText', 'ResultCode', 'IsFinalResult', 'Actions',
         'Country', 'IDType', 'IDNumber', 'ExpirationDate',
-        'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
+        'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
       ].sort());
       expect(scope.isDone()).toBe(true);
     });
@@ -183,73 +189,6 @@ describe('IDapi', () => {
       expect(error).toEqual('undefined:undefined');
       expect(response).toEqual(undefined);
       expect(scope.isDone()).toBe(true);
-    });
-
-    it('should use the signature instead of sec_key when provided an optional parameter', async () => {
-      expect.assertions(14);
-      const instance = new IDApi('001', '1234', 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
-      const id_info = {
-        first_name: 'John',
-        last_name: 'Doe',
-        middle_name: '',
-        country: 'NG',
-        id_type: 'BVN',
-        id_number: '00000000000',
-        phone_number: '0726789065',
-      };
-      const idApiResponse = {
-        JSONVersion: '1.0.0',
-        SmileJobID: '0000001096',
-        PartnerParams: {
-          user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
-          job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
-        },
-        ResultType: 'ID Verification',
-        ResultText: 'ID Number Validated',
-        ResultCode: '1012',
-        IsFinalResult: 'true',
-        Actions: {
-          Verify_ID_Number: 'Verified',
-          Return_Personal_Info: 'Returned',
-        },
-        Country: 'NG',
-        IDType: 'BVN',
-        IDNumber: '00000000000',
-        ExpirationDate: 'NaN-NaN-NaN',
-        FullName: 'some  person',
-        DOB: 'NaN-NaN-NaN',
-        Photo: 'Not Available',
-        signature: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=',
-        timestamp: 1570612182124,
-      };
-
-      nock('https://testapi.smileidentity.com').post('/v1/id_verification', (body) => {
-        expect(body.partner_id).toEqual('001');
-        expect(body.signature).not.toEqual(undefined);
-        expect(body.timestamp).not.toEqual(undefined);
-        expect(body.partner_params.user_id).toEqual(partner_params.user_id);
-        expect(body.partner_params.job_id).toEqual(partner_params.job_id);
-        expect(body.partner_params.job_type).toEqual(partner_params.job_type);
-        expect(body.first_name).toEqual(id_info.first_name);
-        expect(body.last_name).toEqual(id_info.last_name);
-        expect(body.middle_name).toEqual(id_info.middle_name);
-        expect(body.country).toEqual(id_info.country);
-        expect(body.id_type).toEqual(id_info.id_type);
-        expect(body.id_number).toEqual(id_info.id_number);
-        expect(body.phone_number).toEqual(id_info.phone_number);
-        return true;
-      }).reply(200, idApiResponse);
-
-      const response = await instance.submit_job(partner_params, id_info, { signature: true });
-
-      expect(Object.keys(response).sort()).toEqual([
-        'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType',
-        'ResultText', 'ResultCode', 'IsFinalResult', 'Actions',
-        'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName',
-        'DOB', 'Photo', 'signature', 'timestamp',
-      ].sort());
     });
   });
 });
