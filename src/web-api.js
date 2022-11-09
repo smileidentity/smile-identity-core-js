@@ -6,7 +6,7 @@ const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
-const { mapServerUri } = require('./helpers');
+const { mapServerUri, sdkVersionInfo } = require('./helpers');
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
@@ -143,17 +143,17 @@ class WebApi {
         ).generate_signature(timestamp || _private.data.timestamp);
       },
       configurePrepUploadJson() {
-        const body = {
-          file_name: 'selfie.zip',
-          use_enrolled_image: _private.data.use_enrolled_image,
-          timestamp: _private.data.timestamp,
-          smile_client_id: _private.data.partner_id,
-          partner_params: _private.data.partner_params,
-          model_parameters: {},
+        return JSON.stringify({
           callback_url: _private.data.callback_url,
+          file_name: 'selfie.zip',
+          model_parameters: {},
+          partner_params: _private.data.partner_params,
           signature: _private.determineSignature().signature,
-        };
-        return JSON.stringify(body);
+          smile_client_id: _private.data.partner_id,
+          timestamp: _private.data.timestamp,
+          use_enrolled_image: _private.data.use_enrolled_image,
+          ...sdkVersionInfo,
+        });
       },
       setupRequests() {
         // make the first call to the upload lambda

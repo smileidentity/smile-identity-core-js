@@ -1,6 +1,6 @@
 const https = require('https');
 const Signature = require('./signature');
-const { mapServerUri } = require('./helpers');
+const { mapServerUri, sdkVersionInfo } = require('./helpers');
 
 class IDApi {
   constructor(partner_id, api_key, sid_server) {
@@ -67,14 +67,15 @@ class IDApi {
         ).generate_signature(_private.data.timestamp);
       },
       configureJson() {
-        const body = {
-          timestamp: _private.data.timestamp,
+        return JSON.stringify({
+          language: 'javascript',
           partner_id: _private.data.partner_id,
           partner_params: _private.data.partner_params,
-          language: 'javascript',
           signature: _private.determineSignature().signature,
-        };
-        return JSON.stringify({ ...body, ..._private.data.id_info });
+          timestamp: _private.data.timestamp,
+          ..._private.data.id_info,
+          ...sdkVersionInfo,
+        });
       },
       setupRequests() {
         let json = '';

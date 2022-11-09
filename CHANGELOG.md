@@ -6,10 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-Add eslint and lint the entire codebase.
-Add support for Node 18.
-Add `index.js` tests.
-Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`
+- Add eslint and lint the entire codebase.
+- Add support for Node 18.
+- Add `index.js` tests.
+- Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`.
+- Add report `source_sdk` and `source_sdk_version` fields to smile.
 
 ### Changed
 - Split tests into multiple files.
@@ -25,7 +26,7 @@ Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`
 
 ## [1.0.1] - 2019-11-02
 ### Fixed
-.git files are once again being ignored with an npm version bump
+- .git files are once again being ignored with an npm version bump.
 
 ## [1.0.0] - 2019-10-18
 ### Added

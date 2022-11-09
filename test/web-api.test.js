@@ -1,6 +1,7 @@
 const assert = require('assert');
 const keypair = require('keypair');
 const nock = require('nock');
+const packageJson = require('../package.json');
 
 const {
   WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
@@ -207,6 +208,8 @@ describe('WebApi', () => {
           assert.equal(body.partner_params.job_id, partner_params.job_id);
           assert.equal(body.partner_params.job_type, partner_params.job_type);
           assert.equal(body.callback_url, 'https://a_callback.cb');
+          assert.equal(body.source_sdk, 'javascript');
+          assert.equal(body.source_sdk_version, packageJson.version);
           return true;
         })
         .reply(200, {
@@ -248,6 +251,8 @@ describe('WebApi', () => {
           assert.equal(body.partner_params.job_id, partner_params.job_id);
           assert.equal(body.partner_params.job_type, partner_params.job_type);
           assert.equal(body.callback_url, 'https://a_callback.cb');
+          assert.equal(body.source_sdk, 'javascript');
+          assert.equal(body.source_sdk_version, packageJson.version);
           return true;
         })
         .reply(200, {

@@ -1,6 +1,7 @@
 const assert = require('assert');
 const keypair = require('keypair');
 const nock = require('nock');
+const packageJson = require('../package.json');
 
 const { IDApi, JOB_TYPE } = require('..');
 
@@ -161,6 +162,8 @@ describe('IDapi', () => {
           assert.equal(body.id_type, id_info.id_type);
           assert.equal(body.id_number, id_info.id_number);
           assert.equal(body.phone_number, id_info.phone_number);
+          assert.equal(body.source_sdk, 'javascript');
+          assert.equal(body.source_sdk_version, packageJson.version);
           return true;
         })
         .reply(200, IDApiResponse)
