@@ -18,11 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable npm publish trigger on push to master.
 - Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
 - Updated documentation in README.md to reflect other smile SDK docs.
-<<<<<<< HEAD
-- Refactor IDApi class.
-=======
 - Remove `options` argument from `IDApi.submit_job`. This argument is no longer used now that `sec_key` is no longer supported.
->>>>>>> main
+- Refactor IDApi class.
 
 ### Removed
 - Drop support for Node 10.
