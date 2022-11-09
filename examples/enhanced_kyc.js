@@ -28,15 +28,10 @@ const id_info = {
   phone_number: '<phone number>',
 };
 
-// Set the options for the job
-const options = {
-  signature: true,
-};
-
 // Submit the job. This method returns a promise.
 (async () => {
   try {
-    const result = await connection.submit_job(partner_params, id_info, options);
+    const result = await connection.submit_job(partner_params, id_info);
     console.info(result);
   } catch (error) {
     console.error(error);
