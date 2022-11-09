@@ -1,7 +1,9 @@
+/* eslint-disable import/no-unresolved */
 import express, { json, static as express_static } from 'express';
 import { v4 as UUID } from 'uuid';
 import { config } from 'dotenv';
 import { WebApi } from 'smile-identity-core';
+/* eslint-enable import/no-unresolved */
 
 config();
 
@@ -38,8 +40,8 @@ app.post('/', async (req, res) => {
     const partner_params_from_server = {
       user_id: `user-${UUID()}`,
       job_id: `job-${UUID()}`,
-      // eslint-disable-next-line max-len
-      job_type: getJobType(images), // job_type is the simplest job we have which enrolls a user using their selfie
+      // job_type is the simplest job we have which enrolls a user using their selfie.
+      job_type: getJobType(images),
     };
 
     const options = {
@@ -62,8 +64,8 @@ app.post('/', async (req, res) => {
   }
 });
 
-// eslint-disable-next-line max-len
-// NOTE: This can be used to process responses. don't forget to add it as a callback option in the `connection` config on L22
+// NOTE: This can be used to process responses. Don't forget to add it as a
+// callback option in the `connection` config on L22.
 // eslint-disable-next-line no-unused-vars
 app.post('/callback', (_req, _res, _next) => { });
 

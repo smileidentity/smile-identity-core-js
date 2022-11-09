@@ -1,7 +1,7 @@
 // See https://docs.smileidentity.com/server-to-server/javascript/products/smartselfie-tm-authentication for
-//  how to setup and retrieve configuation values for the WebApi class.
+//  how to setup and retrieve configuration values for the WebApi class.
 
-import { WebApi } from 'smile-identity-core';
+import { WebApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
 
 // Initialize
 const partner_id = '<Your partner ID>'; // login to the Smile Identity portal to view your partner id
@@ -18,33 +18,48 @@ const partner_params = {
   job_type: 2,
 };
 
-// Create image list
-// image_type_id Integer
-// 0 - Selfie image jpg or png (if you have the full path of the selfie)
-// 2 - Selfie image jpg or png base64 encoded (if you have the base64image string of the selfie)
-// 4 - Liveness image jpg or png (if you have the full path of the liveness image)
-// 6 - Liveness image jpg or png base64 encoded (if you have the base64image string
-//     of the liveness image)
+/**
+ * Create image list.
+ *
+ * image_type_id Integer
+ * 0 - Selfie image jpg or png (if you have the full path of the selfie)
+ * 2 - Selfie image jpg or png base64 encoded (if you have the base64image string of the selfie)
+ * 4 - Liveness image jpg or png (if you have the full path of the liveness image)
+ * 6 - Liveness image jpg or png base64 encoded (if you have the base64image string
+ *     of the liveness image)
+ */
 const image_details = [
   {
     image_type_id: '<0 | 2>',
     image: '<full path to selfie image or base64image string>',
   },
   { // Not required if you don't require proof of life (note photo of photo
-    // check will still be performed on the uploaded selfie)
+    // check will still be performed on the uploaded selfie).
     image_type_id: '<4 | 6>',
     image: '<full path to liveness image or base64 image string>',
   },
 ];
 
-// Set the options for the job
+// Set the options for the job.
 const options = {
-  return_job_status: '<true | false>', // Set to true if you want to get the job result in sync (in addition to the result been sent to your callback). If set to false, result is sent to callback url only.
-  return_history: '<true | false>', // Set to true to return results of all jobs you have ran for the user in addition to current job result. You must set return_job_status to true to use this flag.
-  return_image_links: '<true | false>', // Set to true to receive selfie and liveness images you uploaded. You must set return_job_status to true to use this flag.
+  // Set to true if you want to get the job result in sync (in addition to the result been sent to
+  // your callback). If set to false, result is sent to callback url only.
+  return_job_status: '<true | false>',
+  // Set to true to return results of all jobs you have ran for the user in addition to current job
+  // result. You must set return_job_status to true to use this flag.
+  return_history: '<true | false>',
+  // Set to true to receive selfie and liveness images you uploaded. You must set return_job_status
+  // to true to use this flag.
+  return_image_links: '<true | false>',
   signature: true,
 };
 
-// Submit the job.
-// This method returns a promise
-connection.submit_job(partner_params, image_details, {}, options);
+// Submit the job. This method returns a promise.
+(async () => {
+  try {
+    const result = await connection.submit_job(partner_params, image_details, {}, options);
+    console.info(result);
+  } catch (error) {
+    console.error(error);
+  }
+})();
