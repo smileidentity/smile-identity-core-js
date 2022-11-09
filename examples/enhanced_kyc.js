@@ -25,11 +25,6 @@ const id_info = {
   phone_number: '<phone number>',
 };
 
-// Set the options for the job
-const options = {
-  signature: true,
-};
-
 // Submit the job
 // This method returns a promise
-connection.submit_job(partner_params, id_info, options);
+connection.submit_job(partner_params, id_info);

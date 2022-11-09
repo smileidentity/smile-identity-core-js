@@ -1,6 +1,6 @@
 const https = require('https');
 const Signature = require('./signature');
-const { mapServerUri } = require('./helpers');
+const { mapServerUri, sdkVersionInfo } = require('./helpers');
 
 const validatePartnerParams = (partnerParams) => {
   if (!partnerParams) {
@@ -36,32 +36,25 @@ const validateIdInfo = (idInfo) => {
   }
 };
 
-const configureJson = (data, options) => {
-  const body = {
-    language: 'javascript',
-    partner_id: data.partner_id,
-    partner_params: {
-      ...data.partner_params,
-      job_type: parseInt(data.partner_params.job_type, 10),
-    },
-    timestamp: data.timestamp,
-  };
+const configureJson = ({
+  api_key, id_info, partner_id, partner_params, timestamp,
+}) => JSON.stringify({
+  language: 'javascript',
+  partner_id,
+  partner_params: {
+    ...partner_params,
+    job_type: parseInt(partner_params.job_type, 10),
+  },
+  ...id_info,
+  ...new Signature(partner_id, api_key).generate_signature(timestamp),
+  ...sdkVersionInfo,
+});
 
-  const signature = new Signature(data.partner_id, data.api_key);
-
-  if (options && options.signature) {
-    body.signature = signature.generate_signature(data.timestamp).signature;
-  } else {
-    body.sec_key = signature.generate_sec_key(data.timestamp).sec_key;
-  }
-  return JSON.stringify({ ...body, ...data.id_info });
-};
-
-const setupRequests = (data, options) => new Promise((resolve, reject) => {
+const setupRequests = (data) => new Promise((resolve, reject) => {
   let json = '';
   const path = `/${data.url.split('/')[1]}/id_verification`;
   const host = data.url.split('/')[0];
-  const body = configureJson(data, options);
+  const body = configureJson(data);
   const reqOptions = {
     hostname: host,
     path,
@@ -101,21 +94,21 @@ class IDApi {
     this.url = mapServerUri(sid_server);
   }
 
-  submit_job(partner_params, id_info, options = {}) {
+  submit_job(partner_params, id_info) {
     const data = {
-      timestamp: options.signature ? new Date().toISOString() : Date.now(),
-      url: this.url,
-      partner_id: this.partner_id,
       api_key: this.api_key,
-      sid_server: this.sid_server,
-      partner_params,
       id_info,
+      partner_id: this.partner_id,
+      partner_params,
+      sid_server: this.sid_server,
+      timestamp: new Date().toISOString(),
+      url: this.url,
     };
 
     try {
       validatePartnerParams(partner_params);
       validateIdInfo(id_info);
-      return setupRequests(data, options);
+      return setupRequests(data);
     } catch (err) {
       return Promise.reject(err);
     }
