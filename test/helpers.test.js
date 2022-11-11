@@ -26,7 +26,7 @@ describe('helpers', () => {
     assert.equal(typeof sdkVersionInfo, 'object');
     assert.equal(sdkVersionInfo.source_sdk, 'javascript');
     assert.ok(sdkVersionInfo.source_sdk_version.match(/^\d+\.\d+\.\d+$/));
-    assert.ok(sdkVersionInfo.source_sdk_version.match(/^1\./)); // assert that we are at version 1
+    assert.ok(sdkVersionInfo.source_sdk_version.match(/^2\./)); // assert that we are at version 1
     assert(Object.keys(sdkVersionInfo).length === 2);
   });
 
