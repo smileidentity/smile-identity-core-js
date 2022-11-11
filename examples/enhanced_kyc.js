@@ -1,9 +1,12 @@
-import { IDApi } from 'smile-identity-core';
+import { IDApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
 
 // Initialize
-const partner_id = '<Your partner ID>'; // login to the Smile Identity portal to view your partner id
-const api_key = '<Your API key>'; // copy your API key from the Smile Identity portal
-const sid_server = '<0 or 1>'; // Use '0' for the sandbox server, use '1' for production server
+// login to the Smile Identity Portal to view your partner id.
+const partner_id = '<Your partner ID>';
+// copy your API key from the Smile Identity portal.
+const api_key = '<Your API key>';
+// Use '0' for the sandbox server, use '1' for production server.
+const sid_server = '<0 or 1>';
 
 const connection = new IDApi(partner_id, api_key, sid_server);
 
@@ -18,13 +21,19 @@ const partner_params = {
 const id_info = {
   first_name: '<first name>',
   last_name: '<surname>',
-  country: '<2-constter country code>',
+  country: '<ISO 3166 Alpha-2 (2-letter) country code>',
   id_type: '<id type>',
   id_number: '<valid id number>',
   dob: '<date of birth>', // yyyy-mm-dd
   phone_number: '<phone number>',
 };
 
-// Submit the job
-// This method returns a promise
-connection.submit_job(partner_params, id_info);
+// Submit the job. This method returns a promise.
+(async () => {
+  try {
+    const result = await connection.submit_job(partner_params, id_info);
+    console.info(result);
+  } catch (error) {
+    console.error(error);
+  }
+})();

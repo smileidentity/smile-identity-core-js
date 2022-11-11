@@ -6,7 +6,7 @@ const JSZip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
-const { mapServerUri, sdkVersionInfo } = require('./helpers');
+const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
@@ -30,7 +30,12 @@ class WebApi {
       },
       validateInputs() {
         // validate inputs and add them to our data store
-        _private.partnerParams(partner_params);
+        validatePartnerParams(partner_params);
+        _private.data.partner_params = {
+          ...partner_params,
+          job_type: parseInt(partner_params.job_type, 10),
+        };
+
         _private.idInfo(id_info);
 
         if (parseInt(partner_params.job_type, 10) !== 5) {
@@ -60,23 +65,6 @@ class WebApi {
         if (!_private.data.images.some(hasIDImage)) {
           throw new Error('You are attempting to complete a Document Verification job without providing an id card image');
         }
-      },
-      partnerParams(partnerParams) {
-        if (!partnerParams) {
-          throw new Error('Please ensure that you send through partner params');
-        }
-
-        if (typeof partnerParams !== 'object') {
-          throw new Error('Partner params needs to be an object');
-        }
-
-        ['user_id', 'job_id', 'job_type'].forEach((key) => {
-          if (!partnerParams[key]) {
-            throw new Error(`Please make sure that ${key} is included in the partner params`);
-          }
-        });
-        partnerParams.job_type = parseInt(partnerParams.job_type, 10);
-        _private.data.partner_params = partnerParams;
       },
       images(images) {
         const hasSelfieImage = (imageData) => [0, 2].includes(imageData.image_type_id);

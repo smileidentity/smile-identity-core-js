@@ -4,7 +4,7 @@
   "description": "The official Smile Identity Node SDK",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint $(git ls-files '*.js') --ignore-pattern examples",
+    "lint": "eslint $(git ls-files '*.js')",
     "start": "node index.js",
     "test": "jest --coverage"
   },
