@@ -543,8 +543,6 @@ class WebApi {
    *  id_type: string|undefined,
    *  id_number: string|undefined,
    * }} id_info - ID information required to create a job.
-   * return_job_status: boolean,
-   * }} data - the job data to submit.
    * @param {{
    *  optional_callback: string,
    *  return_job_status: boolean,
