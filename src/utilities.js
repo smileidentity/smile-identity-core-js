@@ -3,7 +3,7 @@ const https = require('https');
 const Signature = require('./signature');
 const { mapServerUri } = require('./helpers');
 
-const get_job_status = (partnerId, apiKey, url, userId, jobId, optionFlags) => {
+const get_job_status = (partnerId, apiKey, url, userId, jobId, { return_history, return_images }) => {
   const path = `/${url.split('/')[1]}/job_status`;
   const host = url.split('/')[0];
   const options = {
@@ -19,8 +19,8 @@ const get_job_status = (partnerId, apiKey, url, userId, jobId, optionFlags) => {
     user_id: userId,
     job_id: jobId,
     partner_id: partnerId,
-    history: optionFlags.return_history,
-    image_links: optionFlags.return_images,
+    history: return_history,
+    image_links: return_images,
     ...new Signature(
       partnerId,
       apiKey,
@@ -65,8 +65,8 @@ class Utilities {
     this.url = mapServerUri(sid_server);
   }
 
-  get_job_status(userId, jobId, optionFlags = {}) {
-    return get_job_status(this.partnerId, this.apiKey, this.url, userId, jobId, optionFlags);
+  get_job_status(userId, jobId, options = { return_history: false, return_images: false }) {
+    return get_job_status(this.partnerId, this.apiKey, this.url, userId, jobId, options);
   }
 }
 
