@@ -1,5 +1,4 @@
 const https = require('https');
-// const axios = require('axios').default;
 const Signature = require('./signature');
 const { mapServerUri } = require('./helpers');
 
