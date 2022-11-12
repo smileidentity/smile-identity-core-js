@@ -8,6 +8,17 @@ const { IDApi, JOB_TYPE } = require('..');
 const pair = keypair();
 
 describe('IDapi', () => {
+  before(() => {
+    nock.disableNetConnect();
+  });
+
+  after(() => {
+    nock.enableNetConnect();
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+  });
   describe('#new', () => {
     it('should instantiate and set the global variables', (done) => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
@@ -104,7 +115,7 @@ describe('IDapi', () => {
       });
     });
 
-    it('should be able to send a job', (done) => {
+    it('should be able to send a job', async () => {
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -147,33 +158,46 @@ describe('IDapi', () => {
         timestamp: 1570612182124,
       };
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/id_verification', (body) => {
-          assert.equal(body.partner_id, '001');
-          assert.notEqual(body.signature, undefined);
-          assert.notEqual(body.timestamp, undefined);
-          assert.equal(body.partner_params.user_id, partner_params.user_id);
-          assert.equal(body.partner_params.job_id, partner_params.job_id);
-          assert.equal(body.partner_params.job_type, partner_params.job_type);
-          assert.equal(body.first_name, id_info.first_name);
-          assert.equal(body.last_name, id_info.last_name);
-          assert.equal(body.middle_name, id_info.middle_name);
-          assert.equal(body.country, id_info.country);
-          assert.equal(body.id_type, id_info.id_type);
-          assert.equal(body.id_number, id_info.id_number);
-          assert.equal(body.phone_number, id_info.phone_number);
-          assert.equal(body.source_sdk, 'javascript');
-          assert.equal(body.source_sdk_version, packageJson.version);
-          return true;
-        })
-        .reply(200, IDApiResponse)
-        .isDone();
+      const scope = nock('https://testapi.smileidentity.com').post('/v1/id_verification', (body) => {
+        assert.equal(body.partner_id, '001');
+        assert.notEqual(body.signature, undefined);
+        assert.notEqual(body.timestamp, undefined);
+        assert.equal(body.partner_params.user_id, partner_params.user_id);
+        assert.equal(body.partner_params.job_id, partner_params.job_id);
+        assert.equal(body.partner_params.job_type, partner_params.job_type);
+        assert.equal(body.first_name, id_info.first_name);
+        assert.equal(body.last_name, id_info.last_name);
+        assert.equal(body.middle_name, id_info.middle_name);
+        assert.equal(body.country, id_info.country);
+        assert.equal(body.id_type, id_info.id_type);
+        assert.equal(body.id_number, id_info.id_number);
+        assert.equal(body.phone_number, id_info.phone_number);
+        assert.equal(body.source_sdk, 'javascript');
+        assert.equal(body.source_sdk_version, packageJson.version);
+        return true;
+      }).reply(200, IDApiResponse);
 
-      const promise = instance.submit_job(partner_params, id_info);
-      promise.then((resp) => {
-        assert.deepEqual(Object.keys(resp).sort(), ['JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType', 'ResultText', 'ResultCode', 'IsFinalResult', 'Actions', 'Country', 'IDType', 'IDNumber', 'ExpirationDate', 'FullName', 'DOB', 'Photo', 'signature', 'timestamp'].sort());
-        done();
-      });
+      const response = await instance.submit_job(partner_params, id_info);
+      assert.deepEqual(Object.keys(response).sort(), [
+        'Actions',
+        'Country',
+        'DOB',
+        'ExpirationDate',
+        'FullName',
+        'IDNumber',
+        'IDType',
+        'IsFinalResult',
+        'JSONVersion',
+        'PartnerParams',
+        'Photo',
+        'ResultCode',
+        'ResultText',
+        'ResultType',
+        'SmileJobID',
+        'signature',
+        'timestamp',
+      ]);
+      assert.ok(scope.isDone());
     });
 
     it('should raise an error when a network call fails', (done) => {
