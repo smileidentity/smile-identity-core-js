@@ -333,7 +333,13 @@ const configurePrepUploadJson = ({
   ...sdkVersionInfo,
 });
 
-// create the json file sent as part of the zip file
+/**
+ * Creates the json file sent as part of the zip file
+ *
+ * @param {object} data - data to be sent to smile.
+ * @param {object} serverInformation - server information.
+ * @returns {object} - formatted payload.
+ */
 const configureInfoJson = (data, serverInformation) => ({
   package_information: {
     apiVersion: {
@@ -369,6 +375,15 @@ const configureInfoJson = (data, serverInformation) => ({
   server_information: serverInformation,
 });
 
+/**
+ * Polls the smile server for the result of the job.
+ *
+ * @param {object} data - data required to check the status of the job.
+ * @param {number|undefined} counter - The number of times the function has been called.
+ * @returns {Promise<object>} - the response from the smile server.
+ * @throws {Error} - if the request fails or times out.
+ */
+
 const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
@@ -402,7 +417,17 @@ const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, rej
   }).catch(() => { retryFunc(updatedCounter); });
 });
 
-// upload zip file to s3 using the signed link obtained from the upload lambda
+/**
+ * Upload zip file to s3 using the signed link obtained from the upload lambda
+ *
+ * @param {object} data - data required to upload the zip file to s3.
+ * @param options
+ * @param {string} zipFile - the zip file to be uploaded in base64.
+ * @param {string} signedUrl - the signed url to upload the zip file to.
+ * @param SmileJobId
+ * @returns {Promise<void>} - resolves when the file has been uploaded.
+ * @throws {Error} - if the request fails or times out.
+ */
 const uploadFile = (
   data,
   options,
@@ -439,18 +464,36 @@ const uploadFile = (
   });
 });
 
-const zipUpFile = (data, infoJson) => {
+/**
+ * Creates a zip file containing the images and the json file.
+ *
+ * @param {Array<{
+ * image_type_id: number
+ * image: string
+ * file_name: string
+ * }>} images - images to be zipped.
+ * @param {object} infoJson - metadata associated with the job.
+ * @returns {Promise<Uint8Array>} - the zip file.
+ */
+const zipUpFile = (images, infoJson) => {
   // create zip file in memory
   const zip = new JSzip();
   zip.file('info.json', JSON.stringify(infoJson));
-  data.images.filter((image) => [0, 1].includes(image.image_type_id)).forEach((image) => {
+  images.filter((image) => [0, 1].includes(image.image_type_id)).forEach((image) => {
     zip.file(path.basename(image.image), fs.readFileSync(image.image));
   });
   return zip.generateAsync({ type: 'uint8array' });
 };
 
+/**
+ * Make the first call to the upload lambda to get the url, then pack the zip, then upload the zip.
+ *
+ * @param {object} data - data required to upload the zip file to s3.
+ * @param options
+ * @returns {Promise<{signedUrl: string, SmileJobId: string}>} - the signed url
+ *  and the smile job id.
+ */
 const setupRequests = (data, options) => new Promise((resolve, reject) => {
-  // make the first call to the upload lambda
   let json = '';
   const body = configurePrepUploadJson(data);
   const reqOptions = {
@@ -470,7 +513,7 @@ const setupRequests = (data, options) => new Promise((resolve, reject) => {
       if (resp.statusCode === 200) {
         const prepUploadResponse = JSON.parse(json);
         const infoJson = configureInfoJson(data, prepUploadResponse);
-        zipUpFile(data, infoJson).then((zipFile) => uploadFile(
+        zipUpFile(data.images, infoJson).then((zipFile) => uploadFile(
           data,
           options,
           zipFile,
