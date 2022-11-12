@@ -7,102 +7,7 @@ const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
 const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
-
-/**
- * Gets an authorization token from Smile. Used in Hosted Web Integration.
- *
- * @param {string} partner_id - The partner ID.
- * @param {string} api_key - Your Smile API key.
- * @param {string} sidUrl - The URL to the Smile ID API.
- * @param {string|undefined} defaultCallback - Your default callback URL.
- * @param {{
- * callback_url: string,
- * user_id: string,
- * job_id: string,
- * product: string,
- * }} requestParams - parameters required to get an authorization token.
- * @returns {string} - The authorization token.
- * @throws {Error} - if the request fails.
- */
-const getWebToken = (
-  partner_id,
-  api_key,
-  sidUrl,
-  defaultCallback,
-  requestParams,
-) => new Promise((resolve, reject) => {
-  if (!requestParams) {
-    reject(new Error('Please ensure that you send through request params'));
-    return;
-  }
-
-  if (typeof requestParams !== 'object') {
-    reject(new Error('Request params needs to be an object'));
-    return;
-  }
-  const callbackUrl = requestParams.callback_url || defaultCallback;
-
-  if (typeof callbackUrl !== 'string' || callbackUrl.length === 0) {
-    reject(new Error('Callback URL is required for this method'));
-    return;
-  }
-
-  ['user_id', 'job_id', 'product'].forEach((requiredParam) => {
-    if (!requestParams[requiredParam]) {
-      reject(new Error(`${requiredParam} is required to get a web token`));
-      // NOTE: should return here
-    }
-  });
-
-  const body = JSON.stringify({
-    user_id: requestParams.user_id,
-    job_id: requestParams.job_id,
-    product: requestParams.product,
-    callback_url: callbackUrl,
-    partner_id: this.partner_id,
-    ...new Signature(
-      partner_id,
-      api_key,
-    ).generate_signature(),
-  });
-
-  let json = '';
-  const options = {
-    hostname: sidUrl.split('/')[0],
-    path: `/${sidUrl.split('/')[1]}/token`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  const req = https.request(options, (resp) => {
-    resp.setEncoding('utf8');
-
-    resp.on('data', (chunk) => {
-      json += chunk;
-    });
-
-    resp.on('end', () => {
-      if (resp.statusCode === 200) {
-        const tokenResponse = JSON.parse(json);
-
-        resolve(tokenResponse);
-      } else {
-        const err = JSON.parse(json);
-
-        reject(new Error(`${err.code}: ${err.error}`));
-      }
-    });
-  });
-
-  req.write(body);
-  req.end();
-
-  req.on('error', (err) => {
-    reject(new Error(`${err.code}:${err.error}`));
-  });
-});
+const { getWebToken } = require('./web-token');
 
 /**
  * Validates if the information required to submit a job is present.
@@ -378,13 +283,27 @@ const configureInfoJson = (data, serverInformation) => ({
 /**
  * Polls the smile server for the result of the job.
  *
- * @param {object} data - data required to check the status of the job.
+ * @param {{
+ * api_key: string,
+ * partner_id: string,
+ * partner_params: object,
+ * url: string,
+ * return_history: boolean,
+ * return_images: boolean,
+ * }} data - data required to check the status of the job.
  * @param {number|undefined} counter - The number of times the function has been called.
  * @returns {Promise<object>} - the response from the smile server.
  * @throws {Error} - if the request fails or times out.
  */
 
-const queryJobStatus = (data, counter = 0) => new Promise((resolve, reject) => {
+const queryJobStatus = ({
+  api_key,
+  partner_id,
+  partner_params,
+  url: sidUrl,
+  return_history,
+  return_images,
+}, counter = 0) => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
   const updatedCounter = counter + 1;
@@ -392,18 +311,22 @@ const queryJobStatus = (data, counter = 0) => new Promise((resolve, reject) => {
   const retryFunc = (c) => {
     setTimeout(
       () => {
-        queryJobStatus(data, c).then(resolve).catch(reject);
+        queryJobStatus({
+          api_key,
+          partner_id,
+          partner_params,
+          url: sidUrl,
+          return_history,
+          return_images,
+        }, c).then(resolve).catch(reject);
       },
       timeout,
     );
   };
-  new Utilities(data.partner_id, data.api_key, data.url).get_job_status(
-    data.partner_params.user_id,
-    data.partner_params.job_id,
-    {
-      return_history: data.return_history,
-      return_images: data.return_images,
-    },
+  new Utilities(partner_id, api_key, sidUrl).get_job_status(
+    partner_params.user_id,
+    partner_params.job_id,
+    { return_history, return_images },
   ).then((body) => {
     if (!body.job_complete) {
       if (updatedCounter > 21) {
@@ -421,10 +344,8 @@ const queryJobStatus = (data, counter = 0) => new Promise((resolve, reject) => {
  * Upload zip file to s3 using the signed link obtained from the upload lambda
  *
  * @param {object} data - data required to upload the zip file to s3.
- * @param options
  * @param {string} zipFile - the zip file to be uploaded in base64.
  * @param {string} signedUrl - the signed url to upload the zip file to.
- * @param SmileJobId
  * @returns {Promise<void>} - resolves when the file has been uploaded.
  * @throws {Error} - if the request fails or times out.
  */
@@ -487,8 +408,10 @@ const zipUpFile = (images, infoJson) => {
  * Make the first call to the upload lambda to get the url, then pack the zip, then upload the zip.
  *
  * @param {object} data - data required to upload the zip file to s3.
- * @param options
- * @returns {Promise<{success: boolean, smile_job_id: string}>} - the smile job id and success status.
+ * @returns {Promise<{
+ * success: boolean,
+ * smile_job_id: string
+ * }>} the smile job id and success status.
  */
 const setupRequests = (data) => new Promise((resolve, reject) => {
   let json = '';
@@ -514,10 +437,11 @@ const setupRequests = (data) => new Promise((resolve, reject) => {
           data,
           zipFile,
           prepUploadResponse.upload_url,
-        )).then(resolve).then(() => ({ 
+        )).then(resolve).then(() => ({
           success: true,
           smile_job_id: prepUploadResponse.smile_job_id,
-        })).catch(reject);
+        }))
+          .catch(reject);
       } else {
         const err = JSON.parse(json);
         reject(new Error(`${err.code}:${err.error}`));
@@ -591,8 +515,8 @@ class WebApi {
       this.partner_id,
       this.api_key,
       this.url,
-      this.default_callback,
       requestParams,
+      this.default_callback,
     );
   }
 
