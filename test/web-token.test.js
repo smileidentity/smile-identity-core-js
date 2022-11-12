@@ -80,6 +80,32 @@ describe('web-token', () => {
         done();
       });
     });
+
+    it('should throw an error when the server token authorization server is down', async () => {
+      const requestParams = {
+        user_id: '1',
+        job_id: '1',
+        product: 'biometric_kyc',
+      };
+
+      const scope = nock('https://testapi.smileidentity.com').post('/v1/token', (body) => {
+        assert.equal(body.job_id, requestParams.job_id);
+        assert.equal(body.user_id, requestParams.user_id);
+        assert.equal(body.product, requestParams.product);
+        return true;
+      }).replyWithError({
+        status: 400,
+      });
+
+      let error;
+      await getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb').then(() => {
+        assert.fail('should not have gotten here');
+      }).catch((err) => {
+        error = err;
+      });
+      assert.ok(error instanceof Error);
+      assert.ok(scope.isDone());
+    });
   });
 
   describe('handle callback url', () => {
