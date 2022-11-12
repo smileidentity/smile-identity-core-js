@@ -2,6 +2,7 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const url = require('url');
+const { promisify } = require('util');
 const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
@@ -134,7 +135,8 @@ const checkBoolean = (key, value) => {
  * @param {boolean|undefined|null} options.return_job_status - Whether to return job status.
  * @param {boolean|undefined|null} options.return_images - Whether to return images.
  * @param {boolean|undefined|null} options.return_history - Whether to return job history.
- * @param {boolean|undefined|null} options.use_enrolled_image - Whether to use a previously uploaded selfie image.
+ * @param {boolean|undefined|null} options.use_enrolled_image - Whether to use a previously
+ * uploaded selfie image.
  * @returns {{
  *  return_job_status: boolean,
  *  return_images: boolean,
@@ -224,22 +226,26 @@ const validateImages = (images, useEnrolledImage, jobType) => {
 
   // most job types require at least a selfie,
   // JT6 does not when `use_enrolled_image` flag is passed
-  if ((!images.some(hasSelfieImage) || images.length === 0) && (!useEnrolledImage || jobType !== 6)) {
+  if (
+    (!images.some(hasSelfieImage) || images.length === 0)
+    && (!useEnrolledImage || jobType !== 6)
+  ) {
     throw new Error('You need to send through at least one selfie image');
   }
 };
 
 /**
  * Differentiates between image files and base64 images based on the image_type_id.
+ *
  * @param {Array<{
- * image_type_id: number|string,
- * image: string,
- * }} images 
- * @returns Array<{
+ *  image_type_id: number
+ *  image: string
+ * }>} images - Array of images to be uploaded to smile.
+ * @returns {Array<{
  * image_type_id: number,
  * image: string,
  * image_file: string,
- * }>
+ * }>} - Array of images with image split by file_name and base64.
  */
 const configureImagePayload = (images) => images.map(({ image, image_type_id }) => {
   image_type_id = parseInt(image_type_id, 10);
@@ -275,49 +281,55 @@ const configurePrepUploadJson = ({
   ...sdkVersionInfo,
 });
 
-const configureInfoJson = (data, serverInformation) => {
-  // create the json file sent as part of the zip file
-  const info = {
-    package_information: {
-      apiVersion: {
-        buildNumber: 0,
-        majorVersion: 2,
-        minorVersion: 0,
-      },
-      language: 'javascript',
+// create the json file sent as part of the zip file
+const configureInfoJson = (data, serverInformation) => ({
+  package_information: {
+    apiVersion: {
+      buildNumber: 0,
+      majorVersion: 2,
+      minorVersion: 0,
     },
-    misc_information: {
-      signature: data.signature,
-      retry: 'false',
-      partner_params: data.partner_params,
-      timestamp: data.timestamp,
-      file_name: 'selfie.zip',
-      smile_client_id: data.partner_id,
-      callback_url: data.callback_url,
-      userData: { // TO ASK what goes here
-        isVerifiedProcess: false,
-        name: '',
-        fbUserID: '',
-        firstName: 'Bill',
-        lastName: '',
-        gender: '',
-        email: '',
-        phone: '',
-        countryCode: '+',
-        countryName: '',
-      },
+    language: 'javascript',
+  },
+  misc_information: {
+    signature: data.signature,
+    retry: 'false',
+    partner_params: data.partner_params,
+    timestamp: data.timestamp,
+    file_name: 'selfie.zip',
+    smile_client_id: data.partner_id,
+    callback_url: data.callback_url,
+    userData: { // TO ASK what goes here
+      isVerifiedProcess: false,
+      name: '',
+      fbUserID: '',
+      firstName: 'Bill',
+      lastName: '',
+      gender: '',
+      email: '',
+      phone: '',
+      countryCode: '+',
+      countryName: '',
     },
-    id_info: data.id_info,
-    images: configureImagePayload(data.images),
-    server_information: serverInformation,
-  };
-  return info;
-};
+  },
+  id_info: data.id_info,
+  images: configureImagePayload(data.images),
+  server_information: serverInformation,
+});
 
-const queryJobStatus = (data, options, counter = 0) => {
+const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
   counter += 1;
+
+  const retryFunc = (c) => {
+    setTimeout(
+      () => {
+        queryJobStatus(data, options, c).then(resolve).catch(reject);
+      },
+      timeout,
+    );
+  };
   new Utilities(data.partner_id, data.api_key, data.url).get_job_status(
     data.partner_params.user_id,
     data.partner_params.job_id,
@@ -328,24 +340,22 @@ const queryJobStatus = (data, options, counter = 0) => {
   ).then((body) => {
     if (!body.job_complete) {
       if (counter > 21) {
-        data.reject(new Error('Timeout waiting for job status response.'));
+        reject(new Error('Timeout waiting for job status response.'));
         return;
       }
-      setTimeout(() => { queryJobStatus(data, options, counter); }, timeout);
+      retryFunc(counter);
     } else {
-      data.resolve(body);
+      resolve(body);
     }
-  }).catch(() => {
-    setTimeout(() => { queryJobStatus(data, options, counter); }, timeout);
-  });
-};
+  }).catch(() => { retryFunc(counter); });
+});
 
-const uploadFile = (data, options, signedUrl, SmileJobId) => {
+const uploadFile = (data, options, zipFile, signedUrl, SmileJobId, resolve, reject) => {
   // upload zip file to s3 using the signed link obtained from the upload lambda
   const reqOptions = url.parse(signedUrl);
   reqOptions.headers = {
     'Content-Type': 'application/zip',
-    'Content-Length': `${data.zip.length}`,
+    'Content-Length': `${zipFile.length}`,
   };
   reqOptions.method = 'PUT';
   const req = https.request(reqOptions, (resp) => {
@@ -355,19 +365,19 @@ const uploadFile = (data, options, signedUrl, SmileJobId) => {
     resp.on('end', () => {
       if (resp.statusCode === 200) {
         if (data.return_job_status) {
-          queryJobStatus(data, options);
+          queryJobStatus(data, options).then(resolve).catch(reject);
           return;
         }
-        data.resolve({ success: true, smile_job_id: SmileJobId });
+        resolve({ success: true, smile_job_id: SmileJobId });
         return;
       }
-      data.reject(new Error(`Zip upload status code: ${resp.statusCode}`));
+      reject(new Error(`Zip upload status code: ${resp.statusCode}`));
     });
   });
-  req.write(Buffer.from(data.zip));
+  req.write(Buffer.from(zipFile));
   req.end();
   req.on('error', (err) => {
-    data.reject(err);
+    reject(err);
   });
 };
 
@@ -375,14 +385,12 @@ const zipUpFile = (data, infoJson, callback) => {
   // create zip file in memory
   const zip = new JSzip();
   zip.file('info.json', JSON.stringify(infoJson));
-  data.images.forEach((image) => {
-    if ([0, 1].includes(parseInt(image.image_type_id, 10))) {
-      zip.file(path.basename(image.image), fs.readFileSync(image.image));
-    }
+  data.images.filter((image) => [0, 1].includes(image.image_type_id)).forEach((image) => {
+    zip.file(path.basename(image.image), fs.readFileSync(image.image));
   });
   zip.generateAsync({ type: 'uint8array' }).then((zipFile) => {
-    data.zip = zipFile;
-    callback();
+    // data.zip = zipFile;
+    callback(zipFile);
   });
 };
 
@@ -399,8 +407,6 @@ const setupRequests = (data, options) => {
     },
   };
   return new Promise((resolve, reject) => {
-    data.resolve = resolve;
-    data.reject = reject;
     const req = https.request(reqOptions, (resp) => {
       resp.setEncoding('utf8');
       resp.on('data', (chunk) => {
@@ -412,13 +418,15 @@ const setupRequests = (data, options) => {
           const prepUploadResponse = JSON.parse(json);
           const infoJson = configureInfoJson(data, prepUploadResponse);
 
-          const cb = () => uploadFile(
+          const cb = (zipFile) => uploadFile(
             data,
             options,
+            zipFile,
             prepUploadResponse.upload_url,
             prepUploadResponse.smile_job_id,
+            resolve,
+            reject,
           );
-
           zipUpFile(data, infoJson, cb);
         } else {
           const err = JSON.parse(json);

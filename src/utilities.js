@@ -3,7 +3,14 @@ const https = require('https');
 const Signature = require('./signature');
 const { mapServerUri } = require('./helpers');
 
-const get_job_status = (partnerId, apiKey, url, userId, jobId, { return_history, return_images }) => {
+const get_job_status = (
+  partnerId,
+  apiKey,
+  url,
+  userId,
+  jobId,
+  { return_history, return_images },
+) => {
   const path = `/${url.split('/')[1]}/job_status`;
   const host = url.split('/')[0];
   const options = {
