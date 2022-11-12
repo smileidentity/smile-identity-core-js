@@ -8,6 +8,22 @@ const Utilities = require('./utilities');
 const IDApi = require('./id-api');
 const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
 
+/**
+ * Gets an authorization token from Smile. Used in Hosted Web Integration.
+ *
+ * @param {string} partner_id - The partner ID.
+ * @param {string} api_key - Your Smile API key.
+ * @param {string} sidUrl - The URL to the Smile ID API.
+ * @param {string|undefined} defaultCallback - Your default callback URL.
+ * @param {{
+ * callback_url: string,
+ * user_id: string,
+ * job_id: string,
+ * product: string,
+ * }} requestParams - parameters required to get an authorization token.
+ * @returns {string} - The authorization token.
+ * @throws {Error} - if the request fails.
+ */
 const getWebToken = (
   partner_id,
   api_key,
@@ -24,8 +40,9 @@ const getWebToken = (
     reject(new Error('Request params needs to be an object'));
     return;
   }
+  const callbackUrl = requestParams.callback_url || defaultCallback;
 
-  if (!(requestParams.callback_url || defaultCallback)) {
+  if (typeof callbackUrl !== 'string' || callbackUrl.length === 0) {
     reject(new Error('Callback URL is required for this method'));
     return;
   }
@@ -41,7 +58,7 @@ const getWebToken = (
     user_id: requestParams.user_id,
     job_id: requestParams.job_id,
     product: requestParams.product,
-    callback_url: requestParams.callback_url || defaultCallback,
+    callback_url: callbackUrl,
     partner_id: this.partner_id,
     ...new Signature(
       partner_id,
@@ -87,12 +104,21 @@ const getWebToken = (
   });
 });
 
+/**
+ * Validates if the information required to submit a job is present.
+ *
+ * @param {{
+ * entered: boolean|string|undefined,
+ * country: string|undefined,
+ * id_type: string|undefined,
+ * id_number: string|undefined,
+ * }} idInfo - ID information required to create a job.
+ * @param {number} jobType - Smile Job Type
+ * @returns {string} value representing if `entered` is true or false.
+ */
 const validateIdInfo = (idInfo, jobType) => {
   if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
-    // idInfo.entered = 'false';
-
-    // ACTION: document verification jobs do not check for `country` and `id_type`
-    if (jobType === 6) {
+    if (jobType === 6) { // NOTE: document verification does not check for `country` and `id_type`.
       ['country', 'id_type'].forEach((key) => {
         if (!idInfo[key] || idInfo[key].length === 0) {
           throw new Error(`Please make sure that ${key} is included in the id_info`);
@@ -216,6 +242,18 @@ const validateDocumentVerification = (images) => {
   }
 };
 
+/**
+ * Checks to ensure if images is an array and contains a selfie image, or
+ * if we can use an enrolled image instead.
+ *
+ * @param {Array<{
+ * image_type_id: number
+ * }>} images - Array of images to be uploaded to smile.
+ * @param {boolean|undefined} useEnrolledImage - Whether to use a previously uploaded selfie image.
+ * @param {number} jobType - The job type.
+ * @returns {undefined}
+ * @throws {Error} - if images does not contain a selfie image.
+ */
 const validateImages = (images, useEnrolledImage, jobType) => {
   if (!images) {
     throw new Error('Please ensure that you send through image details');
@@ -264,13 +302,26 @@ const configureImagePayload = (images) => images.map(({ image, image_type_id }) 
   };
 });
 
+/**
+ * Formats upload payload.
+ *
+ * @param {{
+ * api_key: string,
+ * callback_url: string,
+ * partner_id: string,
+ * partner_params: object,
+ * timestamp: string|number,
+ * use_enrolled_image: boolean,
+ * }} options - The options object.
+ * @returns {object} - formatted payload.
+ */
 const configurePrepUploadJson = ({
-  callback_url,
-  partner_params,
-  partner_id,
-  use_enrolled_image,
   api_key,
+  callback_url,
+  partner_id,
+  partner_params,
   timestamp,
+  use_enrolled_image,
 }) => JSON.stringify({
   callback_url,
   file_name: 'selfie.zip',
@@ -442,6 +493,15 @@ const setupRequests = (data, options) => new Promise((resolve, reject) => {
 });
 
 class WebApi {
+  /**
+   * Creates an instance of WebApi.
+   *
+   * @param {string} partner_id - Your Smile Partner ID
+   * @param {string} default_callback - The default callback url to use for all requests.
+   * @param {string} api_key - Your Smile API Key
+   * @param {string|number} sid_server - The server to use for the SID API. 0 for
+   * staging and 1 for production.
+   */
   constructor(partner_id, default_callback, api_key, sid_server) {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
@@ -449,6 +509,21 @@ class WebApi {
     this.url = mapServerUri(sid_server);
   }
 
+  /**
+   * Get the status of an existing job.
+   *
+   * @param {{
+   * user_id: string,
+   * job_id: string,
+   * }} partner_params - the user_id and job_id of the job to check.
+   * @param {{
+   * return_history: boolean,
+   * return_images: boolean,
+   * }} options - indicates whether to return the history and/or images.
+   * @returns {Promise<object>} A promise that resolves to the job status.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   * @memberof WebApi
+   */
   get_job_status(partner_params, options) {
     return new Utilities(this.partner_id, this.api_key, this.url).get_job_status(
       partner_params.user_id,
@@ -457,6 +532,19 @@ class WebApi {
     );
   }
 
+  /**
+   * Get a authorization token for the hosted web integration.
+   *
+   * @param {{
+   * callback_url: string,
+   * user_id: string,
+   * job_id: string,
+   * product: string,
+   * }} requestParams - parameters required to get an authorization token.
+   * @returns {Promise<string>} A promise that resolves to the authorization token.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   * @memberof WebApi
+   */
   get_web_token(requestParams) {
     return getWebToken(
       this.partner_id,
@@ -467,6 +555,40 @@ class WebApi {
     );
   }
 
+  /**
+   * Submit a job to Smile.
+   *
+   * @param {{
+   * user_id: string,
+   * job_id: string,
+   * job_type: string|number,
+   * }} partner_params - the user_id, job_id, and job_type of the job to submit.
+   * Can additionally include optional parameters that Smile will return in the
+   * job status.
+   * @param {Array<{
+   * image_type_id: string|number,
+   * image: string,
+   * }>} image_details - an array of image objects. Each image object must include an image_type_id
+   * and an image. See constants.js for a list of valid image_type_ids.
+   * @param {{
+   * entered: boolean|string|undefined,
+   * country: string|undefined,
+   * id_type: string|undefined,
+   * id_number: string|undefined,
+   * }} id_info - ID information required to create a job.
+   * return_job_status: boolean,
+   * }} data - the job data to submit.
+   * @param {{
+   * optional_callback: string,
+   * return_job_status: boolean,
+   * return_images: boolean,
+   * return_history: boolean,
+   * use_enrolled_image: boolean
+   * }} options - options to control the response.
+   * @returns {Promise<object>} A promise that resolves to the job status.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   * @memberof WebApi
+   */
   submit_job(partner_params, image_details, id_info, options = {}) {
     if (parseInt(partner_params && partner_params.job_type, 10) === 5) {
       return new IDApi(this.partner_id, this.api_key, this.url).submit_job(partner_params, id_info);
