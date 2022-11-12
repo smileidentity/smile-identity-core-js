@@ -9,10 +9,10 @@ const { mapServerUri } = require('./helpers');
  * @param {string} api_key - Your Smile API key.
  * @param {string} url - The URL to the Smile ID API.
  * @param {{
- * callback_url: string,
- * user_id: string,
- * job_id: string,
- * product: string,
+ *  callback_url: string,
+ *  user_id: string,
+ *  job_id: string,
+ *  product: string,
  * }} requestParams - parameters required to get an authorization token.
  * @param {string|undefined} defaultCallback - Your default callback URL.
  * @returns {Promise<{

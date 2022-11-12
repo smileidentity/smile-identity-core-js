@@ -13,10 +13,10 @@ const { getWebToken } = require('./web-token');
  * Validates if the information required to submit a job is present.
  *
  * @param {{
- * entered: boolean|string|undefined,
- * country: string|undefined,
- * id_type: string|undefined,
- * id_number: string|undefined,
+ *  entered: boolean|string|undefined,
+ *  country: string|undefined,
+ *  id_type: string|undefined,
+ *  id_number: string|undefined,
  * }} idInfo - ID information required to create a job.
  * @param {number} jobType - Smile Job Type
  * @returns {string} value representing if `entered` is true or false.
@@ -186,9 +186,9 @@ const validateImages = (images, useEnrolledImage, jobType) => {
  *  image: string
  * }>} images - Array of images to be uploaded to smile.
  * @returns {Array<{
- * image_type_id: number,
- * image: string,
- * image_file: string,
+ *  image_type_id: number,
+ *  image: string,
+ *  image_file: string,
  * }>} - Array of images with image split by file_name and base64.
  */
 const configureImagePayload = (images) => images.map(({ image, image_type_id }) => {
@@ -211,12 +211,12 @@ const configureImagePayload = (images) => images.map(({ image, image_type_id }) 
  * Formats upload payload.
  *
  * @param {{
- * api_key: string,
- * callback_url: string,
- * partner_id: string,
- * partner_params: object,
- * timestamp: string|number,
- * use_enrolled_image: boolean,
+ *  api_key: string,
+ *  callback_url: string,
+ *  partner_id: string,
+ *  partner_params: object,
+ *  timestamp: string|number,
+ *  use_enrolled_image: boolean,
  * }} options - The options object.
  * @returns {object} - formatted payload.
  */
@@ -284,12 +284,12 @@ const configureInfoJson = (data, serverInformation) => ({
  * Polls the smile server for the result of the job.
  *
  * @param {{
- * api_key: string,
- * partner_id: string,
- * partner_params: object,
- * url: string,
- * return_history: boolean,
- * return_images: boolean,
+ *  api_key: string,
+ *  partner_id: string,
+ *  partner_params: object,
+ *  url: string,
+ *  return_history: boolean,
+ *  return_images: boolean,
  * }} data - data required to check the status of the job.
  * @param {number|undefined} counter - The number of times the function has been called.
  * @returns {Promise<object>} - the response from the smile server.
@@ -387,9 +387,9 @@ const uploadFile = (
  * Creates a zip file containing the images and the json file.
  *
  * @param {Array<{
- * image_type_id: number
- * image: string
- * file_name: string
+ *  image_type_id: number
+ *  image: string
+ *  file_name: string
  * }>} images - images to be zipped.
  * @param {object} infoJson - metadata associated with the job.
  * @returns {Promise<Uint8Array>} - the zip file.
@@ -409,8 +409,8 @@ const zipUpFile = (images, infoJson) => {
  *
  * @param {object} data - data required to upload the zip file to s3.
  * @returns {Promise<{
- * success: boolean,
- * smile_job_id: string
+ *  success: boolean,
+ *  smile_job_id: string
  * }>} the smile job id and success status.
  */
 const setupRequests = (data) => new Promise((resolve, reject) => {
@@ -478,12 +478,12 @@ class WebApi {
    * Get the status of an existing job.
    *
    * @param {{
-   * user_id: string,
-   * job_id: string,
+   *  user_id: string,
+   *  job_id: string,
    * }} partner_params - the user_id and job_id of the job to check.
    * @param {{
-   * return_history: boolean,
-   * return_images: boolean,
+   *  return_history: boolean,
+   *  return_images: boolean,
    * }} options - indicates whether to return the history and/or images.
    * @returns {Promise<object>} A promise that resolves to the job status.
    * @throws {Error} If any of the required parameters are missing or if the request fails.
@@ -501,10 +501,10 @@ class WebApi {
    * Get a authorization token for the hosted web integration.
    *
    * @param {{
-   * callback_url: string,
-   * user_id: string,
-   * job_id: string,
-   * product: string,
+   *  callback_url: string,
+   *  user_id: string,
+   *  job_id: string,
+   *  product: string,
    * }} requestParams - parameters required to get an authorization token.
    * @returns {Promise<{
    *  token: string,
@@ -526,31 +526,31 @@ class WebApi {
    * Submit a job to Smile.
    *
    * @param {{
-   * user_id: string,
-   * job_id: string,
-   * job_type: string|number,
+   *  user_id: string,
+   *  job_id: string,
+   *  job_type: string|number,
    * }} partner_params - the user_id, job_id, and job_type of the job to submit.
    * Can additionally include optional parameters that Smile will return in the
    * job status.
    * @param {Array<{
-   * image_type_id: string|number,
-   * image: string,
+   *  image_type_id: string|number,
+   *  image: string,
    * }>} image_details - an array of image objects. Each image object must include an image_type_id
    * and an image. See constants.js for a list of valid image_type_ids.
    * @param {{
-   * entered: boolean|string|undefined,
-   * country: string|undefined,
-   * id_type: string|undefined,
-   * id_number: string|undefined,
+   *  entered: boolean|string|undefined,
+   *  country: string|undefined,
+   *  id_type: string|undefined,
+   *  id_number: string|undefined,
    * }} id_info - ID information required to create a job.
    * return_job_status: boolean,
    * }} data - the job data to submit.
    * @param {{
-   * optional_callback: string,
-   * return_job_status: boolean,
-   * return_images: boolean,
-   * return_history: boolean,
-   * use_enrolled_image: boolean
+   *  optional_callback: string,
+   *  return_job_status: boolean,
+   *  return_images: boolean,
+   *  return_history: boolean,
+   *  use_enrolled_image: boolean
    * }} options - options to control the response.
    * @returns {Promise<object>} A promise that resolves to the job status.
    * @throws {Error} If any of the required parameters are missing or if the request fails.

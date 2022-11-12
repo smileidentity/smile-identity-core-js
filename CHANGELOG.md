@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 -  Add JSDocs to `WebApi` class.
+- Define `sidServerMapping` in constants.
 
 ### Changed
 - Refactor `WebApi` class. Eliminate `_private`.
