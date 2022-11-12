@@ -116,10 +116,7 @@ class WebApi {
         }
       },
       validateReturnData() {
-        if (
-          (!_private.data.callback_url || _private.data.callback_url.length === 0)
-          && !_private.data.return_job_status
-        ) {
+        if ((typeof _private.data.callback_url !== 'string' || _private.data.callback_url.length === 0) && !_private.data.return_job_status) {
           throw new Error('Please choose to either get your response via the callback or job status query');
         }
       },
