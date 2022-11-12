@@ -15,7 +15,9 @@ const { mapServerUri } = require('./helpers');
  * product: string,
  * }} requestParams - parameters required to get an authorization token.
  * @param {string|undefined} defaultCallback - Your default callback URL.
- * @returns {string} - The authorization token.
+ * @returns {Promise<{
+ *  token: string,
+ * }>} - The authorization token.
  * @throws {Error} - if the request fails.
  */
 const getWebToken = (

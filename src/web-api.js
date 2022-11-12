@@ -506,7 +506,9 @@ class WebApi {
    * job_id: string,
    * product: string,
    * }} requestParams - parameters required to get an authorization token.
-   * @returns {Promise<string>} A promise that resolves to the authorization token.
+   * @returns {Promise<{
+   *  token: string,
+   * }>} - The authorization token.
    * @throws {Error} If any of the required parameters are missing or if the request fails.
    * @memberof WebApi
    */
