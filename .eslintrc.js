@@ -21,7 +21,7 @@ module.exports = {
     'no-console': ['error', {
       allow: ['warn', 'error', 'info'],
     }],
-    'no-param-reassign': 0,
+    // 'no-param-reassign': 0,
     'no-underscore-dangle': 0,
     'no-warning-comments': 0,
   },

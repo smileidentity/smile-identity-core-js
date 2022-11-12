@@ -89,7 +89,7 @@ const getWebToken = (
 
 const validateIdInfo = (idInfo, jobType) => {
   if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
-    idInfo.entered = 'false';
+    // idInfo.entered = 'false';
 
     // ACTION: document verification jobs do not check for `country` and `id_type`
     if (jobType === 6) {
@@ -99,16 +99,16 @@ const validateIdInfo = (idInfo, jobType) => {
         }
       });
     }
-  } else if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
+    return 'false';
+  } if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
     ['country', 'id_type', 'id_number'].forEach((key) => {
       if (!idInfo[key] || idInfo[key].length === 0) {
         throw new Error(`Please make sure that ${key} is included in the id_info`);
       }
     });
-  } else {
-    throw new Error('Please make sure that idInfo.entered is either true, false, or undefined');
+    return 'true';
   }
-  return idInfo;
+  throw new Error('Please make sure that idInfo.entered is either true, false, or undefined');
 };
 
 /**
@@ -121,12 +121,12 @@ const validateIdInfo = (idInfo, jobType) => {
  */
 const checkBoolean = (key, value) => {
   if (!value) {
-    value = false;
+    return false;
   }
   if (typeof value !== 'boolean') {
     throw new Error(`${key} needs to be a boolean`);
   }
-  return value;
+  return true;
 };
 
 /**
@@ -249,16 +249,16 @@ const validateImages = (images, useEnrolledImage, jobType) => {
  * }>} - Array of images with image split by file_name and base64.
  */
 const configureImagePayload = (images) => images.map(({ image, image_type_id }) => {
-  image_type_id = parseInt(image_type_id, 10);
+  const imageTypeId = parseInt(image_type_id, 10);
   if ([0, 1].includes(image_type_id)) {
     return {
-      image_type_id,
+      image_type_id: imageTypeId,
       image: '',
       file_name: path.basename(image),
     };
   }
   return {
-    image_type_id,
+    image_type_id: imageTypeId,
     image,
     file_name: '',
   };
@@ -321,7 +321,7 @@ const configureInfoJson = (data, serverInformation) => ({
 const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
-  counter += 1;
+  const updatedCounter = counter + 1;
 
   const retryFunc = (c) => {
     setTimeout(
@@ -340,15 +340,15 @@ const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, rej
     },
   ).then((body) => {
     if (!body.job_complete) {
-      if (counter > 21) {
+      if (updatedCounter > 21) {
         reject(new Error('Timeout waiting for job status response.'));
         return;
       }
-      retryFunc(counter);
+      retryFunc(updatedCounter);
     } else {
       resolve(body);
     }
-  }).catch(() => { retryFunc(counter); });
+  }).catch(() => { retryFunc(updatedCounter); });
 });
 
 // upload zip file to s3 using the signed link obtained from the upload lambda
@@ -487,7 +487,10 @@ class WebApi {
           ...partner_params,
           job_type: jobType,
         },
-        idInfo: validateIdInfo(id_info, jobType),
+        idInfo: {
+          ...id_info,
+          entered: validateIdInfo(id_info, jobType),
+        },
         ...validateBooleans(options),
       };
 
