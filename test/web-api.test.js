@@ -767,7 +767,32 @@ describe('WebApi', () => {
 
   describe('#get_web_token', () => {
     it('should call web-token.getWebToken', (done) => {
+      const requestParams = {
+        user_id: '1',
+        job_id: '1',
+        product: 'biometric_kyc',
+      };
 
+      const tokenResponse = {
+        token: '42',
+      };
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/token', (body) => {
+          assert.equal(body.job_id, requestParams.job_id);
+          assert.equal(body.user_id, requestParams.user_id);
+          assert.equal(body.product, requestParams.product);
+          return true;
+        })
+        .reply(200, tokenResponse)
+        .isDone();
+
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const promise = instance.get_web_token(requestParams);
+      promise.then((resp) => {
+        assert.equal(resp.token, '42');
+        done();
+      });
     });
   });
 });

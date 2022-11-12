@@ -80,78 +80,78 @@ describe('web-token', () => {
         done();
       });
     });
+  });
 
-    describe('handle callback url', () => {
-      it('should ensure that a callback URL exists', (done) => {
-        const promise = getWebToken('001', mockApiKey, 0, {});
+  describe('handle callback url', () => {
+    it('should ensure that a callback URL exists', (done) => {
+      const promise = getWebToken('001', mockApiKey, 0, {});
 
-        promise.catch((err) => {
-          assert.equal(err.message, 'Callback URL is required for this method');
+      promise.catch((err) => {
+        assert.equal(err.message, 'Callback URL is required for this method');
 
-          done();
-        });
+        done();
       });
+    });
 
-      it('should work with a callback_url param', (done) => {
-        const requestParams = {
-          user_id: '1',
-          job_id: '1',
-          product: 'ekyc_smartselfie',
-          callback_url: 'https://a.callback.url/',
-        };
+    it('should work with a callback_url param', (done) => {
+      const requestParams = {
+        user_id: '1',
+        job_id: '1',
+        product: 'ekyc_smartselfie',
+        callback_url: 'https://a.callback.url/',
+      };
 
-        const tokenResponse = {
-          token: '42',
-        };
+      const tokenResponse = {
+        token: '42',
+      };
 
-        nock('https://testapi.smileidentity.com')
-          .post('/v1/token', (body) => {
-            assert.equal(body.job_id, requestParams.job_id);
-            assert.equal(body.user_id, requestParams.user_id);
-            assert.equal(body.product, requestParams.product);
-            assert.equal(body.callback_url, requestParams.callback_url);
-            return true;
-          })
-          .reply(200, tokenResponse)
-          .isDone();
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/token', (body) => {
+          assert.equal(body.job_id, requestParams.job_id);
+          assert.equal(body.user_id, requestParams.user_id);
+          assert.equal(body.product, requestParams.product);
+          assert.equal(body.callback_url, requestParams.callback_url);
+          return true;
+        })
+        .reply(200, tokenResponse)
+        .isDone();
 
-        const promise = getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb');
+      const promise = getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb');
 
-        promise.then((resp) => {
-          assert.equal(resp.token, '42');
-          done();
-        });
+      promise.then((resp) => {
+        assert.equal(resp.token, '42');
+        done();
       });
+    });
 
-      it('should fallback to the default callback URL', (done) => {
-        const defaultCallbackURL = 'https://smileidentity.com/callback';
-        const requestParams = {
-          user_id: '1',
-          job_id: '1',
-          product: 'ekyc_smartselfie',
-        };
+    it('should fallback to the default callback URL', (done) => {
+      const defaultCallbackURL = 'https://smileidentity.com/callback';
+      const requestParams = {
+        user_id: '1',
+        job_id: '1',
+        product: 'ekyc_smartselfie',
+      };
 
-        const tokenResponse = {
-          token: 42,
-        };
+      const tokenResponse = {
+        token: 42,
+      };
 
-        nock('https://testapi.smileidentity.com')
-          .post('/v1/token', (body) => {
-            assert.equal(body.job_id, requestParams.job_id);
-            assert.equal(body.user_id, requestParams.user_id);
-            assert.equal(body.product, requestParams.product);
-            assert.equal(body.callback_url, defaultCallbackURL);
-            return true;
-          })
-          .reply(200, tokenResponse)
-          .isDone();
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/token', (body) => {
+          assert.equal(body.job_id, requestParams.job_id);
+          assert.equal(body.user_id, requestParams.user_id);
+          assert.equal(body.product, requestParams.product);
+          assert.equal(body.callback_url, defaultCallbackURL);
+          return true;
+        })
+        .reply(200, tokenResponse)
+        .isDone();
 
-        const promise = getWebToken('001', mockApiKey, 0, requestParams, defaultCallbackURL);
+      const promise = getWebToken('001', mockApiKey, 0, requestParams, defaultCallbackURL);
 
-        promise.then((resp) => {
-          assert.equal(resp.token, '42');
-          done();
-        });
+      promise.then((resp) => {
+        assert.equal(resp.token, '42');
+        done();
       });
     });
   });
