@@ -12,7 +12,6 @@ class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
-    this.sid_server = sid_server;
     this.api_key = api_key;
     this.url = mapServerUri(sid_server);
   }
@@ -26,7 +25,6 @@ class WebApi {
         url: this.url,
         partner_id: this.partner_id,
         api_key: this.api_key,
-        sid_server: this.sid_server,
       },
       validateInputs() {
         // validate inputs and add them to our data store
@@ -264,7 +262,7 @@ class WebApi {
         // call job status for the result of the job
         const timeout = counter < 4 ? 2000 : 4000;
         counter += 1;
-        new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.sid_server)
+        new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.url)
           .get_job_status(
             _private.data.partner_params.user_id,
             _private.data.partner_params.job_id,
@@ -325,7 +323,7 @@ class WebApi {
         const promise = new IDApi(
           _private.data.partner_id,
           _private.data.api_key,
-          _private.data.sid_server,
+          _private.data.url,
           {},
         ).submit_job(_private.data.partner_params, _private.data.id_info);
 
@@ -361,7 +359,7 @@ class WebApi {
   }
 
   get_job_status(partner_params, options) {
-    return new Utilities(this.partner_id, this.api_key, this.sid_server)
+    return new Utilities(this.partner_id, this.api_key, this.url)
       .get_job_status(partner_params.user_id, partner_params.job_id, options);
   }
 
