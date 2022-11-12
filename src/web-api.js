@@ -8,6 +8,77 @@ const Utilities = require('./utilities');
 const IDApi = require('./id-api');
 const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
 
+const getWebToken = (partnerId, apiKey, sidUrl, requestParams, defaultCallback) => new Promise((resolve, reject) => {
+  if (!requestParams) {
+    reject(new Error('Please ensure that you send through request params'));
+  }
+
+  if (typeof requestParams !== 'object') {
+    reject(new Error('Request params needs to be an object'));
+  }
+
+  if (!(requestParams.callback_url || defaultCallback)) {
+    reject(new Error('Callback URL is required for this method'));
+  }
+
+  ['user_id', 'job_id', 'product'].forEach((requiredParam) => {
+    if (!requestParams[requiredParam]) {
+      reject(new Error(`${requiredParam} is required to get a web token`));
+    }
+  });
+
+  const timestamp = new Date().toISOString();
+
+  const body = JSON.stringify({
+    user_id: requestParams.user_id,
+    job_id: requestParams.job_id,
+    product: requestParams.product,
+    callback_url: requestParams.callback_url || defaultCallback,
+    partner_id: this.partner_id,
+    ...new Signature(
+      partnerId,
+      apiKey,
+    ).generate_signature(timestamp),
+  });
+
+  let json = '';
+  const options = {
+    hostname: sidUrl.split('/')[0],
+    path: `/${sidUrl.split('/')[1]}/token`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+
+  const req = https.request(options, (resp) => {
+    resp.setEncoding('utf8');
+
+    resp.on('data', (chunk) => {
+      json += chunk;
+    });
+
+    resp.on('end', () => {
+      if (resp.statusCode === 200) {
+        const tokenResponse = JSON.parse(json);
+
+        resolve(tokenResponse);
+      } else {
+        const err = JSON.parse(json);
+
+        reject(new Error(`${err.code}: ${err.error}`));
+      }
+    });
+  });
+
+  req.write(body);
+  req.end();
+
+  req.on('error', (err) => {
+    reject(new Error(`${err.code}:${err.error}`));
+  });
+});
+
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
     this.partner_id = partner_id;
@@ -359,92 +430,12 @@ class WebApi {
   }
 
   get_job_status(partner_params, options) {
-    return new Utilities(this.partner_id, this.api_key, this.url)
-      .get_job_status(partner_params.user_id, partner_params.job_id, options);
+    return new Utilities(this.partner_id, this.api_key, this.url).get_job_status(partner_params.user_id, partner_params.job_id, options);
   }
 
   get_web_token(requestParams) {
-    return new Promise((resolve, reject) => {
-      if (!requestParams) {
-        reject(new Error('Please ensure that you send through request params'));
-      }
-
-      if (typeof requestParams !== 'object') {
-        reject(new Error('Request params needs to be an object'));
-      }
-
-      if (!(requestParams.callback_url || this.default_callback)) {
-        reject(new Error('Callback URL is required for this method'));
-      }
-
-      ['user_id', 'job_id', 'product'].forEach((requiredParam) => {
-        if (!requestParams[requiredParam]) {
-          reject(new Error(`${requiredParam} is required to get a web token`));
-        }
-      });
-
-      const timestamp = new Date().toISOString();
-      const { signature } = new Signature(
-        this.partner_id,
-        this.api_key,
-      ).generate_signature(timestamp);
-
-      const body = JSON.stringify({
-        user_id: requestParams.user_id,
-        job_id: requestParams.job_id,
-        product: requestParams.product,
-        callback_url: requestParams.callback_url || this.default_callback,
-        partner_id: this.partner_id,
-        signature,
-        timestamp,
-      });
-
-      let json = '';
-      const options = {
-        hostname: this.url.split('/')[0],
-        path: `/${this.url.split('/')[1]}/token`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-
-      const req = https.request(options, (resp) => {
-        resp.setEncoding('utf8');
-
-        resp.on('data', (chunk) => {
-          json += chunk;
-        });
-
-        resp.on('end', () => {
-          if (resp.statusCode === 200) {
-            const tokenResponse = JSON.parse(json);
-
-            resolve(tokenResponse);
-          } else {
-            const err = JSON.parse(json);
-
-            reject(new Error(`${err.code}: ${err.error}`));
-          }
-        });
-      });
-
-      req.write(body);
-      req.end();
-
-      req.on('error', (err) => {
-        reject(new Error(`${err.code}:${err.error}`));
-      });
-    });
+    return getWebToken(this.partner_id, this.api_key, this.url, requestParams, this.default_callback);
   }
 }
 
 module.exports = WebApi;
-
-// configure prep upload payload (determine the signature)
-// send prep upload request
-// get prep upload response (new link)
-// set the info.json
-// zip up the file
-// upload the file
-// query the job status
