@@ -384,7 +384,7 @@ const configureInfoJson = (data, serverInformation) => ({
  * @throws {Error} - if the request fails or times out.
  */
 
-const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, reject) => {
+const queryJobStatus = (data, counter = 0) => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
   const updatedCounter = counter + 1;
@@ -392,7 +392,7 @@ const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, rej
   const retryFunc = (c) => {
     setTimeout(
       () => {
-        queryJobStatus(data, options, c).then(resolve).catch(reject);
+        queryJobStatus(data, c).then(resolve).catch(reject);
       },
       timeout,
     );
@@ -430,10 +430,8 @@ const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, rej
  */
 const uploadFile = (
   data,
-  options,
   zipFile,
   signedUrl,
-  SmileJobId,
 ) => new Promise((resolve, reject) => {
   const reqOptions = url.parse(signedUrl);
   reqOptions.headers = {
@@ -448,10 +446,10 @@ const uploadFile = (
     resp.on('end', () => {
       if (resp.statusCode === 200) {
         if (data.return_job_status) {
-          queryJobStatus(data, options).then(resolve).catch(reject);
+          queryJobStatus(data).then(resolve).catch(reject);
           return;
         }
-        resolve({ success: true, smile_job_id: SmileJobId });
+        resolve();
         return;
       }
       reject(new Error(`Zip upload status code: ${resp.statusCode}`));
@@ -490,10 +488,9 @@ const zipUpFile = (images, infoJson) => {
  *
  * @param {object} data - data required to upload the zip file to s3.
  * @param options
- * @returns {Promise<{signedUrl: string, SmileJobId: string}>} - the signed url
- *  and the smile job id.
+ * @returns {Promise<{success: boolean, smile_job_id: string}>} - the smile job id and success status.
  */
-const setupRequests = (data, options) => new Promise((resolve, reject) => {
+const setupRequests = (data) => new Promise((resolve, reject) => {
   let json = '';
   const body = configurePrepUploadJson(data);
   const reqOptions = {
@@ -515,11 +512,12 @@ const setupRequests = (data, options) => new Promise((resolve, reject) => {
         const infoJson = configureInfoJson(data, prepUploadResponse);
         zipUpFile(data.images, infoJson).then((zipFile) => uploadFile(
           data,
-          options,
           zipFile,
           prepUploadResponse.upload_url,
-          prepUploadResponse.smile_job_id,
-        )).then(resolve).catch(reject);
+        )).then(resolve).then(() => ({ 
+          success: true,
+          smile_job_id: prepUploadResponse.smile_job_id,
+        })).catch(reject);
       } else {
         const err = JSON.parse(json);
         reject(new Error(`${err.code}:${err.error}`));
@@ -668,7 +666,7 @@ class WebApi {
         validateDocumentVerification(image_details);
       }
 
-      return setupRequests(data, options);
+      return setupRequests(data);
     } catch (err) {
       return Promise.reject(err);
     }
