@@ -2,7 +2,6 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const url = require('url');
-const { promisify } = require('util');
 const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
@@ -18,23 +17,25 @@ const getWebToken = (
 ) => new Promise((resolve, reject) => {
   if (!requestParams) {
     reject(new Error('Please ensure that you send through request params'));
+    return;
   }
 
   if (typeof requestParams !== 'object') {
     reject(new Error('Request params needs to be an object'));
+    return;
   }
 
   if (!(requestParams.callback_url || defaultCallback)) {
     reject(new Error('Callback URL is required for this method'));
+    return;
   }
 
   ['user_id', 'job_id', 'product'].forEach((requiredParam) => {
     if (!requestParams[requiredParam]) {
       reject(new Error(`${requiredParam} is required to get a web token`));
+      // NOTE: should return here
     }
   });
-
-  const timestamp = new Date().toISOString();
 
   const body = JSON.stringify({
     user_id: requestParams.user_id,
@@ -45,7 +46,7 @@ const getWebToken = (
     ...new Signature(
       partner_id,
       api_key,
-    ).generate_signature(timestamp),
+    ).generate_signature(),
   });
 
   let json = '';
@@ -350,8 +351,14 @@ const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, rej
   }).catch(() => { retryFunc(counter); });
 });
 
-const uploadFile = (data, options, zipFile, signedUrl, SmileJobId) => new Promise((resolve, reject) => {
-  // upload zip file to s3 using the signed link obtained from the upload lambda
+// upload zip file to s3 using the signed link obtained from the upload lambda
+const uploadFile = (
+  data,
+  options,
+  zipFile,
+  signedUrl,
+  SmileJobId,
+) => new Promise((resolve, reject) => {
   const reqOptions = url.parse(signedUrl);
   reqOptions.headers = {
     'Content-Type': 'application/zip',
@@ -391,7 +398,7 @@ const zipUpFile = (data, infoJson) => {
   return zip.generateAsync({ type: 'uint8array' });
 };
 
-const setupRequests = (data, options) => {
+const setupRequests = (data, options) => new Promise((resolve, reject) => {
   // make the first call to the upload lambda
   let json = '';
   const body = configurePrepUploadJson(data);
@@ -403,38 +410,36 @@ const setupRequests = (data, options) => {
       'Content-Type': 'application/json',
     },
   };
-  return new Promise((resolve, reject) => {
-    const req = https.request(reqOptions, (resp) => {
-      resp.setEncoding('utf8');
-      resp.on('data', (chunk) => {
-        json += chunk;
-      });
-      resp.on('end', () => {
-        if (resp.statusCode === 200) {
-          const prepUploadResponse = JSON.parse(json);
-          const infoJson = configureInfoJson(data, prepUploadResponse);
-          zipUpFile(data, infoJson).then((zipFile) => uploadFile(
-            data,
-            options,
-            zipFile,
-            prepUploadResponse.upload_url,
-            prepUploadResponse.smile_job_id,
-          )).then(resolve).catch(reject);
-        } else {
-          const err = JSON.parse(json);
-          reject(new Error(`${err.code}:${err.error}`));
-        }
-      });
+  const req = https.request(reqOptions, (resp) => {
+    resp.setEncoding('utf8');
+    resp.on('data', (chunk) => {
+      json += chunk;
     });
-
-    req.write(body);
-    req.end();
-
-    req.on('error', (err) => {
-      reject(new Error(`${err.code}:${err.error}`));
+    resp.on('end', () => {
+      if (resp.statusCode === 200) {
+        const prepUploadResponse = JSON.parse(json);
+        const infoJson = configureInfoJson(data, prepUploadResponse);
+        zipUpFile(data, infoJson).then((zipFile) => uploadFile(
+          data,
+          options,
+          zipFile,
+          prepUploadResponse.upload_url,
+          prepUploadResponse.smile_job_id,
+        )).then(resolve).catch(reject);
+      } else {
+        const err = JSON.parse(json);
+        reject(new Error(`${err.code}:${err.error}`));
+      }
     });
   });
-};
+
+  req.write(body);
+  req.end();
+
+  req.on('error', (err) => {
+    reject(new Error(`${err.code}:${err.error}`));
+  });
+});
 
 class WebApi {
   constructor(partner_id, default_callback, api_key, sid_server) {
