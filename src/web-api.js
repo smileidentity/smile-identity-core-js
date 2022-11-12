@@ -350,7 +350,7 @@ const queryJobStatus = (data, options, counter = 0) => new Promise((resolve, rej
   }).catch(() => { retryFunc(counter); });
 });
 
-const uploadFile = (data, options, zipFile, signedUrl, SmileJobId, resolve, reject) => {
+const uploadFile = (data, options, zipFile, signedUrl, SmileJobId) => new Promise((resolve, reject) => {
   // upload zip file to s3 using the signed link obtained from the upload lambda
   const reqOptions = url.parse(signedUrl);
   reqOptions.headers = {
@@ -379,19 +379,16 @@ const uploadFile = (data, options, zipFile, signedUrl, SmileJobId, resolve, reje
   req.on('error', (err) => {
     reject(err);
   });
-};
+});
 
-const zipUpFile = (data, infoJson, callback) => {
+const zipUpFile = (data, infoJson) => {
   // create zip file in memory
   const zip = new JSzip();
   zip.file('info.json', JSON.stringify(infoJson));
   data.images.filter((image) => [0, 1].includes(image.image_type_id)).forEach((image) => {
     zip.file(path.basename(image.image), fs.readFileSync(image.image));
   });
-  zip.generateAsync({ type: 'uint8array' }).then((zipFile) => {
-    // data.zip = zipFile;
-    callback(zipFile);
-  });
+  return zip.generateAsync({ type: 'uint8array' });
 };
 
 const setupRequests = (data, options) => {
@@ -412,22 +409,17 @@ const setupRequests = (data, options) => {
       resp.on('data', (chunk) => {
         json += chunk;
       });
-
       resp.on('end', () => {
         if (resp.statusCode === 200) {
           const prepUploadResponse = JSON.parse(json);
           const infoJson = configureInfoJson(data, prepUploadResponse);
-
-          const cb = (zipFile) => uploadFile(
+          zipUpFile(data, infoJson).then((zipFile) => uploadFile(
             data,
             options,
             zipFile,
             prepUploadResponse.upload_url,
             prepUploadResponse.smile_job_id,
-            resolve,
-            reject,
-          );
-          zipUpFile(data, infoJson, cb);
+          )).then(resolve).catch(reject);
         } else {
           const err = JSON.parse(json);
           reject(new Error(`${err.code}:${err.error}`));
