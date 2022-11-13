@@ -1,7 +1,6 @@
 const fs = require('fs');
-const https = require('https');
 const path = require('path');
-const url = require('url');
+const axios = require('axios');
 const JSzip = require('jszip');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
@@ -220,14 +219,14 @@ const configureImagePayload = (images) => images.map(({ image, image_type_id }) 
  * }} options - The options object.
  * @returns {object} - formatted payload.
  */
-const configurePrepUploadJson = ({
+const configurePrepUploadPayload = ({
   api_key,
   callback_url,
   partner_id,
   partner_params,
   timestamp,
   use_enrolled_image,
-}) => JSON.stringify({
+}) => ({
   callback_url,
   file_name: 'selfie.zip',
   model_parameters: {},
@@ -353,34 +352,14 @@ const uploadFile = (
   data,
   zipFile,
   signedUrl,
-) => new Promise((resolve, reject) => {
-  const reqOptions = url.parse(signedUrl);
-  reqOptions.headers = {
-    'Content-Type': 'application/zip',
-    'Content-Length': `${zipFile.length}`,
-  };
-  reqOptions.method = 'PUT';
-  const req = https.request(reqOptions, (resp) => {
-    resp.setEncoding('utf8');
-    resp.on('data', () => {});
-
-    resp.on('end', () => {
-      if (resp.statusCode === 200) {
-        if (data.return_job_status) {
-          queryJobStatus(data).then(resolve).catch(reject);
-          return;
-        }
-        resolve();
-        return;
-      }
-      reject(new Error(`Zip upload status code: ${resp.statusCode}`));
-    });
-  });
-  req.write(Buffer.from(zipFile));
-  req.end();
-  req.on('error', (err) => {
-    reject(err);
-  });
+) => axios.put(signedUrl, zipFile).then((resp) => {
+  if (resp.status === 200) {
+    if (data.return_job_status) {
+      return queryJobStatus(data);
+    }
+    return Promise.resolve();
+  }
+  return Promise.reject(new Error(`Zip upload status code: ${resp.status}`));
 });
 
 /**
@@ -407,55 +386,16 @@ const zipUpFile = (images, infoJson) => {
 /**
  * Make the first call to the upload lambda to get the url, then pack the zip, then upload the zip.
  *
- * @param {object} data - data required to upload the zip file to s3.
- * @returns {Promise<{
- *  success: boolean,
- *  smile_job_id: string
- * }>} the smile job id and success status.
+ * @param {object} payload - data required to upload the zip file to s3.
+ * @returns {Promise<object>} the job status response.
  */
-const setupRequests = (data) => new Promise((resolve, reject) => {
-  let json = '';
-  const body = configurePrepUploadJson(data);
-  const reqOptions = {
-    hostname: data.url.split('/')[0],
-    path: `/${data.url.split('/')[1]}/upload`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-  const req = https.request(reqOptions, (resp) => {
-    resp.setEncoding('utf8');
-    resp.on('data', (chunk) => {
-      json += chunk;
-    });
-    resp.on('end', () => {
-      if (resp.statusCode === 200) {
-        const prepUploadResponse = JSON.parse(json);
-        const infoJson = configureInfoJson(data, prepUploadResponse);
-        zipUpFile(data.images, infoJson).then((zipFile) => uploadFile(
-          data,
-          zipFile,
-          prepUploadResponse.upload_url,
-        )).then(resolve).then(() => ({
-          success: true,
-          smile_job_id: prepUploadResponse.smile_job_id,
-        }))
-          .catch(reject);
-      } else {
-        const err = JSON.parse(json);
-        reject(new Error(`${err.code}:${err.error}`));
-      }
-    });
-  });
-
-  req.write(body);
-  req.end();
-
-  req.on('error', (err) => {
-    reject(new Error(`${err.code}:${err.error}`));
-  });
-});
+const setupRequests = (payload) => axios.post(
+  `https://${payload.url}/upload`,
+  configurePrepUploadPayload(payload),
+).then(({ data }) => Promise.all([
+  zipUpFile(payload.images, configureInfoJson(payload, data)),
+  Promise.resolve(data),
+])).then(([zipFile, { upload_url }]) => uploadFile(payload, zipFile, upload_url));
 
 class WebApi {
   /**
