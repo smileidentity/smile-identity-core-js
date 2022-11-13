@@ -11,6 +11,17 @@ const pair = keypair();
 const mockApiKey = Buffer.from(pair.public).toString('base64');
 
 describe('web-token', () => {
+  before(() => {
+    nock.disableNetConnect();
+  });
+
+  after(() => {
+    nock.enableNetConnect();
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+  });
   describe('#get_web_token', () => {
     it('should ensure it is called with params', (done) => {
       const promise = getWebToken('001', mockApiKey, 0, undefined, 'https://a_callback.cb');
