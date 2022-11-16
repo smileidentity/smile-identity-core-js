@@ -30,7 +30,7 @@ describe('WebApi', () => {
       const instance = new WebApi('001', '', Buffer.from(pair.public).toString('base64'), 0);
       let error;
       try {
-        await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], {}, {});
+        await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' }], {}, {});
       } catch (err) {
         error = err;
       }
@@ -181,7 +181,7 @@ describe('WebApi', () => {
 
         let error;
         try {
-          await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], id_info, { return_job_status: true });
+          await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' }], id_info, { return_job_status: true });
         } catch (err) {
           error = err;
         }
@@ -198,7 +198,7 @@ describe('WebApi', () => {
       };
       let error;
       try {
-        await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], {}, { return_job_status: true });
+        await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' }], {}, { return_job_status: true });
       } catch (err) {
         error = err;
       }
@@ -218,7 +218,7 @@ describe('WebApi', () => {
         };
         let error;
         try {
-          await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' }], {}, options);
+          await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' }], {}, options);
         } catch (err) {
           error = err;
         }
@@ -260,7 +260,8 @@ describe('WebApi', () => {
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
 
-        assert.deepEqual(response, { success: true, smile_job_id });
+      assert.deepEqual(response, { success: true });
+      return true;
     });
 
     it('should be able to send a job with a signature', async () => {
@@ -298,7 +299,7 @@ describe('WebApi', () => {
         .reply(200);
 
       await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options).then((resp) => {
-        assert.deepEqual(resp, { success: true, smile_job_id });
+        assert.deepEqual(resp, { success: true });
       });
     });
 
@@ -427,7 +428,7 @@ describe('WebApi', () => {
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload')
-        .replyWithError(400, {
+        .replyWithError({
           code: '2204',
           error: 'unauthorized',
         });
@@ -445,8 +446,10 @@ describe('WebApi', () => {
       }
       // todo: figure out how to get nook to act like an error response would in real life
       // err.message in this case should be '2204:unauthorized'
-      assert.equal(error.message, undefined);
+      assert.equal(error.code, 2204);
+      assert.equal(error.error, 'unauthorized');
       assert.equal(response, undefined);
+      return true
     });
 
     it('should return a response from job_status if that flag is set to true', async () => {
@@ -598,7 +601,7 @@ describe('WebApi', () => {
         await instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -619,8 +622,8 @@ describe('WebApi', () => {
         await instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
-            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
           ],
           { id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -640,8 +643,8 @@ describe('WebApi', () => {
         await instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
-            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
           ],
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
@@ -658,32 +661,39 @@ describe('WebApi', () => {
           job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
+        const options = {};
+        const smile_job_id = '0000000111';
+
         nock('https://testapi.smileidentity.com')
           .post('/v1/upload', (body) => {
             assert.equal(body.use_enrolled_image, true);
+            return true;
           })
           .reply(200, {
             upload_url: 'https://some_url.com',
+            smile_job_id,
           });
         nock('https://some_url.com')
           .put('/') // todo: find a way to unzip and test info.json
           .reply(200);
 
-        await instance.submit_job(
+         const resp = await instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
-            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         )
-          .then((resp) => {
-            assert.deepEqual(resp, { success: true });
-          });
-      });
+   
+            assert.deepEqual(resp, { success: true, smile_job_id });
+           
 
-      it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
+        return;
+      }).timeout(5000);
+
+      it('should not require a selfie image when `use_enrolled_image` option is selected',  async () => {
         const instance = new WebApi('001', null, Buffer.from(pair.public).toString('base64'), 0);
         const partner_params = {
           user_id: '1',
@@ -694,6 +704,7 @@ describe('WebApi', () => {
         nock('https://testapi.smileidentity.com')
           .post('/v1/upload', (body) => {
             assert.equal(body.use_enrolled_image, true);
+            return true;
           })
           .reply(200, {
             upload_url: 'https://some_url.com',
@@ -702,18 +713,18 @@ describe('WebApi', () => {
           .put('/') // todo: find a way to unzip and test info.json
           .reply(200);
 
-        await instance.submit_job(
+       const response = await instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'test/fixtures/1pixel.jpeg' },
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         )
-          .then((resp) => {
-            assert.deepEqual(resp, { success: true });
-          });
-      });
+            assert.deepEqual(response, { success: true });
+           return
+
+      }).timeout(5000);
     });
   });
 

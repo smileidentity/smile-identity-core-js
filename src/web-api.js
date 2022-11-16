@@ -357,7 +357,7 @@ const uploadFile = (
     if (data.return_job_status) {
       return queryJobStatus(data);
     }
-    return Promise.resolve();
+    return Promise.resolve({ success: true});
   }
   return Promise.reject(new Error(`Zip upload status code: ${resp.status}`));
 });
