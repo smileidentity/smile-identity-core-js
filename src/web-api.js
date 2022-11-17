@@ -7,446 +7,594 @@ const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
 const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
+const { getWebToken } = require('./web-token');
+
+/**
+ * Validates if the information required to submit a job is present.
+ *
+ * @param {{
+ *  entered: boolean|string|undefined,
+ *  country: string|undefined,
+ *  id_type: string|undefined,
+ *  id_number: string|undefined,
+ * }} idInfo - ID information required to create a job.
+ * @param {number} jobType - Smile Job Type
+ * @returns {string} value representing if `entered` is true or false.
+ */
+const validateIdInfo = (idInfo, jobType) => {
+  if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
+    if (jobType === 6) { // NOTE: document verification does not check for `country` and `id_type`.
+      ['country', 'id_type'].forEach((key) => {
+        if (!idInfo[key] || idInfo[key].length === 0) {
+          throw new Error(`Please make sure that ${key} is included in the id_info`);
+        }
+      });
+    }
+    return 'false';
+  } if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
+    ['country', 'id_type', 'id_number'].forEach((key) => {
+      if (!idInfo[key] || idInfo[key].length === 0) {
+        throw new Error(`Please make sure that ${key} is included in the id_info`);
+      }
+    });
+    return 'true';
+  }
+  throw new Error('Please make sure that idInfo.entered is either true, false, or undefined');
+};
+
+/**
+ * Type checks boolean value, throws error if not a boolean or falsy, and returns coerced boolean.
+ *
+ * @param {string} key - The name of the boolean key.
+ * @param {boolean|undefined|null} value - The boolean value.
+ * @returns {boolean} - true if bool is true, false if bool is falsy.
+ * @throws {Error} - if bool is not a boolean.
+ */
+const checkBoolean = (key, value) => {
+  if (!value) {
+    return false;
+  }
+  if (typeof value !== 'boolean') {
+    throw new Error(`${key} needs to be a boolean`);
+  }
+  return true;
+};
+
+/**
+ * Coerces keys in an object to booleans. Throws error if any keys are not booleans.
+ *
+ * @param {object} options - The object to coerce.
+ * @param {boolean|undefined|null} options.return_job_status - Whether to return job status.
+ * @param {boolean|undefined|null} options.return_images - Whether to return images.
+ * @param {boolean|undefined|null} options.return_history - Whether to return job history.
+ * @param {boolean|undefined|null} options.use_enrolled_image - Whether to use a previously
+ * uploaded selfie image.
+ * @returns {{
+ *  return_job_status: boolean,
+ *  return_images: boolean,
+ *  return_history: boolean,
+ *  use_enrolled_image: boolean
+ * }} The options object with each key value coerced to a boolean.
+ * @throws {Error} - if any keys are not booleans.
+ */
+const validateBooleans = (options) => {
+  const obj = {};
+  const booleanKeys = ['return_job_status', 'return_history', 'return_images', 'use_enrolled_image'];
+  booleanKeys.forEach((key) => {
+    obj[key] = checkBoolean(key, options[key]);
+  });
+  return obj;
+};
+
+/**
+ * Validates if the valid options were set to return data from the API.
+ *
+ * @param {string|undefined} callbackUrl - The callback URL.
+ * @param {boolean} returnJobStatus - Whether to return job status.
+ */
+const validateReturnData = (callbackUrl, returnJobStatus) => {
+  if ((typeof callbackUrl !== 'string' || callbackUrl.length === 0) && !returnJobStatus) {
+    throw new Error('Please choose to either get your response via the callback or job status query');
+  }
+};
+
+/**
+ * Checks to see if an image is an ID card front image.
+ *
+ * @param {object} image - image object
+ * @param {number} image.image_type_id - smile image type.
+ * @returns {boolean} - true if image is a ID card front image, false otherwise.
+ */
+const hasIdImage = ({ image_type_id }) => [1, 3].includes(image_type_id);
+
+/**
+ * Checks to see if an image is a selfie image.
+ *
+ * @param {object} image - image object
+ * @param {number} image.image_type_id - smile image type.
+ * @returns {boolean} - true if image is a ID card front image, false otherwise.
+ */
+const hasSelfieImage = ({ image_type_id }) => [0, 2].includes(image_type_id);
+
+/**
+ * Checks to ensure required images for job type 1 are present.
+ *
+ * @param {Array<{
+ *  image_type_id: number
+ * }>} images - Array of images to be uploaded to smile.
+ * @param {boolean|undefined} entered - Whether to use a previously uploaded selfie image.
+ * @returns {undefined}
+ * @throws {Error} - if images does not contain an image of the front of an id card.
+ */
+const validateEnrollWithId = (images, entered) => {
+  if (!images.some(hasIdImage) && (!entered || entered.toString() !== 'true')) {
+    throw new Error('You are attempting to complete a job type 1 without providing an id card image or id info');
+  }
+};
+
+/**
+ * Checks to ensure if images contains an id card image.
+ *
+ * @param {Array<{
+ *  image_type_id: number
+ * }>} images - Array of images to be uploaded to smile.
+ * @returns {undefined}
+ * @throws {Error} - if images does not contain an image of the front of an id card.
+ */
+const validateDocumentVerification = (images) => {
+  if (!images.some(hasIdImage)) {
+    throw new Error('You are attempting to complete a Document Verification job without providing an id card image');
+  }
+};
+
+/**
+ * Checks to ensure if images is an array and contains a selfie image, or
+ * if we can use an enrolled image instead.
+ *
+ * @param {Array<{
+ * image_type_id: number
+ * }>} images - Array of images to be uploaded to smile.
+ * @param {boolean|undefined} useEnrolledImage - Whether to use a previously uploaded selfie image.
+ * @param {number} jobType - The job type.
+ * @returns {undefined}
+ * @throws {Error} - if images does not contain a selfie image.
+ */
+const validateImages = (images, useEnrolledImage, jobType) => {
+  if (!images) {
+    throw new Error('Please ensure that you send through image details');
+  }
+
+  if (!Array.isArray(images)) {
+    throw new Error('Image details needs to be an array');
+  }
+
+  // most job types require at least a selfie,
+  // JT6 does not when `use_enrolled_image` flag is passed
+  if (
+    (!images.some(hasSelfieImage) || images.length === 0)
+    && (!useEnrolledImage || jobType !== 6)
+  ) {
+    throw new Error('You need to send through at least one selfie image');
+  }
+};
+
+/**
+ * Differentiates between image files and base64 images based on the image_type_id.
+ *
+ * @param {Array<{
+ *  image_type_id: number
+ *  image: string
+ * }>} images - Array of images to be uploaded to smile.
+ * @returns {Array<{
+ *  image_type_id: number,
+ *  image: string,
+ *  image_file: string,
+ * }>} - Array of images with image split by file_name and base64.
+ */
+const configureImagePayload = (images) => images.map(({ image, image_type_id }) => {
+  const imageTypeId = parseInt(image_type_id, 10);
+  if ([0, 1].includes(image_type_id)) {
+    return {
+      image_type_id: imageTypeId,
+      image: '',
+      file_name: path.basename(image),
+    };
+  }
+  return {
+    image_type_id: imageTypeId,
+    image,
+    file_name: '',
+  };
+});
+
+/**
+ * Formats upload payload.
+ *
+ * @param {{
+ *  api_key: string,
+ *  callback_url: string,
+ *  partner_id: string,
+ *  partner_params: object,
+ *  timestamp: string|number,
+ *  use_enrolled_image: boolean,
+ * }} options - The options object.
+ * @returns {object} - formatted payload.
+ */
+const configurePrepUploadJson = ({
+  api_key,
+  callback_url,
+  partner_id,
+  partner_params,
+  timestamp,
+  use_enrolled_image,
+}) => JSON.stringify({
+  callback_url,
+  file_name: 'selfie.zip',
+  model_parameters: {},
+  partner_params,
+  smile_client_id: partner_id,
+  use_enrolled_image,
+  ...new Signature(partner_id, api_key).generate_signature(timestamp),
+  ...sdkVersionInfo,
+});
+
+/**
+ * Creates the json file sent as part of the zip file
+ *
+ * @param {object} data - data to be sent to smile.
+ * @param {object} serverInformation - server information.
+ * @returns {object} - formatted payload.
+ */
+const configureInfoJson = (data, serverInformation) => ({
+  package_information: {
+    apiVersion: {
+      buildNumber: 0,
+      majorVersion: 2,
+      minorVersion: 0,
+    },
+    language: 'javascript',
+  },
+  misc_information: {
+    signature: data.signature,
+    retry: 'false',
+    partner_params: data.partner_params,
+    timestamp: data.timestamp,
+    file_name: 'selfie.zip',
+    smile_client_id: data.partner_id,
+    callback_url: data.callback_url,
+    userData: { // TO ASK what goes here
+      isVerifiedProcess: false,
+      name: '',
+      fbUserID: '',
+      firstName: 'Bill',
+      lastName: '',
+      gender: '',
+      email: '',
+      phone: '',
+      countryCode: '+',
+      countryName: '',
+    },
+  },
+  id_info: data.id_info,
+  images: configureImagePayload(data.images),
+  server_information: serverInformation,
+});
+
+/**
+ * Polls the smile server for the result of the job.
+ *
+ * @param {{
+ *  api_key: string,
+ *  partner_id: string,
+ *  partner_params: object,
+ *  url: string,
+ *  return_history: boolean,
+ *  return_images: boolean,
+ * }} data - data required to check the status of the job.
+ * @param {number|undefined} counter - The number of times the function has been called.
+ * @returns {Promise<object>} - the response from the smile server.
+ * @throws {Error} - if the request fails or times out.
+ */
+
+const queryJobStatus = ({
+  api_key,
+  partner_id,
+  partner_params,
+  url: sidUrl,
+  return_history,
+  return_images,
+}, counter = 0) => new Promise((resolve, reject) => {
+  // call job status for the result of the job
+  const timeout = counter < 4 ? 2000 : 4000;
+  const updatedCounter = counter + 1;
+
+  const retryFunc = (c) => {
+    setTimeout(
+      () => {
+        queryJobStatus({
+          api_key,
+          partner_id,
+          partner_params,
+          url: sidUrl,
+          return_history,
+          return_images,
+        }, c).then(resolve).catch(reject);
+      },
+      timeout,
+    );
+  };
+  new Utilities(partner_id, api_key, sidUrl).get_job_status(
+    partner_params.user_id,
+    partner_params.job_id,
+    { return_history, return_images },
+  ).then((body) => {
+    if (!body.job_complete) {
+      if (updatedCounter > 21) {
+        reject(new Error('Timeout waiting for job status response.'));
+        return;
+      }
+      retryFunc(updatedCounter);
+    } else {
+      resolve(body);
+    }
+  }).catch(() => { retryFunc(updatedCounter); });
+});
+
+/**
+ * Upload zip file to s3 using the signed link obtained from the upload lambda
+ *
+ * @param {object} data - data required to upload the zip file to s3.
+ * @param {string} zipFile - the zip file to be uploaded in base64.
+ * @param {string} signedUrl - the signed url to upload the zip file to.
+ * @returns {Promise<void>} - resolves when the file has been uploaded.
+ * @throws {Error} - if the request fails or times out.
+ */
+const uploadFile = (
+  data,
+  zipFile,
+  signedUrl,
+) => new Promise((resolve, reject) => {
+  const reqOptions = url.parse(signedUrl);
+  reqOptions.headers = {
+    'Content-Type': 'application/zip',
+    'Content-Length': `${zipFile.length}`,
+  };
+  reqOptions.method = 'PUT';
+  const req = https.request(reqOptions, (resp) => {
+    resp.setEncoding('utf8');
+    resp.on('data', () => {});
+
+    resp.on('end', () => {
+      if (resp.statusCode === 200) {
+        if (data.return_job_status) {
+          queryJobStatus(data).then(resolve).catch(reject);
+          return;
+        }
+        resolve();
+        return;
+      }
+      reject(new Error(`Zip upload status code: ${resp.statusCode}`));
+    });
+  });
+  req.write(Buffer.from(zipFile));
+  req.end();
+  req.on('error', (err) => {
+    reject(err);
+  });
+});
+
+/**
+ * Creates a zip file containing the images and the json file.
+ *
+ * @param {Array<{
+ *  image_type_id: number
+ *  image: string
+ *  file_name: string
+ * }>} images - images to be zipped.
+ * @param {object} infoJson - metadata associated with the job.
+ * @returns {Promise<Uint8Array>} - the zip file.
+ */
+const zipUpFile = (images, infoJson) => {
+  // create zip file in memory
+  const zip = new JSzip();
+  zip.file('info.json', JSON.stringify(infoJson));
+  images.filter((image) => [0, 1].includes(image.image_type_id)).forEach((image) => {
+    zip.file(path.basename(image.image), fs.readFileSync(image.image));
+  });
+  return zip.generateAsync({ type: 'uint8array' });
+};
+
+/**
+ * Make the first call to the upload lambda to get the url, then pack the zip, then upload the zip.
+ *
+ * @param {object} data - data required to upload the zip file to s3.
+ * @returns {Promise<{
+ *  success: boolean,
+ *  smile_job_id: string
+ * }>} the smile job id and success status.
+ */
+const setupRequests = (data) => new Promise((resolve, reject) => {
+  let json = '';
+  const body = configurePrepUploadJson(data);
+  const reqOptions = {
+    hostname: data.url.split('/')[0],
+    path: `/${data.url.split('/')[1]}/upload`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  const req = https.request(reqOptions, (resp) => {
+    resp.setEncoding('utf8');
+    resp.on('data', (chunk) => {
+      json += chunk;
+    });
+    resp.on('end', () => {
+      if (resp.statusCode === 200) {
+        const prepUploadResponse = JSON.parse(json);
+        const infoJson = configureInfoJson(data, prepUploadResponse);
+        zipUpFile(data.images, infoJson).then((zipFile) => uploadFile(
+          data,
+          zipFile,
+          prepUploadResponse.upload_url,
+        )).then(resolve).then(() => ({
+          success: true,
+          smile_job_id: prepUploadResponse.smile_job_id,
+        }))
+          .catch(reject);
+      } else {
+        const err = JSON.parse(json);
+        reject(new Error(`${err.code}:${err.error}`));
+      }
+    });
+  });
+
+  req.write(body);
+  req.end();
+
+  req.on('error', (err) => {
+    reject(new Error(`${err.code}:${err.error}`));
+  });
+});
 
 class WebApi {
+  /**
+   * Creates an instance of WebApi.
+   *
+   * @param {string} partner_id - Your Smile Partner ID
+   * @param {string} default_callback - The default callback url to use for all requests.
+   * @param {string} api_key - Your Smile API Key
+   * @param {string|number} sid_server - The server to use for the SID API. 0 for
+   * staging and 1 for production.
+   */
   constructor(partner_id, default_callback, api_key, sid_server) {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
-    this.sid_server = sid_server;
     this.api_key = api_key;
     this.url = mapServerUri(sid_server);
   }
 
+  /**
+   * Get the status of an existing job.
+   *
+   * @param {{
+   *  user_id: string,
+   *  job_id: string,
+   * }} partner_params - the user_id and job_id of the job to check.
+   * @param {{
+   *  return_history: boolean,
+   *  return_images: boolean,
+   * }} options - indicates whether to return the history and/or images.
+   * @returns {Promise<object>} A promise that resolves to the job status.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   * @memberof WebApi
+   */
+  get_job_status(partner_params, options) {
+    return new Utilities(this.partner_id, this.api_key, this.url).get_job_status(
+      partner_params.user_id,
+      partner_params.job_id,
+      options,
+    );
+  }
+
+  /**
+   * Get a authorization token for the hosted web integration.
+   *
+   * @param {{
+   *  callback_url: string,
+   *  user_id: string,
+   *  job_id: string,
+   *  product: string,
+   * }} requestParams - parameters required to get an authorization token.
+   * @returns {Promise<{
+   *  token: string,
+   * }>} - The authorization token.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   * @memberof WebApi
+   */
+  get_web_token(requestParams) {
+    return getWebToken(
+      this.partner_id,
+      this.api_key,
+      this.url,
+      requestParams,
+      this.default_callback,
+    );
+  }
+
+  /**
+   * Submit a job to Smile.
+   *
+   * @param {{
+   *  user_id: string,
+   *  job_id: string,
+   *  job_type: string|number,
+   * }} partner_params - the user_id, job_id, and job_type of the job to submit.
+   * Can additionally include optional parameters that Smile will return in the
+   * job status.
+   * @param {Array<{
+   *  image_type_id: string|number,
+   *  image: string,
+   * }>} image_details - an array of image objects. Each image object must include an image_type_id
+   * and an image. See constants.js for a list of valid image_type_ids.
+   * @param {{
+   *  entered: boolean|string|undefined,
+   *  country: string|undefined,
+   *  id_type: string|undefined,
+   *  id_number: string|undefined,
+   * }} id_info - ID information required to create a job.
+   * @param {{
+   *  optional_callback: string,
+   *  return_job_status: boolean,
+   *  return_images: boolean,
+   *  return_history: boolean,
+   *  use_enrolled_image: boolean
+   * }} options - options to control the response.
+   * @returns {Promise<object>} A promise that resolves to the job status.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   * @memberof WebApi
+   */
   submit_job(partner_params, image_details, id_info, options = {}) {
-    // define the data and functions we will need
-    const _private = {
-      data: {
-        callback_url: (options && options.optional_callback) || this.default_callback,
-        timestamp: new Date().toISOString(),
-        url: this.url,
+    if (parseInt(partner_params && partner_params.job_type, 10) === 5) {
+      return new IDApi(this.partner_id, this.api_key, this.url).submit_job(partner_params, id_info);
+    }
+
+    try {
+      validatePartnerParams(partner_params);
+      const callbackUrl = (options && options.optional_callback) || this.default_callback;
+      const jobType = parseInt(partner_params.job_type, 10);
+      const data = {
         partner_id: this.partner_id,
         api_key: this.api_key,
-        sid_server: this.sid_server,
-      },
-      validateInputs() {
-        // validate inputs and add them to our data store
-        validatePartnerParams(partner_params);
-        _private.data.partner_params = {
+        url: this.url,
+        callback_url: callbackUrl,
+        timestamp: new Date().toISOString(),
+        images: image_details,
+        partner_params: {
           ...partner_params,
-          job_type: parseInt(partner_params.job_type, 10),
-        };
-
-        _private.idInfo(id_info);
-
-        if (parseInt(partner_params.job_type, 10) !== 5) {
-          _private.images(image_details);
-          _private.checkBoolean('return_job_status', options.return_job_status);
-          _private.checkBoolean('return_history', options.return_history);
-          _private.checkBoolean('return_images', options.return_images);
-          _private.checkBoolean('use_enrolled_image', options.use_enrolled_image);
-        }
-      },
-      validateReturnData() {
-        if (
-          (!_private.data.callback_url || _private.data.callback_url.length === 0)
-          && !_private.data.return_job_status
-        ) {
-          throw new Error('Please choose to either get your response via the callback or job status query');
-        }
-      },
-      validateEnrollWithID() {
-        const hasImage = (imageData) => [1, 3].includes(imageData.image_type_id);
-        if (!_private.data.images.some(hasImage) && (!_private.data.id_info.entered || _private.data.id_info.entered.toString() !== 'true')) {
-          throw new Error('You are attempting to complete a job type 1 without providing an id card image or id info');
-        }
-      },
-      validateDocumentVerification() {
-        const hasIDImage = (imageData) => [1, 3].includes(imageData.image_type_id);
-        if (!_private.data.images.some(hasIDImage)) {
-          throw new Error('You are attempting to complete a Document Verification job without providing an id card image');
-        }
-      },
-      images(images) {
-        const hasSelfieImage = (imageData) => [0, 2].includes(imageData.image_type_id);
-        if (!images) {
-          throw new Error('Please ensure that you send through image details');
-        }
-
-        if (!Array.isArray(images)) {
-          throw new Error('Image details needs to be an array');
-        }
-
-        // most job types require at least a selfie,
-        // JT6 does not when `use_enrolled_image` flag is passed
-        if (images.length === 0
-          || !(
-            images.some(hasSelfieImage)
-            || (options.use_enrolled_image && parseInt(partner_params.job_type, 10) === 6)
-          )
-        ) {
-          throw new Error('You need to send through at least one selfie image');
-        }
-
-        _private.data.images = images;
-      },
-      idInfo(idInfo) {
-        if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
-          idInfo.entered = 'false';
-
-          // ACTION: document verification jobs do not check for `country` and `id_type`
-          if (_private.data.partner_params.job_type === 6) {
-            ['country', 'id_type'].forEach((key) => {
-              if (!idInfo[key] || idInfo[key].length === 0) {
-                throw new Error(`Please make sure that ${key} is included in the id_info`);
-              }
-            });
-          }
-        }
-
-        if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
-          ['country', 'id_type', 'id_number'].forEach((key) => {
-            if (!idInfo[key] || idInfo[key].length === 0) {
-              throw new Error(`Please make sure that ${key} is included in the id_info`);
-            }
-          });
-        }
-
-        _private.data.id_info = idInfo;
-      },
-      checkBoolean(key, bool) {
-        if (!bool) {
-          bool = false;
-        }
-        if (!!bool !== bool) {
-          throw new Error(`${key} needs to be a boolean`);
-        }
-
-        _private.data[key] = bool;
-      },
-      determineSignature(timestamp) {
-        // calculate an outgoing signature
-        return new Signature(
-          _private.data.partner_id,
-          _private.data.api_key,
-        ).generate_signature(timestamp || _private.data.timestamp);
-      },
-      configurePrepUploadJson() {
-        return JSON.stringify({
-          callback_url: _private.data.callback_url,
-          file_name: 'selfie.zip',
-          model_parameters: {},
-          partner_params: _private.data.partner_params,
-          signature: _private.determineSignature().signature,
-          smile_client_id: _private.data.partner_id,
-          timestamp: _private.data.timestamp,
-          use_enrolled_image: _private.data.use_enrolled_image,
-          ...sdkVersionInfo,
-        });
-      },
-      setupRequests() {
-        // make the first call to the upload lambda
-        let json = '';
-        const body = _private.configurePrepUploadJson();
-        const reqOptions = {
-          hostname: _private.data.url.split('/')[0],
-          path: `/${_private.data.url.split('/')[1]}/upload`,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        };
-        const req = https.request(reqOptions, (resp) => {
-          resp.setEncoding('utf8');
-          resp.on('data', (chunk) => {
-            json += chunk;
-          });
-
-          resp.on('end', () => {
-            if (resp.statusCode === 200) {
-              const prepUploadResponse = JSON.parse(json);
-              const infoJson = _private.configureInfoJson(prepUploadResponse);
-
-              _private.zipUpFile(
-                infoJson,
-                () => _private.uploadFile(
-                  prepUploadResponse.upload_url,
-                  infoJson,
-                  prepUploadResponse.smile_job_id,
-                ),
-              );
-            } else {
-              const err = JSON.parse(json);
-              _private.data.reject(new Error(`${err.code}:${err.error}`));
-            }
-          });
-        });
-
-        req.write(body);
-        req.end();
-
-        req.on('error', (err) => {
-          _private.data.reject(`${err.code}:${err.error}`);
-        });
-      },
-      configureInfoJson(serverInformation) {
-        // create the json file sent as part of the zip file
-        const info = {
-          package_information: {
-            apiVersion: {
-              buildNumber: 0,
-              majorVersion: 2,
-              minorVersion: 0,
-            },
-            language: 'javascript',
-          },
-          misc_information: {
-            signature: _private.data.signature,
-            retry: 'false',
-            partner_params: _private.data.partner_params,
-            timestamp: _private.data.timestamp,
-            file_name: 'selfie.zip',
-            smile_client_id: _private.data.partner_id,
-            callback_url: _private.data.callback_url,
-            userData: { // TO ASK what goes here
-              isVerifiedProcess: false,
-              name: '',
-              fbUserID: '',
-              firstName: 'Bill',
-              lastName: '',
-              gender: '',
-              email: '',
-              phone: '',
-              countryCode: '+',
-              countryName: '',
-            },
-          },
-          id_info: _private.data.id_info,
-          images: _private.configureImagePayload(),
-          server_information: serverInformation,
-        };
-        return info;
-      },
-      configureImagePayload() {
-        // differentiate between image files and base64 images based on the image_type_id
-        const images = [];
-        _private.data.images.forEach((i) => {
-          if ([0, 1].indexOf(parseInt(i.image_type_id, 10)) > -1) {
-            images.push({
-              image_type_id: i.image_type_id,
-              image: '',
-              file_name: path.basename(i.image),
-            });
-          } else {
-            images.push({
-              image_type_id: i.image_type_id,
-              image: i.image,
-              file_name: '',
-            });
-          }
-        });
-        return images;
-      },
-      zipUpFile(info_json, callback) {
-        // create zip file in memory
-        const zip = new JSzip();
-        zip.file('info.json', JSON.stringify(info_json));
-        _private.data.images.forEach((image) => {
-          if ([0, 1].indexOf(parseInt(image.image_type_id, 10)) > -1) {
-            zip.file(path.basename(image.image), fs.readFileSync(image.image));
-          }
-        });
-        zip.generateAsync({ type: 'uint8array' }).then((zipFile) => {
-          _private.data.zip = zipFile;
-          callback();
-        });
-      },
-      QueryJobStatus(counter = 0) {
-        // call job status for the result of the job
-        const timeout = counter < 4 ? 2000 : 4000;
-        counter += 1;
-        new Utilities(_private.data.partner_id, _private.data.api_key, _private.data.sid_server)
-          .get_job_status(
-            _private.data.partner_params.user_id,
-            _private.data.partner_params.job_id,
-            {
-              return_history: _private.data.return_history,
-              return_images: _private.data.return_images,
-              signature: options.signature,
-            },
-          ).then((body) => {
-            if (!body.job_complete) {
-              if (counter > 21) {
-                _private.data.reject(new Error('Timeout waiting for job status response.'));
-                return;
-              }
-              setTimeout(() => {
-                _private.QueryJobStatus(counter);
-              }, timeout);
-            } else {
-              _private.data.resolve(body);
-            }
-          }).catch(() => {
-            setTimeout(() => {
-              _private.QueryJobStatus(counter);
-            }, timeout);
-          });
-      },
-      uploadFile(signedUrl, info_json, SmileJobID) {
-        // upload zip file to s3 using the signed link obtained from the upload lambda
-        const reqOptions = url.parse(signedUrl);
-        reqOptions.headers = {
-          'Content-Type': 'application/zip',
-          'Content-Length': `${_private.data.zip.length}`,
-        };
-        reqOptions.method = 'PUT';
-        const req = https.request(reqOptions, (resp) => {
-          resp.setEncoding('utf8');
-          resp.on('data', () => {});
-
-          resp.on('end', () => {
-            if (resp.statusCode === 200) {
-              if (_private.data.return_job_status) {
-                _private.QueryJobStatus();
-                return;
-              }
-              _private.data.resolve({ success: true, smile_job_id: SmileJobID });
-              return;
-            }
-            _private.data.reject(new Error(`Zip upload status code: ${resp.statusCode}`));
-          });
-        });
-        req.write(Buffer.from(_private.data.zip));
-        req.end();
-        req.on('error', (err) => {
-          _private.data.reject(err);
-        });
-      },
-      setupIDApiRequest() {
-        const promise = new IDApi(
-          _private.data.partner_id,
-          _private.data.api_key,
-          _private.data.sid_server,
-          {},
-        ).submit_job(_private.data.partner_params, _private.data.id_info);
-
-        promise.then((idApiResp) => _private.data.resolve(idApiResp)).catch((err) => {
-          throw _private.data.reject(err);
-        });
-      },
-    };
-    // this section kicks everything off
-    const result = new Promise((resolve, reject) => {
-      try {
-        _private.data.resolve = resolve;
-        _private.data.reject = reject;
-        _private.validateInputs();
-
-        if (parseInt(_private.data.partner_params.job_type, 10) === 5) {
-          _private.setupIDApiRequest();
-        } else {
-          _private.validateReturnData();
-          if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
-            _private.validateEnrollWithID();
-          }
-          if (parseInt(_private.data.partner_params.job_type, 10) === 6) {
-            _private.validateDocumentVerification();
-          }
-          _private.setupRequests();
-        }
-      } catch (err) {
-        reject(err);
-      }
-    });
-    return result;
-  }
-
-  get_job_status(partner_params, options) {
-    return new Utilities(this.partner_id, this.api_key, this.sid_server)
-      .get_job_status(partner_params.user_id, partner_params.job_id, options);
-  }
-
-  get_web_token(requestParams) {
-    return new Promise((resolve, reject) => {
-      if (!requestParams) {
-        reject(new Error('Please ensure that you send through request params'));
-      }
-
-      if (typeof requestParams !== 'object') {
-        reject(new Error('Request params needs to be an object'));
-      }
-
-      if (!(requestParams.callback_url || this.default_callback)) {
-        reject(new Error('Callback URL is required for this method'));
-      }
-
-      ['user_id', 'job_id', 'product'].forEach((requiredParam) => {
-        if (!requestParams[requiredParam]) {
-          reject(new Error(`${requiredParam} is required to get a web token`));
-        }
-      });
-
-      const timestamp = new Date().toISOString();
-      const { signature } = new Signature(
-        this.partner_id,
-        this.api_key,
-      ).generate_signature(timestamp);
-
-      const body = JSON.stringify({
-        user_id: requestParams.user_id,
-        job_id: requestParams.job_id,
-        product: requestParams.product,
-        callback_url: requestParams.callback_url || this.default_callback,
-        partner_id: this.partner_id,
-        signature,
-        timestamp,
-      });
-
-      let json = '';
-      const options = {
-        hostname: this.url.split('/')[0],
-        path: `/${this.url.split('/')[1]}/token`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+          job_type: jobType,
         },
+        idInfo: {
+          ...id_info,
+          entered: validateIdInfo(id_info, jobType),
+        },
+        ...validateBooleans(options),
       };
 
-      const req = https.request(options, (resp) => {
-        resp.setEncoding('utf8');
+      validateImages(image_details, options.use_enrolled_image, jobType);
+      validateReturnData(callbackUrl, data.return_job_status);
 
-        resp.on('data', (chunk) => {
-          json += chunk;
-        });
+      if (jobType === 1) {
+        validateEnrollWithId(image_details, data.idInfo.entered);
+      } else if (jobType === 6) {
+        validateDocumentVerification(image_details);
+      }
 
-        resp.on('end', () => {
-          if (resp.statusCode === 200) {
-            const tokenResponse = JSON.parse(json);
-
-            resolve(tokenResponse);
-          } else {
-            const err = JSON.parse(json);
-
-            reject(new Error(`${err.code}: ${err.error}`));
-          }
-        });
-      });
-
-      req.write(body);
-      req.end();
-
-      req.on('error', (err) => {
-        reject(new Error(`${err.code}:${err.error}`));
-      });
-    });
+      return setupRequests(data);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
 }
 
 module.exports = WebApi;
-
-// configure prep upload payload (determine the signature)
-// send prep upload request
-// get prep upload response (new link)
-// set the info.json
-// zip up the file
-// upload the file
-// query the job status

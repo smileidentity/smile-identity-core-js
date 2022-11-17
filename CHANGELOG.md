@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+-  Add JSDocs to `WebApi` class.
+- Define `sidServerMapping` in constants.
+
+### Changed
+- Refactor `WebApi` class. Eliminate `_private`.
+- Refactor `Utilities` class.
+- Refactor `get_web_token` code, move from `WebApi` class into `web-token` file. Improve test coverage.
 
 ## [2.0.0] - 2022-11-11
 ### Added
