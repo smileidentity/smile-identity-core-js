@@ -294,7 +294,6 @@ const configureInfoJson = (data, serverInformation) => ({
  * @returns {Promise<object>} - the response from the smile server.
  * @throws {Error} - if the request fails or times out.
  */
-
 const queryJobStatus = ({
   api_key,
   partner_id,
