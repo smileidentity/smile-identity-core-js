@@ -41,7 +41,12 @@ describe('WebApi', () => {
       expect.assertions(1);
       const instance = new WebApi('001', '', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], {}, {});
+      const promise = instance.submit_job(
+        partner_params,
+        [{ image_type_id: 0, image: fixturePath }],
+        {},
+        {},
+      );
       await expect(promise).rejects.toThrow(new Error('Please choose to either get your response via the callback or job status query'));
     });
 
@@ -122,7 +127,12 @@ describe('WebApi', () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-        const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], id_info, { return_job_status: true });
+        const promise = instance.submit_job(
+          partner_params,
+          [{ image_type_id: 0, image: fixturePath }],
+          id_info,
+          { return_job_status: true },
+        );
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the id_info`));
       });
     });
@@ -131,7 +141,12 @@ describe('WebApi', () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], {}, { return_job_status: true });
+      const promise = instance.submit_job(
+        partner_params,
+        [{ image_type_id: 0, image: fixturePath }],
+        {},
+        { return_job_status: true },
+      );
       await expect(promise).rejects.toThrow(new Error('You are attempting to complete a job type 1 without providing an id card image or id info'));
     });
 
@@ -142,7 +157,12 @@ describe('WebApi', () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
-        const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], {}, options);
+        const promise = instance.submit_job(
+          partner_params,
+          [{ image_type_id: 0, image: fixturePath }],
+          {},
+          options,
+        );
         await expect(promise).rejects.toThrow(new Error(`${flag} needs to be a boolean`));
       });
     });
@@ -581,8 +601,6 @@ describe('WebApi', () => {
         expect(response).toEqual(jobStatusResponse);
         // expect(postScope.isDone()).toBe(true);
         // expect(putScope.isDone()).toBe(true);
-        // nock.abortPendingRequests();
-        return
       });
 
       it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
@@ -616,7 +634,6 @@ describe('WebApi', () => {
         );
 
         expect(response).toEqual(jobStatusResponse);
-        return
       });
     });
   });
@@ -651,7 +668,6 @@ describe('WebApi', () => {
 
       expect(response.signature).toEqual(jobStatusResponse.signature);
       expect(response.job_complete).toEqual(true);
-      return
     });
   });
 
@@ -674,7 +690,7 @@ describe('WebApi', () => {
         expect.assertions(1);
         const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
         delete requestParams[param];
-        return await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error(`${param} is required to get a web token`));
+        await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error(`${param} is required to get a web token`));
       });
     });
 
@@ -693,14 +709,13 @@ describe('WebApi', () => {
       nock('https://some_url.com').put('/').reply(200).isDone();
       const response = await instance.get_web_token(requestParams);
       expect(response.token).toEqual(tokenResponse.token);
-      return
     });
 
     describe('handle callback url', () => {
       it('should ensure that a callback URL exists', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        return await expect(instance.get_web_token({})).rejects.toThrow(new Error('Callback URL is required for this method'));
+        await expect(instance.get_web_token({})).rejects.toThrow(new Error('Callback URL is required for this method'));
       });
 
       it('should work with a callback_url param', async () => {
@@ -725,7 +740,6 @@ describe('WebApi', () => {
 
         const response = await instance.get_web_token(requestParams);
         expect(response.token).toEqual(tokenResponse.token);
-        return
       });
 
       it('should fallback to the default callback URL', async () => {
@@ -746,7 +760,6 @@ describe('WebApi', () => {
 
         const response = await instance.get_web_token(requestParams);
         expect(response.token).toEqual(tokenResponse.token);
-        return;
       });
     });
   });

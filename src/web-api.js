@@ -354,7 +354,7 @@ const uploadFile = (
   data,
   zipFile,
   signedUrl,
-  smile_job_id
+  smile_job_id,
 ) => new Promise((resolve, reject) => {
   const reqOptions = url.parse(signedUrl);
   reqOptions.headers = {
@@ -372,7 +372,7 @@ const uploadFile = (
           queryJobStatus(data).then(resolve).catch(reject);
           return;
         }
-        resolve({ success: true, smile_job_id: smile_job_id });
+        resolve({ success: true, smile_job_id });
         return;
       }
       reject(new Error(`Zip upload status code: ${resp.statusCode}`));
@@ -439,7 +439,7 @@ const setupRequests = (data) => new Promise((resolve, reject) => {
           data,
           zipFile,
           prepUploadResponse.upload_url,
-          prepUploadResponse.smile_job_id
+          prepUploadResponse.smile_job_id,
         )).then(resolve).then(() => ({
           success: true,
           smile_job_id: prepUploadResponse.smile_job_id,

@@ -1,4 +1,3 @@
-const assert = require('assert');
 const keypair = require('keypair');
 const nock = require('nock');
 
@@ -11,24 +10,32 @@ const pair = keypair();
 const mockApiKey = Buffer.from(pair.public).toString('base64');
 
 describe('web-token', () => {
+  beforeAll(() => {
+    nock.disableNetConnect();
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+    jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    nock.enableNetConnect();
+  });
+
   describe('#get_web_token', () => {
-    it('should ensure it is called with params', (done) => {
+    it('should ensure it is called with params', async () => {
       const promise = getWebToken('001', mockApiKey, 0, undefined, 'https://a_callback.cb');
-      promise.catch((err) => {
-        assert.equal(err.message, 'Please ensure that you send through request params');
-        done();
-      });
+
+      await expect(promise).rejects.toThrow(new Error('Please ensure that you send through request params'));
     });
 
-    it('should ensure the params are in an object', (done) => {
+    it('should ensure the params are in an object', async () => {
       const promise = getWebToken('001', mockApiKey, 0, 'requestParams', 'https://a_callback.cb');
-      promise.catch((err) => {
-        assert.equal(err.message, 'Request params needs to be an object');
-        done();
-      });
+      await expect(promise).rejects.toThrow(new Error('Request params needs to be an object'));
     });
 
-    it('should ensure that all required params are sent', (done) => {
+    it('should ensure that all required params are sent', async () => {
       const requestParams = {
         user_id: '1',
         job_id: '1',
@@ -38,22 +45,19 @@ describe('web-token', () => {
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/token', (body) => {
-          assert.equal(body.job_id, requestParams.job_id);
-          assert.equal(body.user_id, requestParams.user_id);
-          assert.equal(body.product, undefined);
+          expect(body.job_id).toEqual(requestParams.job_id);
+          expect(body.user_id).toEqual(requestParams.user_id);
+          expect(body.product).toEqual(undefined);
           return true;
         })
-        .reply(412, tokenResponse)
-        .isDone();
+        .reply(412, tokenResponse);
 
       const promise = getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb');
-      promise.catch((err) => {
-        assert.equal(err.message, 'product is required to get a web token');
-        done();
-      });
+
+      await expect(promise).rejects.toThrow(new Error('product is required to get a web token'));
     });
 
-    it('should return a token when all required params are set', (done) => {
+    it('should return a token when all required params are set', () => {
       const requestParams = {
         user_id: '1',
         job_id: '1',
@@ -66,18 +70,16 @@ describe('web-token', () => {
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/token', (body) => {
-          assert.equal(body.job_id, requestParams.job_id);
-          assert.equal(body.user_id, requestParams.user_id);
-          assert.equal(body.product, requestParams.product);
+          expect(body.job_id).toEqual(requestParams.job_id);
+          expect(body.user_id).toEqual(requestParams.user_id);
+          expect(body.product).toEqual(requestParams.product);
           return true;
         })
-        .reply(200, tokenResponse)
-        .isDone();
+        .reply(200, tokenResponse);
 
       const promise = getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb');
-      promise.then((resp) => {
-        assert.equal(resp.token, '42');
-        done();
+      return promise.then((resp) => {
+        expect(resp.token).toEqual('42');
       });
     });
 
@@ -89,37 +91,56 @@ describe('web-token', () => {
       };
 
       const scope = nock('https://testapi.smileidentity.com').post('/v1/token', (body) => {
-        assert.equal(body.job_id, requestParams.job_id);
-        assert.equal(body.user_id, requestParams.user_id);
-        assert.equal(body.product, requestParams.product);
+        expect(body.job_id).toEqual(requestParams.job_id);
+        expect(body.user_id).toEqual(requestParams.user_id);
+        expect(body.product).toEqual(requestParams.product);
         return true;
       }).replyWithError({
         status: 400,
       });
 
+      const promise = getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb');
+
+      let response;
       let error;
-      await getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb').then(() => {
-        assert.fail('should not have gotten here');
-      }).catch((err) => {
+
+      try {
+        response = await promise;
+      } catch (err) {
         error = err;
-      });
-      assert.ok(error instanceof Error);
-      assert.ok(scope.isDone());
+      }
+
+      // make sure this test fails if the job goes through
+      expect(response).toBeUndefined();
+
+      // todo: figure out how to get nook to act like an error response would in real life
+      // err.message in this case should be '2204:unauthorized'
+      expect(error.message).toBe('undefined:undefined');
+      expect(scope.isDone()).toEqual(true);
     });
   });
 
   describe('handle callback url', () => {
-    it('should ensure that a callback URL exists', (done) => {
+    it('should ensure that a callback URL exists', async () => {
       const promise = getWebToken('001', mockApiKey, 0, {});
+      let response;
+      let error;
 
-      promise.catch((err) => {
-        assert.equal(err.message, 'Callback URL is required for this method');
+      try {
+        response = await promise;
+      } catch (err) {
+        error = err;
+      }
 
-        done();
-      });
+      // make sure this test fails if the job goes through
+      expect(response).toBeUndefined();
+
+      // todo: figure out how to get nook to act like an error response would in real life
+      // err.message in this case should be '2204:unauthorized'
+      expect(error.message).toBe('Callback URL is required for this method');
     });
 
-    it('should work with a callback_url param', (done) => {
+    it('should work with a callback_url param', () => {
       const requestParams = {
         user_id: '1',
         job_id: '1',
@@ -133,24 +154,22 @@ describe('web-token', () => {
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/token', (body) => {
-          assert.equal(body.job_id, requestParams.job_id);
-          assert.equal(body.user_id, requestParams.user_id);
-          assert.equal(body.product, requestParams.product);
-          assert.equal(body.callback_url, requestParams.callback_url);
+          expect(body.job_id).toEqual(requestParams.job_id);
+          expect(body.user_id).toEqual(requestParams.user_id);
+          expect(body.product).toEqual(requestParams.product);
+          expect(body.callback_url).toEqual(requestParams.callback_url);
           return true;
         })
-        .reply(200, tokenResponse)
-        .isDone();
+        .reply(200, tokenResponse);
 
       const promise = getWebToken('001', mockApiKey, 0, requestParams, 'https://a_callback.cb');
 
-      promise.then((resp) => {
-        assert.equal(resp.token, '42');
-        done();
+      return promise.then((resp) => {
+        expect(resp.token).toEqual('42');
       });
     });
 
-    it('should fallback to the default callback URL', (done) => {
+    it('should fallback to the default callback URL', () => {
       const defaultCallbackURL = 'https://smileidentity.com/callback';
       const requestParams = {
         user_id: '1',
@@ -164,20 +183,17 @@ describe('web-token', () => {
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/token', (body) => {
-          assert.equal(body.job_id, requestParams.job_id);
-          assert.equal(body.user_id, requestParams.user_id);
-          assert.equal(body.product, requestParams.product);
-          assert.equal(body.callback_url, defaultCallbackURL);
+          expect(body.job_id).toEqual(requestParams.job_id);
+          expect(body.user_id).toEqual(requestParams.user_id);
+          expect(body.product).toEqual(requestParams.product);
+          expect(body.callback_url).toEqual(defaultCallbackURL);
           return true;
-        })
-        .reply(200, tokenResponse)
-        .isDone();
+        }).reply(200, tokenResponse);
 
       const promise = getWebToken('001', mockApiKey, 0, requestParams, defaultCallbackURL);
 
-      promise.then((resp) => {
-        assert.equal(resp.token, '42');
-        done();
+      return promise.then((resp) => {
+        expect(resp.token).toEqual(42);
       });
     });
   });
