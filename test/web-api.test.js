@@ -449,7 +449,7 @@ describe('WebApi', () => {
       assert.equal(error.code, 2204);
       assert.equal(error.error, 'unauthorized');
       assert.equal(response, undefined);
-      return true
+      return true;
     });
 
     it('should return a response from job_status if that flag is set to true', async () => {
@@ -661,7 +661,6 @@ describe('WebApi', () => {
           job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
         };
 
-        const options = {};
         const smile_job_id = '0000000111';
 
         const timestamp = new Date().toISOString();
@@ -703,9 +702,9 @@ describe('WebApi', () => {
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
-        )
+        );
 
-        assert.deepEqual(resp, {...jobStatusResponse, job_complete: true});
+        assert.deepEqual(resp, { ...jobStatusResponse, job_complete: true });
       }).timeout(3000);
 
       it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
@@ -752,7 +751,7 @@ describe('WebApi', () => {
           ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
-        )
+        );
         assert.deepEqual(response, { ...jobStatusResponse, job_complete: true });
       }).timeout(3000);
     });
