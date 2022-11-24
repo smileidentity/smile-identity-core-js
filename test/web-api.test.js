@@ -8,6 +8,8 @@ const {
 } = require('..');
 
 const pair = keypair();
+const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');
+const mockApiKey = Buffer.from(pair.public).toString('base64');
 
 describe('WebApi', () => {
   beforeAll(() => {
@@ -22,8 +24,6 @@ describe('WebApi', () => {
   afterAll(() => {
     nock.enableNetConnect();
   });
-
-  const mockApiKey = Buffer.from(pair.public).toString('base64');
 
   describe('#new', () => {
     it('should instantiate and set the global variables', () => {
@@ -41,7 +41,7 @@ describe('WebApi', () => {
       expect.assertions(1);
       const instance = new WebApi('001', '', mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, {});
+      const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], {}, {});
       await expect(promise).rejects.toThrow(new Error('Please choose to either get your response via the callback or job status query'));
     });
 
@@ -122,7 +122,7 @@ describe('WebApi', () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-        const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], id_info, { return_job_status: true });
+        const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], id_info, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the id_info`));
       });
     });
@@ -131,7 +131,7 @@ describe('WebApi', () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, { return_job_status: true });
+      const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You are attempting to complete a job type 1 without providing an id card image or id info'));
     });
 
@@ -142,42 +142,52 @@ describe('WebApi', () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
-        const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: 'path/to/image.jpg' }], {}, options);
+        const promise = instance.submit_job(partner_params, [{ image_type_id: 0, image: fixturePath }], {}, options);
         await expect(promise).rejects.toThrow(new Error(`${flag} needs to be a boolean`));
       });
     });
 
     it('should be able to send a job', async () => {
-      expect.assertions(9);
+      expect.assertions(11);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
-
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
+      };
       const options = {};
       const smile_job_id = '0000000111';
 
-      nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
-        expect(body.smile_client_id).toEqual('001');
-        expect(body.sec_key).not.toEqual(undefined);
-        expect(body.timestamp).not.toEqual(undefined);
-        expect(body.file_name).toEqual('selfie.zip');
-        expect(body.partner_params.user_id).toEqual(partner_params.user_id);
-        expect(body.partner_params.job_id).toEqual(partner_params.job_id);
-        expect(body.partner_params.job_type).toEqual(partner_params.job_type);
-        expect(body.callback_url).toEqual('https://a_callback.cb');
-        return true;
-      }).reply(200, {
-        upload_url: 'https://some_url.com',
-        smile_job_id,
-      }).isDone();
-      // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').reply(200).isDone();
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload', (body) => {
+          expect(body.smile_client_id).toEqual('001');
+          expect(body.signature).not.toEqual(undefined);
+          expect(body.timestamp).not.toEqual(undefined);
+          expect(body.file_name).toEqual('selfie.zip');
+          expect(body.partner_params.user_id).toEqual(partner_params.user_id);
+          expect(body.partner_params.job_id).toEqual(partner_params.job_id);
+          expect(body.partner_params.job_type).toEqual(partner_params.job_type);
+          expect(body.callback_url).toEqual('https://a_callback.cb');
+          expect(body.source_sdk).toEqual('javascript');
+          expect(body.source_sdk_version).toEqual(packageJson.version);
+          return true;
+        })
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+          smile_job_id,
+        });
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200);
 
-      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
+
       expect(response).toEqual({ success: true, smile_job_id });
+      return true;
     });
 
     it('should be able to send a job with a signature', async () => {
-      expect.assertions(9);
+      expect.assertions(11);
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
 
@@ -186,22 +196,27 @@ describe('WebApi', () => {
       };
       const smile_job_id = '0000000111';
 
-      nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
-        expect(body.smile_client_id).toEqual('001');
-        expect(body.signature).not.toEqual(undefined);
-        expect(body.timestamp).not.toEqual(undefined);
-        expect(body.file_name).toEqual('selfie.zip');
-        expect(body.partner_params.user_id).toEqual(partner_params.user_id);
-        expect(body.partner_params.job_id).toEqual(partner_params.job_id);
-        expect(body.partner_params.job_type).toEqual(partner_params.job_type);
-        expect(body.callback_url).toEqual('https://a_callback.cb');
-        return true;
-      }).reply(200, {
-        upload_url: 'https://some_url.com',
-        smile_job_id,
-      }).isDone();
-      // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').reply(200).isDone();
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/upload', (body) => {
+          expect(body.smile_client_id).toEqual('001');
+          expect(body.signature).not.toBeUndefined();
+          expect(body.timestamp).not.toBeUndefined();
+          expect(body.file_name).toEqual('selfie.zip');
+          expect(body.partner_params.user_id).toEqual(partner_params.user_id);
+          expect(body.partner_params.job_id).toEqual(partner_params.job_id);
+          expect(body.partner_params.job_type).toEqual(partner_params.job_type);
+          expect(body.callback_url).toEqual('https://a_callback.cb');
+          expect(body.source_sdk).toEqual('javascript');
+          expect(body.source_sdk_version).toEqual(packageJson.version);
+          return true;
+        })
+        .reply(200, {
+          upload_url: 'https://some_url.com',
+          smile_job_id,
+        }).isDone();
+      nock('https://some_url.com')
+        .put('/') // todo: find a way to unzip and test info.json
+        .reply(200).isDone();
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
       expect(response).toEqual({ success: true, smile_job_id });
@@ -243,7 +258,7 @@ describe('WebApi', () => {
         FullName: 'some  person',
         DOB: 'NaN-NaN-NaN',
         Photo: 'Not Available',
-        sec_key: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
+        signature: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
         timestamp: 1570612182124,
       };
 
@@ -254,7 +269,7 @@ describe('WebApi', () => {
         'JSONVersion', 'SmileJobID', 'PartnerParams', 'ResultType',
         'ResultText', 'ResultCode', 'IsFinalResult', 'Actions',
         'Country', 'IDType', 'IDNumber', 'ExpirationDate',
-        'FullName', 'DOB', 'Photo', 'sec_key', 'timestamp',
+        'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
       ].sort());
     });
 
@@ -370,7 +385,7 @@ describe('WebApi', () => {
       nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse).isDone();
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
-      expect(response.sec_key).toBe(jobStatusResponse.sec_key);
+      expect(response.signature).toBe(jobStatusResponse.signature);
     });
 
     it('should set all the job_status flags correctly', async () => {
@@ -404,14 +419,14 @@ describe('WebApi', () => {
         expect(body.job_id).toBe(partner_params.job_id);
         expect(body.user_id).toBe(partner_params.user_id);
         expect(body.timestamp).not.toBe(undefined);
-        expect(body.sec_key).not.toBe(undefined);
+        expect(body.signature).not.toBe(undefined);
         expect(body.image_links).toBe(true);
         expect(body.history).toBe(true);
         return true;
       }).reply(200, jobStatusResponse).isDone();
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
-      expect(response.sec_key).toBe(jobStatusResponse.sec_key);
+      expect(response.signature).toBe(jobStatusResponse.signature);
     });
 
     it('should poll job_status until job_complete is true', async () => {
@@ -442,7 +457,7 @@ describe('WebApi', () => {
 
       const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
 
-      expect(response.sec_key).toBe(jobStatusResponse.sec_key);
+      expect(response.signature).toBe(jobStatusResponse.signature);
       expect(response.job_complete).toBe(true);
     });
 
@@ -454,7 +469,7 @@ describe('WebApi', () => {
 
         const promise = instance.submit_job(
           partner_params,
-          [{ image_type_id: 0, image: 'path/to/image.jpg' }],
+          [{ image_type_id: 0, image: fixturePath }],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         );
@@ -469,8 +484,8 @@ describe('WebApi', () => {
         const promise = instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
-            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath },
           ],
           { id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
@@ -486,8 +501,8 @@ describe('WebApi', () => {
         const promise = instance.submit_job(
           partner_params,
           [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: 'path/to/image.jpg' },
-            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image.jpg' },
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath },
           ],
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
@@ -504,11 +519,11 @@ describe('WebApi', () => {
           expect(body.smile_client_id).toBe('001');
           expect(body.partner_params).toStrictEqual(partner_params);
           expect(body.file_name).toBe('selfie.zip');
-          expect(typeof body.sec_key).toBe('string');
-          expect(typeof body.timestamp).toBe('number');
+          expect(typeof body.signature).toBe('string');
+          expect(typeof body.timestamp).toBe('string');
           return true;
         }).reply(200, { upload_url: 'https://some_url.com' });
-        const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');
+
         // todo: find a way to unzip and test info.json
         const putScope = nock('https://some_url.com').put('/').once().reply(200);
 
@@ -523,24 +538,38 @@ describe('WebApi', () => {
         expect(putScope.isDone()).toBe(true);
       });
 
-      it.only('should send the `use_enrolled_image` field when option is provided', async () => {
-        // expect.assertions(4);
+      it('should send the `use_enrolled_image` field when option is provided', async () => {
+        expect.assertions(7);
         const { signature, timestamp } = new Signature('001', mockApiKey).generate_signature();
-        const instance = new WebApi('001', mockApiKey, 0);
+        const instance = new WebApi('001', '', mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
-        const postScope = nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
+        const jobStatusResponse = {
+          job_success: true,
+          job_complete: true,
+          result: {
+            ResultCode: '0810',
+            ResultText: 'Awesome!',
+          },
+          ...new Signature('001', mockApiKey).generate_signature(timestamp),
+        };
+
+        nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
           expect(body.use_enrolled_image).toBe(true);
           expect(body.smile_client_id).toBe('001');
           expect(body.partner_params).toStrictEqual(partner_params);
           expect(body.file_name).toBe('selfie.zip');
           expect(typeof body.signature).toBe('string');
-          expect(typeof body.timestamp).toBe('number');
-          expect(body.timestamp).toBe(timestamp);
+          expect(typeof body.timestamp).toBe('string');
           return true;
         }).reply(200, { upload_url: 'https://some_url.com' });
-        const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');
+
         // todo: find a way to unzip and test info.json
-        const putScope = nock('https://some_url.com').put('/').once().reply(200);
+        nock('https://some_url.com')
+          .put('/') // todo: find a way to unzip and test info.json
+          .reply(200);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
 
         const response = await instance.submit_job(
           partner_params,
@@ -548,36 +577,45 @@ describe('WebApi', () => {
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true, signature },
         );
-        expect(response).toEqual({ success: true });
-        expect(postScope.isDone()).toBe(true);
-        expect(putScope.isDone()).toBe(true);
-        nock.abortPendingRequests();
+        expect(response).toEqual(jobStatusResponse);
+        // expect(postScope.isDone()).toBe(true);
+        // expect(putScope.isDone()).toBe(true);
+        // nock.abortPendingRequests();
+        return
       });
 
       it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
         expect.assertions(1);
-        const instance = new WebApi('001', null, mockApiKey, 0);
+        const instance = new WebApi('001', 'default', mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
 
-        /*
-        const postScope = nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
-          expect(body.use_enrolled_image).toBe(true);
-        }).reply(200, { upload_url: 'https://some_url.com' });
-        */
+        const timestamp = new Date().toISOString();
 
+        const jobStatusResponse = {
+          job_success: true,
+          job_complete: true,
+          result: {
+            ResultCode: '0810',
+            ResultText: 'Awesome!',
+          },
+          ...new Signature('001', mockApiKey).generate_signature(timestamp),
+        };
+
+        nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
+          upload_url: 'https://some_url.com',
+        });
         // todo: find a way to unzip and test info.json
-        // const putScope = nock('https://some_url.com').put('/').reply(200);
-
+        nock('https://some_url.com').put('/').reply(200);
+        nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse);
         const response = await instance.submit_job(
           partner_params,
-          [{ image_type_id: 1, image: 'path/to/image.jpg' }],
+          [{ image_type_id: 1, image: fixturePath }],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         );
 
-        expect(response).toEqual({ success: true });
-        // expect(postScope.isDone()).toBe(true);
-        // expect(putScope.isDone()).toBe(true);
+        expect(response).toEqual(jobStatusResponse);
+        return
       });
     });
   });
@@ -612,6 +650,7 @@ describe('WebApi', () => {
 
       expect(response.signature).toEqual(jobStatusResponse.signature);
       expect(response.job_complete).toEqual(true);
+      return
     });
   });
 
@@ -634,7 +673,7 @@ describe('WebApi', () => {
         expect.assertions(1);
         const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
         delete requestParams[param];
-        await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error(`${param} is required to get a web token`));
+        return await expect(instance.get_web_token(requestParams)).rejects.toThrow(new Error(`${param} is required to get a web token`));
       });
     });
 
@@ -650,16 +689,17 @@ describe('WebApi', () => {
         expect(body.product).toEqual(requestParams.product);
         return true;
       }).reply(200, tokenResponse).isDone();
-
+      nock('https://some_url.com').put('/').reply(200).isDone();
       const response = await instance.get_web_token(requestParams);
       expect(response.token).toEqual(tokenResponse.token);
+      return
     });
 
     describe('handle callback url', () => {
       it('should ensure that a callback URL exists', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        await expect(instance.get_web_token({})).rejects.toThrow(new Error('Callback URL is required for this method'));
+        return await expect(instance.get_web_token({})).rejects.toThrow(new Error('Callback URL is required for this method'));
       });
 
       it('should work with a callback_url param', async () => {
@@ -684,6 +724,7 @@ describe('WebApi', () => {
 
         const response = await instance.get_web_token(requestParams);
         expect(response.token).toEqual(tokenResponse.token);
+        return
       });
 
       it('should fallback to the default callback URL', async () => {
@@ -704,6 +745,7 @@ describe('WebApi', () => {
 
         const response = await instance.get_web_token(requestParams);
         expect(response.token).toEqual(tokenResponse.token);
+        return;
       });
     });
   });
