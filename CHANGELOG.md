@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor `Utilities` class.
 - Refactor `get_web_token` code, move from `WebApi` class into `web-token` file. Improve test coverage.
 
+### Removed
+- Drop support for Node 12
+
 ## [2.0.0] - 2022-11-11
 ### Added
 - Add support for Node 18.
