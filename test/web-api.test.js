@@ -356,7 +356,7 @@ describe('WebApi', () => {
 
       // todo: figure out how to get nook to act like an error response would in real life
       // err.message in this case should be '2204:unauthorized'
-      expect(error).toBe('undefined:undefined');
+      expect(error.message).toBe('undefined:undefined');
     });
 
     it('should return a response from job_status if that flag is set to true', async () => {
@@ -514,6 +514,7 @@ describe('WebApi', () => {
         expect.assertions(9);
         const instance = new WebApi('001', 'https://fake-callback-url.com', mockApiKey, 0);
         const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const smile_job_id = '0000000111';
         const postScope = nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
           expect(body.use_enrolled_image).toBe(true);
           expect(body.smile_client_id).toBe('001');
@@ -522,7 +523,7 @@ describe('WebApi', () => {
           expect(typeof body.signature).toBe('string');
           expect(typeof body.timestamp).toBe('string');
           return true;
-        }).reply(200, { upload_url: 'https://some_url.com' });
+        }).reply(200, { upload_url: 'https://some_url.com', smile_job_id });
 
         // todo: find a way to unzip and test info.json
         const putScope = nock('https://some_url.com').put('/').once().reply(200);
@@ -533,7 +534,7 @@ describe('WebApi', () => {
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: false, use_enrolled_image: true },
         );
-        expect(response).toEqual({ success: true });
+        expect(response).toEqual({ success: true, smile_job_id });
         expect(postScope.isDone()).toBe(true);
         expect(putScope.isDone()).toBe(true);
       });

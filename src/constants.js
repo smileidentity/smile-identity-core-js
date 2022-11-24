@@ -50,4 +50,9 @@ const JOB_TYPE = {
   BUSINESS_VERIFICATION: 7,
 };
 
-module.exports = { IMAGE_TYPE, JOB_TYPE };
+const sidServerMapping = {
+  0: 'testapi.smileidentity.com/v1',
+  1: 'api.smileidentity.com/v1',
+};
+
+module.exports = { IMAGE_TYPE, JOB_TYPE, sidServerMapping };

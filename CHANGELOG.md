@@ -6,24 +6,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Add eslint and lint the entire codebase.
-- Add support for Node 18.
-- Add `index.js` tests.
-- Add `JOB_TYPE`, `IMAGE_TYPE` and `ENV`.
-- Add report `source_sdk` and `source_sdk_version` fields to smile.
+-  Add JSDocs to `WebApi` class.
+- Define `sidServerMapping` in constants.
 
 ### Changed
-- Split tests into multiple files.
-- Run tests in github actions against multiple node versions. Remove travis.
-- Disable npm publish trigger on push to master.
-- Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
+- Refactor `WebApi` class. Eliminate `_private`.
+- Refactor `Utilities` class.
+- Refactor `get_web_token` code, move from `WebApi` class into `web-token` file. Improve test coverage.
+
+## [2.0.0] - 2022-11-11
+### Added
+- Add support for Node 18.
+- Adds `examples/` directory with examples for each job type.
+- Exports maps for `JOB_TYPE` and `IMAGE_TYPE`.
+- Add `source_sdk` and `source_sdk_version` fields on submit_job requests.
+- Run tests and linter in CI for every supported version of node.
+
+### Changed
+- Removes `options` argument from `IDApi.submit_job`. This argument is no longer used now that `sec_key` is no longer supported.
+- Improves test coverage.
+- Lints codebase.
 - Updated documentation in README.md to reflect other smile SDK docs.
-- Remove `options` argument from `IDApi.submit_job`. This argument is no longer used now that `sec_key` is no longer supported.
+- Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
 - Refactor IDApi class.
 
 ### Removed
-- Drop support for Node 10.
 - Remove `sec_key` based authentication. Functions `Signature.generate_sec_key` and `Signature.confirm_sec_key` should be replaced with `Signature.generate_signature` and `Signature.confirm_signature` respectively.
+- Drop support for Node 10.
 
 ## [1.0.1] - 2019-11-02
 ### Fixed

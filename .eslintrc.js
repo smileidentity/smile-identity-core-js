@@ -17,12 +17,8 @@ module.exports = {
   rules: {
     camelcase: 0,
     'compat/compat': 0,
-    'max-nested-callbacks': 0,
     'no-console': ['error', {
       allow: ['warn', 'error', 'info'],
     }],
-    'no-param-reassign': 0,
-    'no-underscore-dangle': 0,
-    'no-warning-comments': 0,
   },
 };

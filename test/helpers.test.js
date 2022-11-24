@@ -25,7 +25,7 @@ describe('helpers', () => {
     expect(typeof sdkVersionInfo).toEqual('object');
     expect(sdkVersionInfo.source_sdk).toEqual('javascript');
     expect(sdkVersionInfo.source_sdk_version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(sdkVersionInfo.source_sdk_version).toMatch(/^1\./); // assert that we are at version 1
+    expect(sdkVersionInfo.source_sdk_version).toMatch(/^2\./); // assert that we are at version 2
     expect(Object.keys(sdkVersionInfo).length).toEqual(2);
   });
 

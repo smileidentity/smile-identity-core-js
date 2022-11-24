@@ -8,7 +8,7 @@ Please see [CHANGELOG.md](CHANGELOG.md) for release versions and changes.
 
 ## Features
 
-The library exposes four classes namely; the `WebApi` class, the `IDApi` class, the `Signature` class, and the `Utilities` class.
+The library exposes four classes; the `WebApi` class, the `IDApi` class, the `Signature` class, and the `Utilities` class.
 
 The `WebApi` class has the following public methods:
 
@@ -28,6 +28,8 @@ The `Signature` class has the following public methods:
 The `Utilities` Class allows you as the Partner to have access to our general Utility functions to gain access to your data. It has the following public methods:
 
 - `get_job_status` - retrieve information & results of a job. Read more on job status in the [Smile Identity documentation](https://docs.smileidentity.com/further-reading/job-status).
+
+For examples of how to use these classes, please see the [examples](/examples/) directory of this repository.
 
 ## Installation
 

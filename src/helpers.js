@@ -1,4 +1,5 @@
 const packageJson = require('../package.json');
+const { sidServerMapping } = require('./constants');
 
 /**
  * Converts a numeric key to a smile server URI, or
@@ -9,10 +10,6 @@ const packageJson = require('../package.json');
  * @returns {string} URI of smile server if in map, original input if URI.
  */
 const mapServerUri = (uriOrKey) => {
-  const sidServerMapping = {
-    0: 'testapi.smileidentity.com/v1',
-    1: 'api.smileidentity.com/v1',
-  };
   if (uriOrKey in sidServerMapping) {
     return sidServerMapping[uriOrKey];
   }
