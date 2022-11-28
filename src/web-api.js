@@ -346,6 +346,7 @@ const queryJobStatus = ({
  * @param {object} data - data required to upload the zip file to s3.
  * @param {string} zipFile - the zip file to be uploaded in base64.
  * @param {string} signedUrl - the signed url to upload the zip file to.
+ * @param {string} smile_job_id - the smile job id returned from the upload response.
  * @returns {Promise<void>} - resolves when the file has been uploaded.
  * @throws {Error} - if the request fails or times out.
  */
@@ -353,6 +354,7 @@ const uploadFile = (
   data,
   zipFile,
   signedUrl,
+  smile_job_id,
 ) => new Promise((resolve, reject) => {
   const reqOptions = url.parse(signedUrl);
   reqOptions.headers = {
@@ -370,7 +372,7 @@ const uploadFile = (
           queryJobStatus(data).then(resolve).catch(reject);
           return;
         }
-        resolve();
+        resolve({ success: true, smile_job_id });
         return;
       }
       reject(new Error(`Zip upload status code: ${resp.statusCode}`));
@@ -437,6 +439,7 @@ const setupRequests = (data) => new Promise((resolve, reject) => {
           data,
           zipFile,
           prepUploadResponse.upload_url,
+          prepUploadResponse.smile_job_id,
         )).then(resolve).then(() => ({
           success: true,
           smile_job_id: prepUploadResponse.smile_job_id,

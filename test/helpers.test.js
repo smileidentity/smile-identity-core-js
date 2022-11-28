@@ -1,4 +1,3 @@
-const assert = require('assert');
 const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('../src/helpers');
 
 describe('helpers', () => {
@@ -18,16 +17,16 @@ describe('helpers', () => {
     ];
 
     testCases.forEach((testCase) => {
-      assert.equal(mapServerUri(testCase.input), testCase.expected);
+      expect(mapServerUri(testCase.input)).toEqual(testCase.expected);
     });
   });
 
   it('sdkVersionInfo', () => {
-    assert.equal(typeof sdkVersionInfo, 'object');
-    assert.equal(sdkVersionInfo.source_sdk, 'javascript');
-    assert.ok(sdkVersionInfo.source_sdk_version.match(/^\d+\.\d+\.\d+$/));
-    assert.ok(sdkVersionInfo.source_sdk_version.match(/^2\./)); // assert that we are at version 2
-    assert(Object.keys(sdkVersionInfo).length === 2);
+    expect(typeof sdkVersionInfo).toEqual('object');
+    expect(sdkVersionInfo.source_sdk).toEqual('javascript');
+    expect(sdkVersionInfo.source_sdk_version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(sdkVersionInfo.source_sdk_version).toMatch(/^2\./); // assert that we are at version 2
+    expect(Object.keys(sdkVersionInfo).length).toEqual(2);
   });
 
   it('validatePartnerParams', () => {
@@ -49,7 +48,7 @@ describe('helpers', () => {
       } catch (err) {
         error = err;
       }
-      assert.equal(error.message, testCase.expected, JSON.stringify(testCase.input));
+      expect(error.message).toEqual(testCase.expected);
     });
   });
 });
