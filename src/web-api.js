@@ -344,6 +344,7 @@ const queryJobStatus = ({
  * @param {object} data - data required to upload the zip file to s3.
  * @param {string} zipFile - the zip file to be uploaded in base64.
  * @param {string} signedUrl - the signed url to upload the zip file to.
+ * @param {string} smile_job_id - the smile job id returned from the upload response.
  * @returns {Promise<void>} - resolves when the file has been uploaded.
  * @throws {Error} - if the request fails or times out.
  */
@@ -351,12 +352,13 @@ const uploadFile = (
   data,
   zipFile,
   signedUrl,
+  smile_job_id,
 ) => axios.put(signedUrl, zipFile).then((resp) => {
   if (resp.status === 200) {
     if (data.return_job_status) {
       return queryJobStatus(data);
     }
-    return Promise.resolve({ success: true });
+    return Promise.resolve({ success: true, smile_job_id });
   }
   return Promise.reject(new Error(`Zip upload status code: ${resp.status}`));
 });
@@ -394,7 +396,8 @@ const setupRequests = (payload) => axios.post(
 ).then(({ data }) => Promise.all([
   zipUpFile(payload.images, configureInfoJson(payload, data)),
   Promise.resolve(data),
-])).then(([zipFile, { upload_url }]) => uploadFile(payload, zipFile, upload_url));
+])).then(([zipFile, { upload_url, smile_job_id,
+ }]) => uploadFile(payload, zipFile, upload_url, smile_job_id));
 
 class WebApi {
   /**

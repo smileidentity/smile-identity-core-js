@@ -1,23 +1,40 @@
-const assert = require('assert');
 const smileIdentityCore = require('..');
 
 describe('smile-identity-core', () => {
   it('should export an object', () => {
-    assert.equal(typeof smileIdentityCore, 'object');
+    expect(smileIdentityCore).toBeInstanceOf(Object);
   });
 
-  it('should export four classes and two objects', () => {
-    assert.equal(typeof smileIdentityCore.Signature, 'function');
-    assert.equal(typeof smileIdentityCore.Utilities, 'function');
-    assert.equal(typeof smileIdentityCore.WebApi, 'function');
-    assert.equal(typeof smileIdentityCore.IDApi, 'function');
-    assert.equal(typeof smileIdentityCore.IMAGE_TYPE, 'object');
-    assert.equal(typeof smileIdentityCore.JOB_TYPE, 'object');
-    assert.equal(Object.keys(smileIdentityCore).length, 6);
+  it('should export four classes', () => {
+    expect(smileIdentityCore.Signature).toBeInstanceOf(Function);
+    expect(smileIdentityCore.Utilities).toBeInstanceOf(Function);
+    expect(smileIdentityCore.WebApi).toBeInstanceOf(Function);
+    expect(smileIdentityCore.IDApi).toBeInstanceOf(Function);
+    expect(smileIdentityCore.IMAGE_TYPE).toBeInstanceOf(Object);
+    expect(smileIdentityCore.JOB_TYPE).toBeInstanceOf(Object);
+    expect(Object.keys(smileIdentityCore)).toHaveLength(6);
+    expect(Object.keys(smileIdentityCore.IMAGE_TYPE)).toHaveLength(8);
+    expect(Object.keys(smileIdentityCore.JOB_TYPE)).toHaveLength(6);
   });
 
   it('should run in node and not in the browser', () => {
-    assert.equal(typeof process, 'object');
-    assert.equal(typeof window, 'undefined');
+    expect(typeof process).toBe('object');
+    expect(typeof window).toBe('undefined');
+  });
+
+  describe('smile-identity-core no browser support', () => {
+
+    beforeAll(() => {
+      jest.resetModules();
+      window = {};
+      console.error = jest.fn();
+      require('..')
+
+    });
+
+    it('should throw an error when run in a browser', () => {
+      expect(console.error).toHaveBeenCalledWith('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
+
+    });
   });
 });
