@@ -40,7 +40,7 @@ describe('WebApi', () => {
     it('should ensure that a method of getting data back has been selected', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', '', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC, };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       const promise = instance.submit_job(
         partner_params,
         [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
@@ -553,7 +553,10 @@ describe('WebApi', () => {
 
         const response = await instance.submit_job(
           partner_params,
-          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }, { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath }],
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath },
+          ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: false, use_enrolled_image: true },
         );
@@ -597,7 +600,10 @@ describe('WebApi', () => {
 
         const response = await instance.submit_job(
           partner_params,
-          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }, { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath }],
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath },
+          ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true, signature },
         );
@@ -622,7 +628,7 @@ describe('WebApi', () => {
           },
           ...new Signature('001', mockApiKey).generate_signature(timestamp),
         };
- 
+
         nock('https://testapi.smileidentity.com')
           .post('/v1/job_status')
           .reply(200, jobStatusResponse);

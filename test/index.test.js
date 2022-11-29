@@ -23,18 +23,15 @@ describe('smile-identity-core', () => {
   });
 
   describe('smile-identity-core no browser support', () => {
-
     beforeAll(() => {
       jest.resetModules();
-      window = {};
+      global.window = {};
       console.error = jest.fn();
-      require('..')
-
+      require('..'); // eslint-disable-line global-require
     });
 
     it('should throw an error when run in a browser', () => {
       expect(console.error).toHaveBeenCalledWith('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
-
     });
   });
 });

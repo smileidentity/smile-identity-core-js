@@ -25,7 +25,6 @@ describe('Utilities', () => {
       expect.assertions(9);
       const partnerParams = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_images: true, return_history: true };
-      const mockApiKey = Buffer.from(pair.public).toString('base64');
 
       const timestamp = new Date().toISOString();
       const { signature } = new Signature('001', mockApiKey).generate_signature(timestamp);
@@ -74,7 +73,7 @@ describe('Utilities', () => {
         expect(body.image_links).toEqual(true);
         expect(body.history).toEqual(true);
         return true;
-      }).replyWithError({code: '2204', error: 'unauthorized' });
+      }).replyWithError({ code: '2204', error: 'unauthorized' });
 
       const utilities = new Utilities('001', Buffer.from(pair.public).toString('base64'), 0);
       const jobStatus = utilities.get_job_status(
@@ -90,7 +89,6 @@ describe('Utilities', () => {
       expect.assertions(8);
       const partnerParams = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_images: true, return_history: true };
-      const mockApiKey = Buffer.from(pair.public).toString('base64');
 
       const timestamp = new Date().toISOString();
       const returned_timestamp = new Date('2022-11-29').toISOString();

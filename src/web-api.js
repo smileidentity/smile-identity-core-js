@@ -396,8 +396,8 @@ const setupRequests = (payload) => axios.post(
 ).then(({ data }) => Promise.all([
   zipUpFile(payload.images, configureInfoJson(payload, data)),
   Promise.resolve(data),
-])).then(([zipFile, { upload_url, smile_job_id,
- }]) => uploadFile(payload, zipFile, upload_url, smile_job_id));
+])).then(([zipFile,
+  { upload_url, smile_job_id }]) => uploadFile(payload, zipFile, upload_url, smile_job_id));
 
 class WebApi {
   /**
