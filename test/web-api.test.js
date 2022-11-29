@@ -40,10 +40,10 @@ describe('WebApi', () => {
     it('should ensure that a method of getting data back has been selected', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', '', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       const promise = instance.submit_job(
         partner_params,
-        [{ image_type_id: 0, image: fixturePath }],
+        [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
         {},
         {},
       );
@@ -65,16 +65,17 @@ describe('WebApi', () => {
     });
 
     ['user_id', 'job_id', 'job_type'].forEach((key) => {
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       delete partner_params[key];
-      it('should ensure that the partner_params contain user_id, job_id and job_type', async () => {
+
+      it(`should ensure that the partner_params contain ${key}`, async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
         await expect(promise).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
 
-      it('should ensure that in partner_params, user_id, job_id, and job_type are not emptystrings', async () => {
+      it(`should ensure that in partner_params, ${key} is not an empty string`, async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
@@ -85,7 +86,7 @@ describe('WebApi', () => {
     it('should ensure that images exist', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       const promise = instance.submit_job(partner_params, null, {}, { return_job_status: true });
 
       await expect(promise).rejects.toThrow(new Error('Please ensure that you send through image details'));
@@ -94,7 +95,7 @@ describe('WebApi', () => {
     it('should ensure that images is an array', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       const promise = instance.submit_job(partner_params, {}, {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('Image details needs to be an array'));
     });
@@ -102,7 +103,7 @@ describe('WebApi', () => {
     it('should ensure that images is an array and that it is not empty', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       const promise = instance.submit_job(partner_params, [], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You need to send through at least one selfie image'));
     });
@@ -110,8 +111,8 @@ describe('WebApi', () => {
     it('should ensure that images is an array and that it has a selfie', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 1, image: 'path/to/image' }], {}, { return_job_status: true });
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
+      const promise = instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: 'path/to/image' }], {}, { return_job_status: true });
       await expect(promise).rejects.toThrow(new Error('You need to send through at least one selfie image'));
     });
 
@@ -123,13 +124,13 @@ describe('WebApi', () => {
         entered: 'true',
       };
       delete id_info[key];
-      it('should ensure that id_info is correctly filled out', async () => {
+      it(`should ensure that id_info contains ${key}`, async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
         const promise = instance.submit_job(
           partner_params,
-          [{ image_type_id: 0, image: fixturePath }],
+          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
           id_info,
           { return_job_status: true },
         );
@@ -140,10 +141,10 @@ describe('WebApi', () => {
     it('should ensure that job type 1 has an id card image if there is no id_info', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 1 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
       const promise = instance.submit_job(
         partner_params,
-        [{ image_type_id: 0, image: fixturePath }],
+        [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
         {},
         { return_job_status: true },
       );
@@ -153,13 +154,13 @@ describe('WebApi', () => {
     ['return_job_status', 'return_images', 'return_history'].forEach((flag) => {
       const options = {};
       options[flag] = 'not a boolean';
-      it('should ensure that optional fields are booleans', async () => {
+      it(`should ensure that optional field ${flag} is boolean`, async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
         const promise = instance.submit_job(
           partner_params,
-          [{ image_type_id: 0, image: fixturePath }],
+          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
           {},
           options,
         );
@@ -209,7 +210,7 @@ describe('WebApi', () => {
     it('should be able to send a job with a signature', async () => {
       expect.assertions(11);
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
 
       const options = {
         signature: true,
@@ -238,14 +239,14 @@ describe('WebApi', () => {
         .put('/') // todo: find a way to unzip and test info.json
         .reply(200).isDone();
 
-      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
       expect(response).toEqual({ success: true, smile_job_id });
     });
 
     it('should call IDApi.new().submit_job if the job type is 5', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.ENHANCED_KYC };
       const id_info = {
         first_name: 'John',
         last_name: 'Doe',
@@ -255,13 +256,14 @@ describe('WebApi', () => {
         id_number: '00000000000',
         phone_number: '0726789065',
       };
+      const timestamp = new Date().toISOString();
       const IDApiResponse = {
         JSONVersion: '1.0.0',
         SmileJobID: '0000001096',
         PartnerParams: {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
-          job_type: 5,
+          job_type: JOB_TYPE.ENHANCED_KYC,
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -278,8 +280,7 @@ describe('WebApi', () => {
         FullName: 'some  person',
         DOB: 'NaN-NaN-NaN',
         Photo: 'Not Available',
-        signature: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
-        timestamp: 1570612182124,
+        ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 
       nock('https://testapi.smileidentity.com').post('/v1/id_verification', () => true).reply(200, IDApiResponse).isDone();
@@ -348,11 +349,11 @@ describe('WebApi', () => {
     });
 
     it('should raise an error when a network call fails', async () => {
-      expect.assertions(2);
+      expect.assertions(4);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
 
-      nock('https://testapi.smileidentity.com').post('/v1/upload').replyWithError(400, {
+      nock('https://testapi.smileidentity.com').post('/v1/upload').replyWithError({
         code: '2204',
         error: 'unauthorized',
       }).isDone();
@@ -360,7 +361,7 @@ describe('WebApi', () => {
       // todo: find a way to unzip and test info.json
       nock('https://some_url.com').put('/').reply(200).isDone();
 
-      const promise = instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {});
+      const promise = instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {});
 
       let response;
       let error;
@@ -376,13 +377,15 @@ describe('WebApi', () => {
 
       // todo: figure out how to get nook to act like an error response would in real life
       // err.message in this case should be '2204:unauthorized'
-      expect(error.message).toBe('undefined:undefined');
+      expect(error.message).toBeUndefined();
+      expect(error.code).toBe('2204');
+      expect(error.error).toBe('unauthorized');
     });
 
     it('should return a response from job_status if that flag is set to true', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
       const options = { return_job_status: true };
 
       const timestamp = new Date().toISOString();
@@ -404,14 +407,14 @@ describe('WebApi', () => {
       nock('https://some_url.com').put('/').reply(200).isDone();
       nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse).isDone();
 
-      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
       expect(response.signature).toBe(jobStatusResponse.signature);
     });
 
     it('should set all the job_status flags correctly', async () => {
       expect.assertions(7);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
       const options = {
         return_job_status: true,
         return_images: true,
@@ -445,14 +448,14 @@ describe('WebApi', () => {
         return true;
       }).reply(200, jobStatusResponse).isDone();
 
-      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
       expect(response.signature).toBe(jobStatusResponse.signature);
     });
 
     it('should poll job_status until job_complete is true', async () => {
       expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
       const options = { return_job_status: true };
 
       const timestamp = new Date().toISOString();
@@ -475,7 +478,7 @@ describe('WebApi', () => {
       jobStatusResponse.job_complete = true;
       nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse).isDone();
 
-      const response = await instance.submit_job(partner_params, [{ image_type_id: 2, image: 'base6image' }], {}, options);
+      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
 
       expect(response.signature).toBe(jobStatusResponse.signature);
       expect(response.job_complete).toBe(true);
@@ -485,11 +488,11 @@ describe('WebApi', () => {
       it('should require the provision of ID Card images', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.DOCUMENT_VERIFICATION };
 
         const promise = instance.submit_job(
           partner_params,
-          [{ image_type_id: 0, image: fixturePath }],
+          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         );
@@ -499,7 +502,7 @@ describe('WebApi', () => {
       it('should require the provision of country in id_info', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.DOCUMENT_VERIFICATION };
 
         const promise = instance.submit_job(
           partner_params,
@@ -516,7 +519,7 @@ describe('WebApi', () => {
       it('should require the provision of id_type in id_info', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.DOCUMENT_VERIFICATION };
 
         const promise = instance.submit_job(
           partner_params,
@@ -533,7 +536,7 @@ describe('WebApi', () => {
       it('should send the `use_enrolled_image` field to the callback_url when option is provided', async () => {
         expect.assertions(9);
         const instance = new WebApi('001', 'https://fake-callback-url.com', mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.DOCUMENT_VERIFICATION };
         const smile_job_id = '0000000111';
         const postScope = nock('https://testapi.smileidentity.com').post('/v1/upload', (body) => {
           expect(body.use_enrolled_image).toBe(true);
@@ -550,7 +553,10 @@ describe('WebApi', () => {
 
         const response = await instance.submit_job(
           partner_params,
-          [{ image_type_id: 0, image: fixturePath }, { image_type_id: 1, image: fixturePath }],
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath },
+          ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: false, use_enrolled_image: true },
         );
@@ -563,7 +569,7 @@ describe('WebApi', () => {
         expect.assertions(7);
         const { signature, timestamp } = new Signature('001', mockApiKey).generate_signature();
         const instance = new WebApi('001', '', mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.DOCUMENT_VERIFICATION };
         const jobStatusResponse = {
           job_success: true,
           job_complete: true,
@@ -594,7 +600,10 @@ describe('WebApi', () => {
 
         const response = await instance.submit_job(
           partner_params,
-          [{ image_type_id: 0, image: fixturePath }, { image_type_id: 1, image: fixturePath }],
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            { image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath },
+          ],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true, signature },
         );
@@ -606,7 +615,7 @@ describe('WebApi', () => {
       it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', 'default', mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: 6 };
+        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.DOCUMENT_VERIFICATION };
 
         const timestamp = new Date().toISOString();
 
@@ -620,6 +629,13 @@ describe('WebApi', () => {
           ...new Signature('001', mockApiKey).generate_signature(timestamp),
         };
 
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, { ...jobStatusResponse, job_complete: true });
+
         nock('https://testapi.smileidentity.com').post('/v1/upload').reply(200, {
           upload_url: 'https://some_url.com',
         });
@@ -628,7 +644,7 @@ describe('WebApi', () => {
         nock('https://testapi.smileidentity.com').post('/v1/job_status').reply(200, jobStatusResponse);
         const response = await instance.submit_job(
           partner_params,
-          [{ image_type_id: 1, image: fixturePath }],
+          [{ image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE, image: fixturePath }],
           { country: 'NG', id_type: 'NIN' },
           { return_job_status: true, use_enrolled_image: true },
         );
@@ -643,7 +659,7 @@ describe('WebApi', () => {
       expect.assertions(8);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
 
-      const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
       const options = { return_images: true, return_history: true };
       const timestamp = new Date().toISOString();
       const jobStatusResponse = {

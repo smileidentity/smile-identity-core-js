@@ -172,7 +172,7 @@ describe('IDapi', () => {
         phone_number: '0726789065',
       };
 
-      const scope = nock('https://testapi.smileidentity.com').post('/v1/id_verification').replyWithError(400, {
+      const scope = nock('https://testapi.smileidentity.com').post('/v1/id_verification').replyWithError({
         code: '2204',
         error: 'unauthorized',
       });
@@ -186,7 +186,7 @@ describe('IDapi', () => {
       }
       // todo: figure out how to get nook to act like an error response would in real life
       // err.message in this case should be '2204:unauthorized'
-      expect(error.message).toEqual('undefined:undefined');
+      expect(error.message).toBeUndefined();
       expect(response).toEqual(undefined);
       expect(scope.isDone()).toBe(true);
     });

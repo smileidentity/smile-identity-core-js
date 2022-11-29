@@ -1,4 +1,4 @@
-const https = require('https');
+const axios = require('axios');
 const Signature = require('./signature');
 const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('./helpers');
 
@@ -16,9 +16,9 @@ const validateIdInfo = (idInfo) => {
   }
 };
 
-const configureJson = ({
-  api_key, id_info, partner_id, partner_params, timestamp,
-}) => JSON.stringify({
+const configurePayload = ({
+  api_key, id_info, partner_id, partner_params,
+}) => ({
   language: 'javascript',
   partner_id,
   partner_params: {
@@ -26,44 +26,8 @@ const configureJson = ({
     job_type: parseInt(partner_params.job_type, 10),
   },
   ...id_info,
-  ...new Signature(partner_id, api_key).generate_signature(timestamp),
+  ...new Signature(partner_id, api_key).generate_signature(),
   ...sdkVersionInfo,
-});
-
-const setupRequests = (data) => new Promise((resolve, reject) => {
-  let json = '';
-  const path = `/${data.url.split('/')[1]}/id_verification`;
-  const host = data.url.split('/')[0];
-  const body = configureJson(data);
-  const reqOptions = {
-    hostname: host,
-    path,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-  const req = https.request(reqOptions, (resp) => {
-    resp.setEncoding('utf8');
-    resp.on('data', (chunk) => {
-      json += chunk;
-    });
-
-    resp.on('end', () => {
-      if (resp.statusCode === 200) {
-        resolve(JSON.parse(json));
-        return;
-      }
-      const err = JSON.parse(json);
-      reject(new Error(`${err.code}:${err.error}`));
-    });
-  });
-  req.write(body);
-  req.end();
-
-  req.on('error', (err) => {
-    reject(new Error(`${err.code}:${err.error}`));
-  });
 });
 
 class IDApi {
@@ -75,16 +39,6 @@ class IDApi {
   }
 
   submit_job(partner_params, id_info) {
-    const data = {
-      api_key: this.api_key,
-      id_info,
-      partner_id: this.partner_id,
-      partner_params,
-      sid_server: this.sid_server,
-      timestamp: new Date().toISOString(),
-      url: this.url,
-    };
-
     try {
       validatePartnerParams(partner_params);
 
@@ -93,7 +47,16 @@ class IDApi {
       }
 
       validateIdInfo(id_info);
-      return setupRequests(data);
+
+      const data = {
+        api_key: this.api_key,
+        id_info,
+        partner_id: this.partner_id,
+        partner_params,
+        sid_server: this.sid_server,
+      };
+
+      return axios.post(`https://${this.url}/id_verification`, configurePayload(data)).then((response) => response.data);
     } catch (err) {
       return Promise.reject(err);
     }

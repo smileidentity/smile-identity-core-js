@@ -4,6 +4,7 @@ const nock = require('nock');
 const { Utilities, Signature } = require('..');
 
 const pair = keypair();
+const mockApiKey = Buffer.from(pair.public).toString('base64');
 
 describe('Utilities', () => {
   beforeAll(() => {
@@ -11,8 +12,8 @@ describe('Utilities', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
     nock.cleanAll();
+    jest.clearAllMocks();
   });
 
   afterAll(() => {
@@ -24,7 +25,6 @@ describe('Utilities', () => {
       expect.assertions(9);
       const partnerParams = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_images: true, return_history: true };
-      const mockApiKey = Buffer.from(pair.public).toString('base64');
 
       const timestamp = new Date().toISOString();
       const { signature } = new Signature('001', mockApiKey).generate_signature(timestamp);
@@ -73,7 +73,7 @@ describe('Utilities', () => {
         expect(body.image_links).toEqual(true);
         expect(body.history).toEqual(true);
         return true;
-      }).replyWithError(400, { code: '2204', error: 'unauthorized' });
+      }).replyWithError({ code: '2204', error: 'unauthorized' });
 
       const utilities = new Utilities('001', Buffer.from(pair.public).toString('base64'), 0);
       const jobStatus = utilities.get_job_status(
@@ -81,7 +81,46 @@ describe('Utilities', () => {
         partnerParams.job_id,
         options,
       );
-      await expect(jobStatus).rejects.toThrow(new Error('Error: 400'));
+      await expect(jobStatus).rejects.toThrow(Error);
+      expect(scope.isDone()).toEqual(true);
+    });
+
+    it('should raise an error if signature cannot be confirmed', async () => {
+      expect.assertions(8);
+      const partnerParams = { user_id: '1', job_id: '1', job_type: 4 };
+      const options = { return_images: true, return_history: true };
+
+      const timestamp = new Date().toISOString();
+      const returned_timestamp = new Date('2022-11-29').toISOString();
+      const { signature } = new Signature('001', mockApiKey).generate_signature(timestamp);
+
+      const jobStatusResponse = {
+        job_complete: true,
+        job_success: true,
+        result: {
+          ResultCode: '0810',
+          ResultText: 'Awesome!',
+        },
+        signature,
+        timestamp: returned_timestamp,
+      };
+      const scope = nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
+        expect(body.job_id).toEqual(partnerParams.job_id);
+        expect(body.user_id).toEqual(partnerParams.user_id);
+        expect(body.timestamp).not.toEqual(undefined);
+        expect(body.signature).not.toEqual(undefined);
+        expect(body.image_links).toEqual(true);
+        expect(body.history).toEqual(true);
+        return true;
+      }).reply(200, jobStatusResponse);
+
+      const utilities = new Utilities('001', mockApiKey, 0);
+      const jobStatus = utilities.get_job_status(
+        partnerParams.user_id,
+        partnerParams.job_id,
+        options,
+      );
+      await expect(jobStatus).rejects.toThrow(new Error('Unable to confirm validity of the job_status response'));
       expect(scope.isDone()).toEqual(true);
     });
   });

@@ -1,4 +1,4 @@
-const https = require('https');
+const axios = require('axios');
 const Signature = require('./signature');
 const { mapServerUri } = require('./helpers');
 
@@ -26,31 +26,26 @@ const getWebToken = (
   url,
   requestParams,
   defaultCallback,
-) => new Promise((resolve, reject) => {
+) => {
   if (!requestParams) {
-    reject(new Error('Please ensure that you send through request params'));
-    return;
+    return Promise.reject(new Error('Please ensure that you send through request params'));
   }
 
   if (typeof requestParams !== 'object') {
-    reject(new Error('Request params needs to be an object'));
-    return;
+    return Promise.reject(new Error('Request params needs to be an object'));
   }
   const callbackUrl = requestParams.callback_url || defaultCallback;
 
   if (typeof callbackUrl !== 'string' || callbackUrl.length === 0) {
-    reject(new Error('Callback URL is required for this method'));
-    return;
+    return Promise.reject(new Error('Callback URL is required for this method'));
   }
 
-  ['user_id', 'job_id', 'product'].forEach((requiredParam) => {
-    if (!requestParams[requiredParam]) {
-      reject(new Error(`${requiredParam} is required to get a web token`));
-      // NOTE: should return here
-    }
-  });
+  const missingKey = ['user_id', 'job_id', 'product'].find((key) => !requestParams[key]);
+  if (missingKey) {
+    return Promise.reject(new Error(`${missingKey} is required to get a web token`));
+  }
 
-  const body = JSON.stringify({
+  const body = {
     user_id: requestParams.user_id,
     job_id: requestParams.job_id,
     product: requestParams.product,
@@ -60,47 +55,9 @@ const getWebToken = (
       partner_id,
       api_key,
     ).generate_signature(),
-  });
-
-  let json = '';
-
-  const sidUrl = mapServerUri(url);
-
-  const options = {
-    hostname: sidUrl.split('/')[0],
-    path: `/${sidUrl.split('/')[1]}/token`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   };
 
-  const req = https.request(options, (resp) => {
-    resp.setEncoding('utf8');
-
-    resp.on('data', (chunk) => {
-      json += chunk;
-    });
-
-    resp.on('end', () => {
-      if (resp.statusCode === 200) {
-        const tokenResponse = JSON.parse(json);
-
-        resolve(tokenResponse);
-      } else {
-        const err = JSON.parse(json);
-
-        reject(new Error(`${err.code}: ${err.error}`));
-      }
-    });
-  });
-
-  req.write(body);
-  req.end();
-
-  req.on('error', (err) => {
-    reject(new Error(`${err.code}:${err.error}`));
-  });
-});
+  return axios.post(`https://${mapServerUri(url)}/token`, body).then((response) => response.data);
+};
 
 module.exports = { getWebToken };
