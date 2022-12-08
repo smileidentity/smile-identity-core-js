@@ -353,7 +353,16 @@ const uploadFile = (
   zipFile,
   signedUrl,
   smile_job_id,
-) => axios.put(signedUrl, zipFile).then((resp) => {
+) => axios.put(
+  signedUrl,
+  zipFile,
+  {
+    headers: {
+      'Content-Type': 'application/zip',
+      'Content-Length': `${zipFile.length}`,
+    },
+  },
+).then((resp) => {
   if (resp.status === 200) {
     if (data.return_job_status) {
       return queryJobStatus(data);
