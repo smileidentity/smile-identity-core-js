@@ -12,7 +12,7 @@ const { getWebToken } = require('./web-token');
  * Validates if the information required to submit a job is present.
  *
  * @param {{
- *  entered: boolean|string|undefined,
+ *  entered: boolean|string|?,
  *  country: string|undefined,
  *  id_type: string|undefined,
  *  id_number: string|undefined,
@@ -504,7 +504,7 @@ class WebApi {
     try {
       validatePartnerParams(partner_params);
       const callbackUrl = (options && options.optional_callback) || this.default_callback;
-      const jobType = parseInt(partner_params.job_type, 10);
+      const jobType = parseInt(partner_params.job_type.toString(), 10);
       const data = {
         partner_id: this.partner_id,
         api_key: this.api_key,

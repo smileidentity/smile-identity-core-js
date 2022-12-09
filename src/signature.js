@@ -41,7 +41,7 @@ class Signature {
    * milliseconds. If undefined, the current time will be used.
    * @returns {{
    *  signature: string,
-   *  timestamp: number,
+   *  timestamp: number | string,
    * }} - An object containing the signature and timestamp.
    * @throws {Error} - If the timestamp is invalid.
    */
@@ -52,6 +52,15 @@ class Signature {
     };
   }
 
+  /**
+   * Generates a signature for a given timestamp.
+   *
+   * @param {string|number} timestamp - A valid ISO 8601 timestamp or unix time in
+   * milliseconds. If undefined, the current time will be used.
+   * @param {string} signature - A signature received from the server in a previous request
+   * @returns {boolean} - An object containing the signature and timestamp.
+   * @throws {Error} - If the timestamp is invalid.
+   */
   confirm_signature(timestamp, signature) {
     return generate_signature(this.partnerID, this.apiKey, timestamp) === signature;
   }
