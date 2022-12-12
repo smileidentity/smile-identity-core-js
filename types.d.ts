@@ -1,4 +1,4 @@
-declare module "constants" {
+declare module "src/constants" {
     /**
      * The type of verification job to be performed
      */
@@ -25,12 +25,17 @@ declare module "constants" {
         const DOCUMENT_VERIFICATION: number;
         const BUSINESS_VERIFICATION: number;
     }
+    /**
+     * Available server list
+     *
+     * @type {{[k:number|string]:string}}
+     */
     export const sidServerMapping: {
-        0: string;
-        1: string;
+        [k: string]: string;
+        [k: number]: string;
     };
 }
-declare module "helpers" {
+declare module "src/helpers" {
     /**
      * Converts a numeric key to a smile server URI, or
      * returns the original URI.
@@ -61,7 +66,7 @@ declare module "helpers" {
         job_type: string | number;
     }): void;
 }
-declare module "signature" {
+declare module "src/signature" {
     export = Signature;
     class Signature {
         /**
@@ -101,7 +106,7 @@ declare module "signature" {
         confirm_signature(timestamp: string | number, signature: string): boolean;
     }
 }
-declare module "id-api" {
+declare module "src/id-api" {
     export = IDApi;
     class IDApi {
         /**
@@ -124,6 +129,7 @@ declare module "id-api" {
         *  user_id: string,
         *  job_id: string,
         *  job_type: string|number,
+        * [k:string|number]:any,
         * }} partner_params - the user_id, job_id, and job_type of the job to submit.
         * Can additionally include optional parameters that Smile will return in the
         * job status.
@@ -141,6 +147,8 @@ declare module "id-api" {
         * @memberof WebApi
         */
         submit_job(partner_params: {
+            [k: string]: any;
+            [k: number]: any;
             user_id: string;
             job_id: string;
             job_type: string | number;
@@ -155,7 +163,7 @@ declare module "id-api" {
         }): Promise<object>;
     }
 }
-declare module "utilities" {
+declare module "src/utilities" {
     export = Utilities;
     class Utilities {
         /**
@@ -178,7 +186,7 @@ declare module "utilities" {
         get_job_status(userId: string | number, jobId: string | number, options?: any): any;
     }
 }
-declare module "web-token" {
+declare module "src/web-token" {
     /**
      * Gets an authorization token from Smile. Used in Hosted Web Integration.
      *
@@ -206,7 +214,7 @@ declare module "web-token" {
         token: string;
     }>;
 }
-declare module "web-api" {
+declare module "src/web-api" {
     export = WebApi;
     class WebApi {
         /**
@@ -275,6 +283,7 @@ declare module "web-api" {
          *  user_id: string,
          *  job_id: string,
          *  job_type: string|number,
+         * [k:string|number]:any,
          * }} partner_params - the user_id, job_id, and job_type of the job to submit.
          * Can additionally include optional parameters that Smile will return in the
          * job status.
@@ -301,6 +310,8 @@ declare module "web-api" {
          * @memberof WebApi
          */
         submit_job(partner_params: {
+            [k: string]: any;
+            [k: number]: any;
             user_id: string;
             job_id: string;
             job_type: string | number;

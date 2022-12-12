@@ -12,10 +12,13 @@ const { getWebToken } = require('./web-token');
  * Validates if the information required to submit a job is present.
  *
  * @param {{
- *  entered: boolean|string|?,
- *  country: string|undefined,
- *  id_type: string|undefined,
- *  id_number: string|undefined,
+ * entered: boolean|string|?,
+*  country: string|undefined,
+*  id_type: string|undefined,
+*  id_number: string|undefined,
+*  business_type: string|undefined,
+*  postal_code: string|undefined,
+*  postal_address: string|undefined,
  * }} idInfo - ID information required to create a job.
  * @param {number} jobType - Smile Job Type
  * @returns {string} value representing if `entered` is true or false.
@@ -122,7 +125,7 @@ const hasSelfieImage = ({ image_type_id }) => [0, 2].includes(image_type_id);
  *  image_type_id: number
  * }>} images - Array of images to be uploaded to smile.
  * @param {boolean|undefined} entered - Whether to use a previously uploaded selfie image.
- * @returns {undefined}
+ * @returns {void}
  * @throws {Error} - if images does not contain an image of the front of an id card.
  */
 const validateEnrollWithId = (images, entered) => {
@@ -137,7 +140,7 @@ const validateEnrollWithId = (images, entered) => {
  * @param {Array<{
  *  image_type_id: number
  * }>} images - Array of images to be uploaded to smile.
- * @returns {undefined}
+ * @returns {void}
  * @throws {Error} - if images does not contain an image of the front of an id card.
  */
 const validateDocumentVerification = (images) => {
@@ -155,7 +158,7 @@ const validateDocumentVerification = (images) => {
  * }>} images - Array of images to be uploaded to smile.
  * @param {boolean|undefined} useEnrolledImage - Whether to use a previously uploaded selfie image.
  * @param {number} jobType - The job type.
- * @returns {undefined}
+ * @returns {void}
  * @throws {Error} - if images does not contain a selfie image.
  */
 const validateImages = (images, useEnrolledImage, jobType) => {
@@ -187,11 +190,11 @@ const validateImages = (images, useEnrolledImage, jobType) => {
  * @returns {Array<{
  *  image_type_id: number,
  *  image: string,
- *  image_file: string,
+ *  file_name: string,
  * }>} - Array of images with image split by file_name and base64.
  */
 const configureImagePayload = (images) => images.map(({ image, image_type_id }) => {
-  const imageTypeId = parseInt(image_type_id, 10);
+  const imageTypeId = parseInt(image_type_id.toString(), 10);
   if ([0, 1].includes(image_type_id)) {
     return {
       image_type_id: imageTypeId,
@@ -240,7 +243,18 @@ const configurePrepUploadPayload = ({
 /**
  * Creates the json file sent as part of the zip file
  *
- * @param {object} data - data to be sent to smile.
+ * @param {{
+ *  signature: string,
+ *  callback_url: string,
+ *  partner_id: string,
+ *  partner_params: object,
+ *  timestamp: string|number,
+ *  id_info: object,
+ *  images: Array<{
+ *  image_type_id: number;
+ *  image: string;
+ * }>
+ * }} data - data to be sent to smile.
  * @param {object} serverInformation - server information.
  * @returns {object} - formatted payload.
  */
@@ -285,7 +299,7 @@ const configureInfoJson = (data, serverInformation) => ({
  * @param {{
  *  api_key: string,
  *  partner_id: string,
- *  partner_params: object,
+ *  partner_params: {user_id: string, job_id: number, [k:string]: any},
  *  url: string,
  *  return_history: boolean,
  *  return_images: boolean,
@@ -471,6 +485,7 @@ class WebApi {
    *  user_id: string,
    *  job_id: string,
    *  job_type: string|number,
+   * [k:string|number]:any,
    * }} partner_params - the user_id, job_id, and job_type of the job to submit.
    * Can additionally include optional parameters that Smile will return in the
    * job status.

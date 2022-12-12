@@ -41,11 +41,11 @@ const validateIdInfo = (idInfo) => {
 *  postal_code: string|undefined,
 *  postal_address: string|undefined,
 * },
-*  callback_url: string,
+*  callback_url?: string,
 *  partner_id: string,
 *  partner_params: {job_type: string | number, [k: string]: any},
-*  timestamp: string|number,
-*  use_enrolled_image: boolean,
+*  timestamp?: string|number,
+*  use_enrolled_image?: boolean,
 * }} options - The options object.
 * @returns {object} - formatted payload.
 */
@@ -86,6 +86,7 @@ class IDApi {
   *  user_id: string,
   *  job_id: string,
   *  job_type: string|number,
+  * [k:string|number]:any,
   * }} partner_params - the user_id, job_id, and job_type of the job to submit.
   * Can additionally include optional parameters that Smile will return in the
   * job status.

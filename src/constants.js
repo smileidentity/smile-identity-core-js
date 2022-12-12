@@ -50,6 +50,12 @@ const JOB_TYPE = {
   BUSINESS_VERIFICATION: 7,
 };
 
+
+/**
+ * Available server list
+ *
+ * @type {{[k:number|string]:string}}
+ */
 const sidServerMapping = {
   0: 'testapi.smileidentity.com/v1',
   1: 'api.smileidentity.com/v1',

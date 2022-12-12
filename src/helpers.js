@@ -13,7 +13,7 @@ const mapServerUri = (uriOrKey) => {
   if (uriOrKey in sidServerMapping) {
     return sidServerMapping[uriOrKey];
   }
-  return uriOrKey;
+  return uriOrKey.toString();
 };
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */
