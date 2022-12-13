@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 -  Add JSDocs to `WebApi` class.
 - Define `sidServerMapping` in constants.
+- Add BASIC_KYC, UPDATE_PHOTO and COMPARE_USER_INFO to JOB_TYPE
 
 ### Changed
 - Refactor `WebApi` class. Eliminate `_private`.
