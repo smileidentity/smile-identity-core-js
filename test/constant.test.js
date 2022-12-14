@@ -1,7 +1,7 @@
 const { JOB_TYPE } = require('..');
 
 describe('Constant', () => {
-  it('should have correct jobtyps', () => {
+  it('should have correct jobtypes', () => {
     expect(JOB_TYPE.BIOMETRIC_KYC).toEqual(1);
     expect(JOB_TYPE.SMART_SELFIE_AUTHENTICATION).toEqual(2);
     expect(JOB_TYPE.SMART_SELFIE_REGISTRATION).toEqual(4);
