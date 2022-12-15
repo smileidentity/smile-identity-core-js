@@ -274,7 +274,7 @@ const configureInfoJson = (data, serverInformation) => ({
       countryName: '',
     },
   },
-  id_info: data.id_info,
+  id_info: data.idInfo,
   images: configureImagePayload(data.images),
   server_information: serverInformation,
 });
