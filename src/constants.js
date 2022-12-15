@@ -1,5 +1,5 @@
 /**
- * The type of verification job to be performed
+ * The type of image submitted in the job request
  *
  * @readonly
  * @enum {number}
@@ -32,10 +32,15 @@ const IMAGE_TYPE = {
 const JOB_TYPE = {
   /** BIOMETRIC_KYC Verify the ID information of your users using facial biometrics */
   BIOMETRIC_KYC: 1,
-  /** SMART_SELFIE_REGISTRATION Used to verify and register a user for future authentication. */
-  SMART_SELFIE_REGISTRATION: 2,
   /** SMART_SELFIE_AUTHENTICATION Used to identify your existing users. */
-  SMART_SELFIE_AUTHENTICATION: 4,
+  SMART_SELFIE_AUTHENTICATION: 2,
+  /** SMART_SELFIE_REGISTRATION Used to verify and register a user for future authentication. */
+  SMART_SELFIE_REGISTRATION: 4,
+  /**
+   * Verifies identity information of a person with their personal
+   * information and ID number from one of our supported ID Types.
+   */
+  BASIC_KYC: 5,
   /**
    * ENHANCED_KYC query the Identity Information for an individual using their
    * ID number from one of our supported.
@@ -48,6 +53,10 @@ const JOB_TYPE = {
    * and confirm it belongs to the user using facial biometrics.
    */
   BUSINESS_VERIFICATION: 7,
+  /** Updates the photo on file for an enrolled user */
+  UPDATE_PHOTO: 8,
+  /** Compares document verification to an id check */
+  COMPARE_USER_INFO: 9,
 };
 
 const sidServerMapping = {
