@@ -13,4 +13,11 @@ interface PartnerParams {
   job_type: number;
 }
 
-export { type PartnerParams, type OptionsParam};
+type TokenRequestParams = {
+  user_id: string;
+  job_id: string;
+  product: string;
+  callback_url: string;
+}
+
+export { type PartnerParams,type OptionsParam, type TokenRequestParams };

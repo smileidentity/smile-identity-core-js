@@ -1,6 +1,7 @@
-const axios = require('axios');
-const Signature = require('./signature');
-const { mapServerUri } = require('./helpers');
+import axios from 'axios';
+import Signature from './signature';
+import { mapServerUri } from './helpers';
+import { TokenRequestParams } from "./shared";
 
 /**
  * Gets an authorization token from Smile. Used in Hosted Web Integration.
@@ -20,13 +21,15 @@ const { mapServerUri } = require('./helpers');
  * }>} - The authorization token.
  * @throws {Error} - if the request fails.
  */
-const getWebToken = (
-  partner_id,
-  api_key,
-  url,
-  requestParams,
-  defaultCallback,
-) => {
+export const getWebToken = (
+  partner_id: string,
+  api_key: string,
+  url: string,
+  requestParams: TokenRequestParams,
+  defaultCallback: string,
+): Promise<{
+  token: string;
+}> => {
   if (!requestParams) {
     return Promise.reject(new Error('Please ensure that you send through request params'));
   }
@@ -40,7 +43,7 @@ const getWebToken = (
     return Promise.reject(new Error('Callback URL is required for this method'));
   }
 
-  const missingKey = ['user_id', 'job_id', 'product'].find((key) => !requestParams[key]);
+  const missingKey = ['user_id', 'job_id', 'product'].find((key) => !requestParams[key as keyof TokenRequestParams]);
   if (missingKey) {
     return Promise.reject(new Error(`${missingKey} is required to get a web token`));
   }
@@ -50,7 +53,7 @@ const getWebToken = (
     job_id: requestParams.job_id,
     product: requestParams.product,
     callback_url: callbackUrl,
-    partner_id: this.partner_id,
+    partner_id: partner_id,
     ...new Signature(
       partner_id,
       api_key,
