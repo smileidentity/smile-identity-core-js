@@ -1,8 +1,10 @@
 /* eslint-disable import/no-unresolved */
-import express, { json, static as express_static } from 'express';
-import { v4 as UUID } from 'uuid';
-import { config } from 'dotenv';
-import { WebApi } from 'smile-identity-core';
+const express = require('express');
+const { json } = require('express');
+const express_static = require('express').static;
+const UUID = require('uuid').v4;
+const { config } = require('dotenv');
+const { WebApi } = require('smile-identity-core');
 /* eslint-enable import/no-unresolved */
 
 config();

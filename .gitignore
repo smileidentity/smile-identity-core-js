@@ -107,3 +107,4 @@ dist
 
 # Project specific files
 examples/package-lock.json
+examples/example-project/package-lock.json
