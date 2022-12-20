@@ -1,4 +1,5 @@
-import { IDApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
+// Change to smile-identity-core if you're using this snippet in your project.
+const { IDApi } = require('..');
 
 // Initialize
 // login to the Smile Identity Portal to view your partner id.
