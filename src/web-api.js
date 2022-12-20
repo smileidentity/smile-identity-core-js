@@ -235,9 +235,9 @@ const configurePrepUploadPayload = ({
   partner_params,
   smile_client_id: partner_id,
   use_enrolled_image,
+  ...idInfo,
   ...new Signature(partner_id, api_key).generate_signature(timestamp),
   ...sdkVersionInfo,
-  ...idInfo,
 });
 
 /**
