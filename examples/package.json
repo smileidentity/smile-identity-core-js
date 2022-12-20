@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "description": "Smile Identity server examples",
   "main": "server.js",
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "smile-identity-core": "latest",
     "uuid": "^9.0.0"
