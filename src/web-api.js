@@ -212,11 +212,11 @@ const configureImagePayload = (images) => images.map(({ image, image_type_id }) 
  * @param {{
  *  api_key: string,
  *  callback_url: string,
+ *  idInfo: object,
  *  partner_id: string,
  *  partner_params: object,
  *  timestamp: string|number,
  *  use_enrolled_image: boolean,
- *  idInfo: object,
  * }} options - The options object.
  * @returns {object} - formatted payload.
  */
