@@ -138,24 +138,6 @@ describe('WebApi', () => {
       });
     });
 
-    [null, 'other string'].forEach((entered) => {
-      const id_info = {
-        country: 'NG', entered, id_number: '12345', id_type: 'BVN',
-      };
-      it(`should ensure that web api throws an error when entered is not true, false, or undefined:${entered}`, async () => {
-        expect.assertions(1);
-        const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.BIOMETRIC_KYC };
-        const promise = instance.submit_job(
-          partner_params,
-          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
-          id_info,
-          { return_job_status: true },
-        );
-        await expect(promise).rejects.toThrow(new Error('Please make sure that idInfo.entered is either true, false, or undefined'));
-      });
-    });
-
     it('should ensure that job type 1 has an id card image if there is no id_info', async () => {
       expect.assertions(1);
       const instance = new WebApi('001', null, mockApiKey, 0);

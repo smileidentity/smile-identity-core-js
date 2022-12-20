@@ -21,8 +21,7 @@ const { getWebToken } = require('./web-token');
  * @returns {string} value representing if `entered` is true or false.
  */
 const validateIdInfo = (idInfo, jobType) => {
-  const entered = String(idInfo.entered); // `true`, `false`, or undefined.
-  if (['false', 'undefined'].includes(entered)) {
+  if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
     if (jobType === 6) { // NOTE: document verification does not check for `country` and `id_type`.
       ['country', 'id_type'].forEach((key) => {
         if (!idInfo[key] || idInfo[key].length === 0) {
@@ -31,7 +30,7 @@ const validateIdInfo = (idInfo, jobType) => {
       });
     }
     return 'false';
-  } if (entered === 'true') {
+  } if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
     ['country', 'id_type', 'id_number'].forEach((key) => {
       if (!idInfo[key] || idInfo[key].length === 0) {
         throw new Error(`Please make sure that ${key} is included in the id_info`);
