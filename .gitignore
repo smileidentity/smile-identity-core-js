@@ -102,4 +102,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# MacOS files
 .DS_Store
+
+# Project specific files
+examples/package-lock.json
