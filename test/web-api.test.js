@@ -169,95 +169,109 @@ describe('WebApi', () => {
     });
 
     it('should be able to send a job', async () => {
-      expect.assertions(11);
+      expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
       const partner_params = {
-        user_id: '1',
         job_id: '1',
         job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
+        user_id: '1',
       };
       const options = {};
-      const smile_job_id = '0000000111';
+      const smileJobId = '0000000111';
+      const postBody = jest.fn(() => true);
+      nock('https://testapi.smileidentity.com').post('/v1/upload', postBody).reply(200, {
+        upload_url: 'https://some_url.com',
+        smile_job_id: smileJobId,
+      });
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').reply(200);
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload', (body) => {
-          expect(body.smile_client_id).toEqual('001');
-          expect(body.signature).not.toEqual(undefined);
-          expect(body.timestamp).not.toEqual(undefined);
-          expect(body.file_name).toEqual('selfie.zip');
-          expect(body.partner_params.user_id).toEqual(partner_params.user_id);
-          expect(body.partner_params.job_id).toEqual(partner_params.job_id);
-          expect(body.partner_params.job_type).toEqual(partner_params.job_type);
-          expect(body.callback_url).toEqual('https://a_callback.cb');
-          expect(body.source_sdk).toEqual('javascript');
-          expect(body.source_sdk_version).toEqual(packageJson.version);
-          return true;
-        })
-        .reply(200, {
-          upload_url: 'https://some_url.com',
-          smile_job_id,
-        });
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200);
-
-      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
-
-      expect(response).toEqual({ success: true, smile_job_id });
-      return true;
+      const response = await instance.submit_job(partner_params, [{
+        image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+        image: 'base6image',
+      }], {}, options);
+      expect(response).toEqual({ success: true, smile_job_id: smileJobId });
+      expect(postBody).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        smile_client_id: '001',
+        signature: expect.any(String),
+        timestamp: expect.any(String),
+        file_name: 'selfie.zip',
+        partner_params: {
+          user_id: '1',
+          job_id: '1',
+          job_type: 2,
+        },
+        callback_url: 'https://a_callback.cb',
+        source_sdk: 'javascript',
+        source_sdk_version: packageJson.version,
+      }));
     });
 
     it('should be able to send a job with a signature', async () => {
-      expect.assertions(11);
+      expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
-      const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION };
-
+      const partner_params = {
+        job_id: '1',
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
+        user_id: '1',
+      };
       const options = {
         signature: true,
       };
-      const smile_job_id = '0000000111';
+      const smileJobId = '0000000111';
+      const postBody = jest.fn(() => true);
+      nock('https://testapi.smileidentity.com').post('/v1/upload', postBody).reply(200, {
+        upload_url: 'https://some_url.com',
+        smile_job_id: smileJobId,
+      }).isDone();
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').reply(200).isDone();
 
-      nock('https://testapi.smileidentity.com')
-        .post('/v1/upload', (body) => {
-          expect(body.smile_client_id).toEqual('001');
-          expect(body.signature).not.toBeUndefined();
-          expect(body.timestamp).not.toBeUndefined();
-          expect(body.file_name).toEqual('selfie.zip');
-          expect(body.partner_params.user_id).toEqual(partner_params.user_id);
-          expect(body.partner_params.job_id).toEqual(partner_params.job_id);
-          expect(body.partner_params.job_type).toEqual(partner_params.job_type);
-          expect(body.callback_url).toEqual('https://a_callback.cb');
-          expect(body.source_sdk).toEqual('javascript');
-          expect(body.source_sdk_version).toEqual(packageJson.version);
-          return true;
-        })
-        .reply(200, {
-          upload_url: 'https://some_url.com',
-          smile_job_id,
-        }).isDone();
-      nock('https://some_url.com')
-        .put('/') // todo: find a way to unzip and test info.json
-        .reply(200).isDone();
-
-      const response = await instance.submit_job(partner_params, [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64, image: 'base6image' }], {}, options);
-      expect(response).toEqual({ success: true, smile_job_id });
+      const response = await instance.submit_job(partner_params, [{
+        image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+        image: 'base6image',
+      }], {}, options);
+      expect(response).toEqual({ success: true, smile_job_id: smileJobId });
+      expect(postBody).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        smile_client_id: '001',
+        signature: expect.any(String),
+        timestamp: expect.any(String),
+        file_name: 'selfie.zip',
+        partner_params: {
+          job_id: '1',
+          job_type: 2,
+          user_id: '1',
+        },
+        callback_url: 'https://a_callback.cb',
+        source_sdk: 'javascript',
+        source_sdk_version: packageJson.version,
+      }));
     });
 
     it('should call IDApi.new().submit_job if the job type is 5', async () => {
-      expect.assertions(1);
+      expect.assertions(2);
       const instance = new WebApi('001', null, mockApiKey, 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: JOB_TYPE.ENHANCED_KYC };
+      const consent_information = {
+        consented: {
+          contact_information: true,
+          document_information: false,
+          personal_details: false,
+        },
+      };
       const id_info = {
+        consent_information,
+        country: 'NG',
+        entered: true,
         first_name: 'John',
+        id_number: '00000000000',
+        id_type: 'BVN',
         last_name: 'Doe',
         middle_name: '',
-        country: 'NG',
-        id_type: 'BVN',
-        id_number: '00000000000',
         phone_number: '0726789065',
       };
       const timestamp = new Date().toISOString();
-      const IDApiResponse = {
+      const iDApiResponse = {
         JSONVersion: '1.0.0',
         SmileJobID: '0000001096',
         PartnerParams: {
@@ -282,8 +296,8 @@ describe('WebApi', () => {
         Photo: 'Not Available',
         ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
-
-      nock('https://testapi.smileidentity.com').post('/v1/id_verification', () => true).reply(200, IDApiResponse).isDone();
+      const postBody = jest.fn(() => true);
+      nock('https://testapi.smileidentity.com').post('/v1/id_verification', postBody).reply(200, iDApiResponse).isDone();
 
       const response = await instance.submit_job(partner_params, null, id_info, null);
       expect(Object.keys(response).sort()).toEqual([
@@ -292,6 +306,16 @@ describe('WebApi', () => {
         'Country', 'IDType', 'IDNumber', 'ExpirationDate',
         'FullName', 'DOB', 'Photo', 'signature', 'timestamp',
       ].sort());
+
+      expect(postBody).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        ...id_info,
+        language: 'javascript',
+        partner_params: { job_id: '1', job_type: 5, user_id: '1' },
+        signature: expect.any(String),
+        source_sdk_version: packageJson.version,
+        source_sdk: 'javascript',
+        timestamp: expect.any(String),
+      }));
     });
 
     it('should call IDApi.new().submit_job if the job type is 5 with the signature if requested', async () => {
