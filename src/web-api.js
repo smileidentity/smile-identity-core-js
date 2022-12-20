@@ -223,11 +223,11 @@ const configureImagePayload = (images) => images.map(({ image, image_type_id }) 
 const configurePrepUploadPayload = ({
   api_key,
   callback_url,
+  idInfo,
   partner_id,
   partner_params,
   timestamp,
   use_enrolled_image,
-  idInfo,
 }) => ({
   callback_url,
   file_name: 'selfie.zip',
