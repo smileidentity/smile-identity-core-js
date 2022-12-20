@@ -226,6 +226,7 @@ const configurePrepUploadPayload = ({
   partner_params,
   timestamp,
   use_enrolled_image,
+  idInfo,
 }) => ({
   callback_url,
   file_name: 'selfie.zip',
@@ -235,6 +236,7 @@ const configurePrepUploadPayload = ({
   use_enrolled_image,
   ...new Signature(partner_id, api_key).generate_signature(timestamp),
   ...sdkVersionInfo,
+  ...idInfo,
 });
 
 /**
