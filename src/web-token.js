@@ -50,7 +50,7 @@ const getWebToken = (
     job_id: requestParams.job_id,
     product: requestParams.product,
     callback_url: callbackUrl,
-    partner_id: this.partner_id,
+    partner_id,
     ...new Signature(
       partner_id,
       api_key,
