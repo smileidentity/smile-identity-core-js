@@ -354,7 +354,8 @@ const queryJobStatus = ({
   url: sidUrl,
   return_history,
   return_images,
-}: QueryPayload, counter: number | undefined = 0): Promise<object> => new Promise((resolve, reject) => {
+}: QueryPayload, counter: number | undefined = 0):
+Promise<object> => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
   const updatedCounter = counter + 1;
