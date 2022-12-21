@@ -239,6 +239,7 @@ const configureImagePayload = (images: Array<{
  * @param {{
  *  api_key: string,
  *  callback_url: string,
+ *  idInfo: object,
  *  partner_id: string,
  *  partner_params: object,
  *  timestamp: string|number,
@@ -249,6 +250,7 @@ const configureImagePayload = (images: Array<{
 const configurePrepUploadPayload = ({
   api_key,
   callback_url,
+  idInfo,
   partner_id,
   partner_params,
   timestamp,
@@ -260,6 +262,7 @@ const configurePrepUploadPayload = ({
   partner_params,
   smile_client_id: partner_id,
   use_enrolled_image,
+  ...idInfo,
   ...new Signature(partner_id, api_key).generate_signature(timestamp),
   ...sdkVersionInfo,
 });

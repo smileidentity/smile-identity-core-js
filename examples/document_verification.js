@@ -3,7 +3,8 @@
  * for how to setup and retrieve configuration values for the WebApi class.
  */
 
-import { WebApi } from 'smile-identity-core'; // eslint-disable-line import/no-unresolved
+// Change to smile-identity-core if you're using this snippet in your project.
+const { WebApi } = require('..');
 
 // Initialize
 // login to the Smile Identity portal to view your partner id.

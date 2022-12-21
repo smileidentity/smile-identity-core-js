@@ -3,14 +3,13 @@
   "version": "0.0.1",
   "description": "Smile Identity server examples",
   "main": "server.js",
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "smile-identity-core": "latest",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   },
   "engines": {
-    "node": ">=6.x"
+    "node": ">=12.x"
   },
   "repository": {
     "url": "https://smileidentity.com/"

@@ -6,15 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
--  Add JSDocs to `WebApi` class.
+- Add JSDocs to `WebApi` class.
+- Add `BASIC_KYC`, `UPDATE_PHOTO` and `COMPARE_USER_INFO` to `JOB_TYPE`.
 - Define `sidServerMapping` in constants.
-- Add BASIC_KYC, UPDATE_PHOTO and COMPARE_USER_INFO to JOB_TYPE
 
 ### Changed
-- Refactor `WebApi` class. Eliminate `_private`.
-- Refactor `Utilities` class.
+- Allow `WebApi` to submit `consent_information` as part of `id_info`.
 - Refactor `get_web_token` code, move from `WebApi` class into `web-token` file. Improve test coverage.
-- Use jest for tests
+- Refactor `Utilities` class.
+- Refactor `WebApi` class. Eliminate `_private`.
+- Use jest for tests.
 
 ## [2.0.0] - 2022-11-11
 ### Added
