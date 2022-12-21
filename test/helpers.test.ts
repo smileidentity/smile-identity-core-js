@@ -17,7 +17,7 @@ describe('helpers', () => {
     ];
 
     testCases.forEach((testCase) => {
-      //@ts-ignore
+      // @ts-ignore
       expect(mapServerUri(testCase.input)).toEqual(testCase.expected);
     });
   });
@@ -45,7 +45,7 @@ describe('helpers', () => {
     testCases.forEach((testCase) => {
       let error = { message: null };
       try {
-        //@ts-ignore
+        // @ts-ignore
         validatePartnerParams(testCase.input);
       } catch (err) {
         error = err;

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint $(git ls-files '*.js' '*.ts')",
-    "start": "node index.js",
+    "start": "node dist/index.js",
     "test": "jest --coverage"
   },
   "author": "Chris DeLauder <chris@smileidentity.com>",
@@ -25,10 +25,12 @@
     "babel-jest": "^29.3.1",
     "eslint": "^8.30.0",
     "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^27.1.7",
     "eslint-plugin-jsdoc": "^39.6.4",
     "jest": "^29.3.1",
+    "jest-config": "^29.3.1",
     "jest-environment-jsdom": "^29.3.1",
     "keypair": "^1.0.4",
     "nock": "^13.2.9",

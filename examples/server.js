@@ -1,15 +1,11 @@
-/* eslint-disable import/no-unresolved */
-const express = require('express');
-const { json } = require('express');
-const express_static = require('express').static;
-const UUID = require('uuid').v4;
-const { config } = require('dotenv');
-const { WebApi } = require('smile-identity-core');
-/* eslint-enable import/no-unresolved */
+import express, { json, static as express_static } from 'express';
+import { v4 as UUID } from 'uuid';
+import { config } from 'dotenv';
+import smileIdentityCore from 'smile-identity-core';
 
 config();
 
-const SIDWebAPI = WebApi;
+const SIDWebAPI = smileIdentityCore.WebApi;
 
 const app = express();
 
@@ -68,7 +64,6 @@ app.post('/', async (req, res) => {
 
 // NOTE: This can be used to process responses. Don't forget to add it as a
 // callback option in the `connection` config on L22.
-// eslint-disable-next-line no-unused-vars
-app.post('/callback', (_req, _res, _next) => { });
+app.post('/callback');
 
 app.listen(process.env.PORT || 4000);

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Signature from './signature';
 import { mapServerUri } from './helpers';
-import { TokenRequestParams } from "./shared";
+import { TokenRequestParams } from './shared';
 
 /**
  * Gets an authorization token from Smile. Used in Hosted Web Integration.
@@ -53,7 +53,7 @@ export const getWebToken = (
     job_id: requestParams.job_id,
     product: requestParams.product,
     callback_url: callbackUrl,
-    partner_id: partner_id,
+    partner_id,
     ...new Signature(
       partner_id,
       api_key,

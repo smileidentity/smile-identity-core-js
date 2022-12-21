@@ -7,7 +7,16 @@ import { Utilities } from './utilities';
 import { IDApi } from './id-api';
 import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { getWebToken } from './web-token';
-import { IdInfo, PartnerParams, OptionsParam, TokenRequestParams } from "./shared";
+import {
+  IdInfo, PartnerParams, OptionsParam, TokenRequestParams,
+} from './shared';
+
+type PayloadData = {
+
+  [k: string]: string | number | Array<{ [k: string]: number | string }>;
+};
+
+type ServerInformation = { [k: string]: string | number };
 
 /**
  * Validates if the information required to submit a job is present.
@@ -21,9 +30,9 @@ import { IdInfo, PartnerParams, OptionsParam, TokenRequestParams } from "./share
  * @param {number} jobType - Smile Job Type
  * @returns {string} value representing if `entered` is true or false.
  */
-const validateIdInfo = (idInfo: IdInfo, jobType: number) => {
-  idInfo.entered = idInfo.entered === undefined ? 'false' : idInfo.entered;
-  if (!('entered' in idInfo) || idInfo.entered.toString() === 'false') {
+const validateIdInfo = (idInfo: IdInfo, jobType: number): string => {
+  const entered = idInfo.entered === undefined ? 'false' : idInfo.entered.toString();
+  if (!('entered' in idInfo) || entered === 'false') {
     if (jobType === 6) { // NOTE: document verification does not check for `country` and `id_type`.
       ['country', 'id_type'].forEach((key) => {
         const idKey = key as keyof IdInfo;
@@ -33,7 +42,7 @@ const validateIdInfo = (idInfo: IdInfo, jobType: number) => {
       });
     }
     return 'false';
-  } if ('entered' in idInfo && idInfo.entered.toString() === 'true') {
+  } if ('entered' in idInfo && entered === 'true') {
     ['country', 'id_type', 'id_number'].forEach((key) => {
       const idKey = key as keyof IdInfo;
       if (!idInfo[idKey] || (idInfo[idKey] as string).length === 0) {
@@ -81,7 +90,7 @@ const checkBoolean = (key: string, value: boolean | null): boolean => {
  * @throws {Error} - if any keys are not booleans.
  */
 const validateBooleans = (options: OptionsParam): OptionsParam => {
-  const obj: {[k:string]:boolean} = {};
+  const obj: { [k:string]:boolean } = {};
   const booleanKeys = ['return_job_status', 'return_history', 'return_images', 'use_enrolled_image'];
   booleanKeys.forEach((key) => {
     const optionKey = key as keyof OptionsParam;
@@ -107,6 +116,7 @@ const validateReturnData = (callbackUrl: string | undefined, returnJobStatus?: b
  *
  * @param {object} image - image object
  * @param {number} image.image_type_id - smile image type.
+ * @param {string} image.image - base64 image or full path to file
  * @returns {boolean} - true if image is a ID card front image, false otherwise.
  */
 const hasIdImage = ({ image_type_id }: {
@@ -119,6 +129,7 @@ const hasIdImage = ({ image_type_id }: {
  *
  * @param {object} image - image object
  * @param {number} image.image_type_id - smile image type.
+ * @param {string} image.image - base64 image or full path to file
  * @returns {boolean} - true if image is a ID card front image, false otherwise.
  */
 const hasSelfieImage = ({ image_type_id }: {
@@ -255,7 +266,7 @@ const configurePrepUploadPayload = ({
   partner_params,
   timestamp,
   use_enrolled_image,
-}: {[k:string]:string|object}): object => ({
+}: { [k:string]:string | object }): object => ({
   callback_url,
   file_name: 'selfie.zip',
   model_parameters: {},
@@ -274,7 +285,7 @@ const configurePrepUploadPayload = ({
  * @param {object} serverInformation - server information.
  * @returns {object} - formatted payload.
  */
-const configureInfoJson = (data: { [k: string]: string | number | Array<{ [k: string]: number | string }> }, serverInformation: { [k: string]: string | number }) : object => ({
+const configureInfoJson = (data: PayloadData, serverInformation: ServerInformation) : object => ({
   package_information: {
     apiVersion: {
       buildNumber: 0,
@@ -389,7 +400,7 @@ const queryJobStatus = ({
  * @throws {Error} - if the request fails or times out.
  */
 const uploadFile = (
-  data: { [k: string]: string | number | Array<{}> },
+  data: { [k: string]: string | number | Array<object> },
   zipFile: Uint8Array,
   signedUrl: string,
   smile_job_id: string,
@@ -443,11 +454,15 @@ const zipUpFile = (images: Array<{
  * @param {object} payload - data required to upload the zip file to s3.
  * @returns {Promise<object>} the job status response.
  */
-const setupRequests = (payload: { [k: string]: any }): Promise<object> => axios.post(
+const setupRequests = (payload: { [k: string]: string | object }): Promise<object> => axios.post(
   `https://${payload.url}/upload`,
   configurePrepUploadPayload(payload),
 ).then(({ data }) => Promise.all([
-  zipUpFile(payload.images, configureInfoJson(payload, data)),
+  zipUpFile(payload.images as Array<{
+    image_type_id: number;
+    image: string;
+    file_name: string;
+  }>, configureInfoJson(payload as PayloadData, data)),
   Promise.resolve(data),
 ])).then(([zipFile,
   { upload_url, smile_job_id }]) => uploadFile(payload, zipFile, upload_url, smile_job_id));
@@ -462,11 +477,20 @@ export class WebApi {
    * @param {string|number} sid_server - The server to use for the SID API. 0 for
    * staging and 1 for production.
    */
-  partner_id: string
-  default_callback: string|null|undefined
-  api_key: string
-  url: string
-  constructor(partner_id: string, default_callback: string|null|undefined, api_key: string, sid_server: string | number) {
+  partner_id: string;
+
+  default_callback: string | null | undefined;
+
+  api_key: string;
+
+  url: string;
+
+  constructor(
+    partner_id: string,
+    default_callback: string | null | undefined,
+    api_key: string,
+    sid_server: string | number,
+  ) {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
     this.api_key = api_key;
@@ -563,7 +587,8 @@ export class WebApi {
       validatePartnerParams(partner_params);
 
       if (parseInt(partner_params && partner_params.job_type.toString(), 10) === 5) {
-        return new IDApi(this.partner_id, this.api_key, this.url).submit_job(partner_params, id_info);
+        return new IDApi(this.partner_id, this.api_key, this.url)
+          .submit_job(partner_params, id_info);
       }
 
       const callbackUrl = (options && options.optional_callback) || this.default_callback;

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Signature from './signature';
-import { OptionsParam } from "./shared";
+import { OptionsParam } from './shared';
 
 import { mapServerUri } from './helpers';
 
@@ -33,16 +33,20 @@ export const get_job_status = (
 });
 
 export class Utilities {
-  partnerId: string
-  apiKey: string
-  url: string
+  partnerId: string;
+
+  apiKey: string;
+
+  url: string;
+
   constructor(partner_id: string, api_key: string, sid_server: string | number) {
     this.partnerId = partner_id;
     this.apiKey = api_key;
     this.url = mapServerUri(sid_server);
   }
 
-  get_job_status(userId: string|number, jobId: string|number, options: OptionsParam = { return_history: false, return_images: false }) {
+  get_job_status(userId: string | number, jobId: string | number, options:
+  OptionsParam = { return_history: false, return_images: false }) {
     return get_job_status(this.partnerId, this.apiKey, this.url, userId, jobId, options);
   }
 }

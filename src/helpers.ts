@@ -1,6 +1,6 @@
-import * as packageJson from "../package.json"
+import * as packageJson from '../package.json';
 import { sidServerMapping } from './constants';
-import { PartnerParams } from "./shared";
+import { PartnerParams } from './shared';
 
 /**
  * Converts a numeric key to a smile server URI, or
@@ -43,7 +43,7 @@ export const validatePartnerParams = (partnerParams: PartnerParams): void => {
   }
 
   ['user_id', 'job_id', 'job_type'].forEach((key) => {
-    let partnerKey = key as keyof PartnerParams;
+    const partnerKey = key as keyof PartnerParams;
     if (!partnerParams[partnerKey]) {
       throw new Error(`Please make sure that ${key} is included in the partner params`);
     }

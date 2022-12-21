@@ -3,7 +3,9 @@ import keypair from 'keypair';
 import nock from 'nock';
 import packageJson from '../package.json';
 
-import { WebApi, Signature, IMAGE_TYPE, JOB_TYPE } from '..';
+import {
+  WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
+} from '..';
 
 const pair = keypair();
 const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');

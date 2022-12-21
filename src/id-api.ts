@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Signature from './signature';
 import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
-import { IdInfo, PartnerParams } from "./shared";
+import { IdInfo, PartnerParams } from './shared';
 
 const validateIdInfo = (idInfo: IdInfo) => {
   if (typeof idInfo !== 'object') {
@@ -19,7 +19,7 @@ const validateIdInfo = (idInfo: IdInfo) => {
 
 const configurePayload = ({
   api_key, id_info, partner_id, partner_params,
-}: {api_key: string, id_info: IdInfo, partner_id: string, partner_params: PartnerParams}) => ({
+}: { api_key: string, id_info: IdInfo, partner_id: string, partner_params: PartnerParams }) => ({
   language: 'javascript',
   partner_id,
   partner_params: {
@@ -32,10 +32,14 @@ const configurePayload = ({
 });
 
 export class IDApi {
-  partner_id: string
-  sid_server: string | number
-  api_key: string
-  url: string
+  partner_id: string;
+
+  sid_server: string | number;
+
+  api_key: string;
+
+  url: string;
+
   constructor(partner_id: string, api_key: string, sid_server: string | number) {
     this.partner_id = partner_id;
     this.sid_server = sid_server;
@@ -68,4 +72,3 @@ export class IDApi {
     }
   }
 }
-

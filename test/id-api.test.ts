@@ -34,14 +34,14 @@ describe('IDapi', () => {
     it('should ensure that the partner_params are present', async () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-      //@ts-ignore
+      // @ts-ignore
       await expect(instance.submit_job(null, {})).rejects.toThrow(new Error('Please ensure that you send through partner params'));
     });
 
     it('should ensure that the partner_params are an object', async () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-      //@ts-ignore
+      // @ts-ignore
       await expect(instance.submit_job('not partner params', {})).rejects.toThrow(new Error('Partner params needs to be an object'));
     });
 
@@ -65,7 +65,7 @@ describe('IDapi', () => {
     it('should ensure that the id_info is an object', async () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-      //@ts-ignore
+      // @ts-ignore
       await expect(instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, '')).rejects.toThrow(new Error('ID Info needs to be an object'));
     });
 
@@ -85,7 +85,7 @@ describe('IDapi', () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
-      //@ts-ignore
+      // @ts-ignore
       await expect(instance.submit_job(partner_params, null)).rejects.toThrow(new Error('Please ensure that you are setting your job_type to 5 to query ID Api'));
     });
 

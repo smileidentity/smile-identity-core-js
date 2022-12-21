@@ -29,8 +29,10 @@ export default class Signature {
    * for your Smile account.
    * @param {string} apiKey - Smile API Key. Found in the Smile Dashboard.
    */
-  partnerID: string
-  apiKey: string
+  partnerID: string;
+
+  apiKey: string;
+
   constructor(partnerID: string, apiKey: string) {
     this.partnerID = partnerID;
     this.apiKey = apiKey;
@@ -47,7 +49,8 @@ export default class Signature {
    * }} - An object containing the signature and timestamp.
    * @throws {Error} - If the timestamp is invalid.
    */
-  generate_signature(timestamp: (string | number) = new Date().toISOString()): { signature: string, timestamp: number | string } {
+  generate_signature(timestamp: (string | number) = new Date().toISOString()):
+  { signature: string, timestamp: number | string } {
     return {
       signature: generate_signature(this.partnerID, this.apiKey, timestamp),
       timestamp,

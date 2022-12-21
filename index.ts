@@ -8,5 +8,6 @@ if ((typeof process === 'undefined' && typeof (process as NodeJS.Process).versio
   console.error('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
 }
 
-
-export { IDApi, Signature, Utilities, WebApi, JOB_TYPE, IMAGE_TYPE }
+export {
+  IDApi, Signature, Utilities, WebApi, JOB_TYPE, IMAGE_TYPE,
+};

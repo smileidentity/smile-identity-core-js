@@ -1,4 +1,3 @@
-import { IDApi } from './id-api';
 interface OptionsParam {
   return_history?: boolean;
   return_images?: boolean;
@@ -31,6 +30,8 @@ type TokenRequestParams = {
   job_id: string;
   product: string;
   callback_url: string;
-}
+};
 
-export { type PartnerParams, type IdInfo, type OptionsParam, type TokenRequestParams };
+export {
+  type PartnerParams, type IdInfo, type OptionsParam, type TokenRequestParams,
+};

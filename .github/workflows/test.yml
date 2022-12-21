@@ -33,6 +33,9 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version-file: '.nvmrc'
+    - name: Setup example
+      run: npm ci
+      working-directory: ./examples
     - run: npm ci
     - name: Lint
       run: npm run lint
