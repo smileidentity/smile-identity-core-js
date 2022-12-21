@@ -7,7 +7,7 @@ const nodeVersionNumber = packageJson.engines.node.replace(/^>=v/, '');
 
 module.exports = {
   presets: [
-    ['@babel/preset-env', {targets: {node: nodeVersionNumber}}],
+    ['@babel/preset-env', { targets: { node: nodeVersionNumber } }],
     '@babel/preset-typescript',
   ],
 };

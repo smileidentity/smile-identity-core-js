@@ -9,11 +9,13 @@ module.exports = {
     'airbnb-base',
     'plugin:jest/recommended',
     'plugin:jsdoc/recommended',
+    'plugin:@typescript-eslint/recommended'
   ],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 13,
   },
-  plugins: ['jest', 'jsdoc'],
+  plugins: ['jest', 'jsdoc', '@typescript-eslint'],
   rules: {
     camelcase: 0,
     'compat/compat': 0,

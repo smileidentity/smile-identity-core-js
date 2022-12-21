@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const keypair = require('keypair');
+import crypto from 'crypto';
+import keypair from 'keypair';
 
-const { Signature } = require('..');
+import { Signature } from '..';
 
 const pair = keypair();
 

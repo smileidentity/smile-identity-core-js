@@ -1,7 +1,7 @@
-const keypair = require('keypair');
-const nock = require('nock');
+import keypair from 'keypair';
+import nock from 'nock';
 
-const { Utilities, Signature } = require('..');
+import { Utilities, Signature } from '..';
 
 const pair = keypair();
 const mockApiKey = Buffer.from(pair.public).toString('base64');

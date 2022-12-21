@@ -1,9 +1,7 @@
-const keypair = require('keypair');
-const nock = require('nock');
+import keypair from 'keypair';
+import nock, { disableNetConnect, cleanAll, enableNetConnect } from 'nock';
 
-const {
-  getWebToken,
-} = require('../src/web-token');
+import { getWebToken } from '../src/web-token';
 
 const pair = keypair();
 
@@ -11,16 +9,16 @@ const mockApiKey = Buffer.from(pair.public).toString('base64');
 
 describe('web-token', () => {
   beforeAll(() => {
-    nock.disableNetConnect();
+    disableNetConnect();
   });
 
   afterEach(() => {
-    nock.cleanAll();
+    cleanAll();
     jest.clearAllMocks();
   });
 
   afterAll(() => {
-    nock.enableNetConnect();
+    enableNetConnect();
   });
 
   describe('#get_web_token', () => {
