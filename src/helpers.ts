@@ -49,9 +49,3 @@ export const validatePartnerParams = (partnerParams: PartnerParams): void => {
     }
   });
 };
-
-module.exports = {
-  mapServerUri,
-  sdkVersionInfo,
-  validatePartnerParams,
-};

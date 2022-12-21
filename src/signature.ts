@@ -58,5 +58,3 @@ export default class Signature {
     return generate_signature(this.partnerID, this.apiKey, timestamp) === signature;
   }
 }
-
-module.exports = Signature;

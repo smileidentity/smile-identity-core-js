@@ -63,5 +63,3 @@ export const getWebToken = (
 
   return axios.post(`https://${mapServerUri(url)}/token`, body).then((response) => response.data);
 };
-
-module.exports = { getWebToken };

@@ -63,6 +63,3 @@ export const sidServerMapping : {[k:string | number]: string} = {
   0: 'testapi.smileidentity.com/v1',
   1: 'api.smileidentity.com/v1',
 };
-
-module.exports = { IMAGE_TYPE, JOB_TYPE, sidServerMapping };
-

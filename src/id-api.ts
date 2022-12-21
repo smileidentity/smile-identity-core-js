@@ -69,4 +69,3 @@ export class IDApi {
   }
 }
 
-module.exports = IDApi;

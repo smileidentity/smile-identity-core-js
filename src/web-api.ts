@@ -559,12 +559,13 @@ export class WebApi {
     image_type_id: number;
     image: string;
   }>, id_info: IdInfo, options: OptionsParam = {}): Promise<object> {
-    if (parseInt(partner_params && partner_params.job_type.toString(), 10) === 5) {
-      return new IDApi(this.partner_id, this.api_key, this.url).submit_job(partner_params, id_info);
-    }
-
     try {
       validatePartnerParams(partner_params);
+
+      if (parseInt(partner_params && partner_params.job_type.toString(), 10) === 5) {
+        return new IDApi(this.partner_id, this.api_key, this.url).submit_job(partner_params, id_info);
+      }
+
       const callbackUrl = (options && options.optional_callback) || this.default_callback;
       const jobType = parseInt(partner_params.job_type.toString(), 10);
       const data = {
@@ -600,6 +601,3 @@ export class WebApi {
     }
   }
 }
-
-module.exports = WebApi;
-export {}

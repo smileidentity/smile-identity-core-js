@@ -46,5 +46,3 @@ export class Utilities {
     return get_job_status(this.partnerId, this.apiKey, this.url, userId, jobId, options);
   }
 }
-
-module.exports = Utilities;
