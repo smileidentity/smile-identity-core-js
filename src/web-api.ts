@@ -81,7 +81,7 @@ const checkBoolean = (key: string, value: boolean | null): boolean => {
  * @throws {Error} - if any keys are not booleans.
  */
 const validateBooleans = (options: OptionsParam): OptionsParam => {
-  const obj: OptionsParam = {};
+  const obj: {[k:string]:boolean} = {};
   const booleanKeys = ['return_job_status', 'return_history', 'return_images', 'use_enrolled_image'];
   booleanKeys.forEach((key) => {
     const optionKey = key as keyof OptionsParam;
@@ -255,15 +255,15 @@ const configurePrepUploadPayload = ({
   partner_params,
   timestamp,
   use_enrolled_image,
-}: {[k:string]:string}): object => ({
+}: {[k:string]:string|object}): object => ({
   callback_url,
   file_name: 'selfie.zip',
   model_parameters: {},
   partner_params,
   smile_client_id: partner_id,
   use_enrolled_image,
-  ...idInfo,
-  ...new Signature(partner_id, api_key).generate_signature(timestamp),
+  ...idInfo as object,
+  ...new Signature(partner_id as string, api_key as string).generate_signature(timestamp as string),
   ...sdkVersionInfo,
 });
 
@@ -584,7 +584,7 @@ export class WebApi {
       };
 
       validateImages(image_details, options.use_enrolled_image, jobType);
-      validateReturnData(callbackUrl, data.return_job_status);
+      validateReturnData(callbackUrl, data.return_job_status as boolean);
 
       if (jobType === 1) {
         validateEnrollWithId(image_details, data.idInfo.entered);
