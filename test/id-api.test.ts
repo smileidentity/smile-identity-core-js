@@ -1,8 +1,8 @@
-const keypair = require('keypair');
-const nock = require('nock');
-const packageJson = require('../package.json');
+import keypair from 'keypair';
+import nock from 'nock';
+import * as packageJson from '../package.json';
 
-const { IDApi, Signature } = require('..');
+import { IDApi, Signature } from '..';
 
 const pair = keypair();
 
@@ -34,12 +34,14 @@ describe('IDapi', () => {
     it('should ensure that the partner_params are present', async () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      //@ts-ignore
       await expect(instance.submit_job(null, {})).rejects.toThrow(new Error('Please ensure that you send through partner params'));
     });
 
     it('should ensure that the partner_params are an object', async () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      //@ts-ignore
       await expect(instance.submit_job('not partner params', {})).rejects.toThrow(new Error('Partner params needs to be an object'));
     });
 
@@ -50,19 +52,20 @@ describe('IDapi', () => {
       it(`should ensure that partner_params contains ${key}`, async () => {
         expect.assertions(1);
         const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-        await expect(instance.submit_job(partner_params, {}, {}, { return_job_status: true })).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
+        await expect(instance.submit_job(partner_params, {})).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
 
       it(`should ensure that in partner_params, ${key} is not an empty string`, async () => {
         expect.assertions(1);
         const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-        await expect(instance.submit_job(partner_params, {}, {}, { return_job_status: true })).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
+        await expect(instance.submit_job(partner_params, {})).rejects.toThrow(new Error(`Please make sure that ${key} is included in the partner params`));
       });
     });
 
     it('should ensure that the id_info is an object', async () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
+      //@ts-ignore
       await expect(instance.submit_job({ user_id: '1', job_id: '1', job_type: 5 }, '')).rejects.toThrow(new Error('ID Info needs to be an object'));
     });
 
@@ -82,6 +85,7 @@ describe('IDapi', () => {
       expect.assertions(1);
       const instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = { user_id: '1', job_id: '1', job_type: 4 };
+      //@ts-ignore
       await expect(instance.submit_job(partner_params, null)).rejects.toThrow(new Error('Please ensure that you are setting your job_type to 5 to query ID Api'));
     });
 
@@ -123,7 +127,6 @@ describe('IDapi', () => {
         FullName: 'some  person',
         DOB: 'NaN-NaN-NaN',
         Photo: 'Not Available',
-        signature: 'RKYX2ZVpvNTFW8oXdN3iTvQcefV93VMo18LQ/Uco0=|7f0b0d5ebc3e5499c224f2db478e210d1860f01368ebc045c7bbe6969f1c08ba',
         ...new Signature('001', mockApiKey).generate_signature(timestamp),
       };
 

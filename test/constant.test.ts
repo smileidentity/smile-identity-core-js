@@ -1,4 +1,4 @@
-const { JOB_TYPE } = require('..');
+import { JOB_TYPE } from '..';
 
 describe('Constant', () => {
   it('should have correct jobtypes', () => {

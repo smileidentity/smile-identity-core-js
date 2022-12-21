@@ -15,10 +15,15 @@ interface PartnerParams {
 }
 
 interface IdInfo {
-  entered?: boolean | string | undefined,
-  country?: string | undefined,
-  id_type?: string | undefined,
-  id_number?: string | undefined,
+  entered?: boolean | string;
+  country?: string,
+  id_type?: string,
+  id_number?: string,
+  first_name?: string,
+  middle_name?: string,
+  last_name?: string,
+  dob?: string,
+  phone_number?: string,
 }
 
 type TokenRequestParams = {

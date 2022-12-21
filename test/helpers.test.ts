@@ -1,4 +1,4 @@
-const { mapServerUri, sdkVersionInfo, validatePartnerParams } = require('../src/helpers');
+import { mapServerUri, sdkVersionInfo, validatePartnerParams } from '../src/helpers';
 
 describe('helpers', () => {
   it('mapServerUri', () => {
@@ -17,6 +17,7 @@ describe('helpers', () => {
     ];
 
     testCases.forEach((testCase) => {
+      //@ts-ignore
       expect(mapServerUri(testCase.input)).toEqual(testCase.expected);
     });
   });
@@ -44,6 +45,7 @@ describe('helpers', () => {
     testCases.forEach((testCase) => {
       let error = { message: null };
       try {
+        //@ts-ignore
         validatePartnerParams(testCase.input);
       } catch (err) {
         error = err;

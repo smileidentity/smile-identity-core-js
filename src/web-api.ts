@@ -96,7 +96,7 @@ const validateBooleans = (options: OptionsParam): OptionsParam => {
  * @param {string|undefined} callbackUrl - The callback URL.
  * @param {boolean} returnJobStatus - Whether to return job status.
  */
-const validateReturnData = (callbackUrl: string | undefined, returnJobStatus: boolean) => {
+const validateReturnData = (callbackUrl: string | undefined, returnJobStatus?: boolean) => {
   if ((typeof callbackUrl !== 'string' || callbackUrl.length === 0) && !returnJobStatus) {
     throw new Error('Please choose to either get your response via the callback or job status query');
   }
@@ -274,7 +274,7 @@ const configurePrepUploadPayload = ({
  * @param {object} serverInformation - server information.
  * @returns {object} - formatted payload.
  */
-const configureInfoJson = (data: { [k: string]: string | number | Array<{ [k: string]: number | string }> }, serverInformation: { [k: string]: string | number }) => ({
+const configureInfoJson = (data: { [k: string]: string | number | Array<{ [k: string]: number | string }> }, serverInformation: { [k: string]: string | number }) : object => ({
   package_information: {
     apiVersion: {
       buildNumber: 0,
@@ -463,10 +463,10 @@ export class WebApi {
    * staging and 1 for production.
    */
   partner_id: string
-  default_callback: string
+  default_callback: string|null|undefined
   api_key: string
   url: string
-  constructor(partner_id: string, default_callback: string, api_key: string, sid_server: string | number) {
+  constructor(partner_id: string, default_callback: string|null|undefined, api_key: string, sid_server: string | number) {
     this.partner_id = partner_id;
     this.default_callback = default_callback;
     this.api_key = api_key;
@@ -511,13 +511,15 @@ export class WebApi {
    * @throws {Error} If any of the required parameters are missing or if the request fails.
    * @memberof WebApi
    */
-  get_web_token(requestParams: TokenRequestParams) {
+  get_web_token(requestParams: TokenRequestParams): Promise<{
+    token: string;
+  }> {
     return getWebToken(
       this.partner_id,
       this.api_key,
       this.url,
       requestParams,
-      this.default_callback,
+      this.default_callback as string,
     );
   }
 

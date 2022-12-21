@@ -1,4 +1,4 @@
-const packageJson = require('../package.json');
+import * as packageJson from "../package.json"
 import { sidServerMapping } from './constants';
 import { PartnerParams } from "./shared";
 
