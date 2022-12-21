@@ -18,6 +18,15 @@ type PayloadData = {
 
 type ServerInformation = { [k: string]: string | number };
 
+type QueryPayload = {
+  api_key: string;
+  partner_id: string;
+  partner_params: PartnerParams;
+  url: string;
+  return_history: boolean;
+  return_images: boolean;
+};
+
 /**
  * Validates if the information required to submit a job is present.
  *
@@ -345,14 +354,7 @@ const queryJobStatus = ({
   url: sidUrl,
   return_history,
   return_images,
-}: {
-  api_key: string;
-  partner_id: string;
-  partner_params: PartnerParams;
-  url: string;
-  return_history: boolean;
-  return_images: boolean;
-}, counter: number | undefined = 0): Promise<object> => new Promise((resolve, reject) => {
+}: QueryPayload, counter: number | undefined = 0): Promise<object> => new Promise((resolve, reject) => {
   // call job status for the result of the job
   const timeout = counter < 4 ? 2000 : 4000;
   const updatedCounter = counter + 1;
@@ -400,7 +402,7 @@ const queryJobStatus = ({
  * @throws {Error} - if the request fails or times out.
  */
 const uploadFile = (
-  data: { [k: string]: string | number | Array<object> },
+  data: { [k: string]: string | number | Array<object> | PartnerParams | boolean },
   zipFile: Uint8Array,
   signedUrl: string,
   smile_job_id: string,
@@ -416,7 +418,7 @@ const uploadFile = (
 ).then((resp) => {
   if (resp.status === 200) {
     if (data.return_job_status) {
-      return queryJobStatus(data);
+      return queryJobStatus(data as QueryPayload);
     }
     return Promise.resolve({ success: true, smile_job_id });
   }
@@ -454,9 +456,11 @@ const zipUpFile = (images: Array<{
  * @param {object} payload - data required to upload the zip file to s3.
  * @returns {Promise<object>} the job status response.
  */
-const setupRequests = (payload: { [k: string]: string | object }): Promise<object> => axios.post(
+const setupRequests = (payload: { [k: string]: unknown }): Promise<object> => axios.post(
   `https://${payload.url}/upload`,
-  configurePrepUploadPayload(payload),
+  configurePrepUploadPayload(payload as {
+    [k: string]: string | object;
+  }),
 ).then(({ data }) => Promise.all([
   zipUpFile(payload.images as Array<{
     image_type_id: number;
@@ -465,7 +469,9 @@ const setupRequests = (payload: { [k: string]: string | object }): Promise<objec
   }>, configureInfoJson(payload as PayloadData, data)),
   Promise.resolve(data),
 ])).then(([zipFile,
-  { upload_url, smile_job_id }]) => uploadFile(payload, zipFile, upload_url, smile_job_id));
+  { upload_url, smile_job_id }]) => uploadFile(payload as {
+  [k: string]: string | number | object[];
+}, zipFile, upload_url, smile_job_id));
 
 export class WebApi {
   /**
@@ -593,7 +599,7 @@ export class WebApi {
 
       const callbackUrl = (options && options.optional_callback) || this.default_callback;
       const jobType = parseInt(partner_params.job_type.toString(), 10);
-      const data = {
+      const data : { [k:string]:unknown } = {
         partner_id: this.partner_id,
         api_key: this.api_key,
         url: this.url,
@@ -612,10 +618,10 @@ export class WebApi {
       };
 
       validateImages(image_details, options.use_enrolled_image, jobType);
-      validateReturnData(callbackUrl, data.return_job_status as boolean);
+      validateReturnData(callbackUrl as string, data.return_job_status as boolean);
 
       if (jobType === 1) {
-        validateEnrollWithId(image_details, data.idInfo.entered);
+        validateEnrollWithId(image_details, (data.idInfo as IdInfo).entered);
       } else if (jobType === 6) {
         validateDocumentVerification(image_details);
       }
