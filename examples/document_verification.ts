@@ -5,7 +5,7 @@
 
 // Change to smile-identity-core if you're using this snippet in your project.
 /* eslint-disable import/no-relative-packages */
-import { WebApi } from '../dist';
+import { WebApi } from '..';
 
 // Initialize
 // login to the Smile Identity portal to view your partner id.
