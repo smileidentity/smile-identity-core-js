@@ -1,11 +1,13 @@
-import express, { json, static as express_static } from 'express';
+/* eslint-disable import/no-unresolved */
+import { express, static as express_static, json } from 'express';
 import { v4 as UUID } from 'uuid';
 import { config } from 'dotenv';
-import smileIdentityCore from 'smile-identity-core';
+import { WebApi } from 'smile-identity-core';
+/* eslint-enable import/no-unresolved */
 
 config();
 
-const SIDWebAPI = smileIdentityCore.WebApi;
+const SIDWebAPI = WebApi;
 
 const app = express();
 

@@ -2,7 +2,8 @@ import * as smileIdentityCore from '..';
 
 describe('smile-identity-core', () => {
   it('should export an object', () => {
-    expect(smileIdentityCore).toBeInstanceOf<object>(Object);
+    expect(typeof smileIdentityCore).toBe('object');
+    expect(smileIdentityCore).not.toBeNull();
   });
 
   it('should export four classes', () => {
