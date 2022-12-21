@@ -1,8 +1,8 @@
-const smileIdentityCore = require('..');
+import  * as smileIdentityCore  from "..";
 
 describe('smile-identity-core', () => {
   it('should export an object', () => {
-    expect(smileIdentityCore).toBeInstanceOf(Object);
+    expect(smileIdentityCore).toBeInstanceOf<Object>(Object);
   });
 
   it('should export four classes', () => {
