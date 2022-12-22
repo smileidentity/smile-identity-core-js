@@ -1,6 +1,6 @@
 {
   "name": "smile-identity-core",
-  "version": "2.0.0",
+  "version": "3.0.0-pre",
   "description": "The official Smile Identity Node SDK",
   "main": "dist/index.js",
   "scripts": {
