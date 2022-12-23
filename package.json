@@ -16,6 +16,7 @@
     "jszip": "^3.10.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.20.5",
     "@babel/core": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.18.6",
