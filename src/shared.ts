@@ -1,4 +1,4 @@
-interface OptionsParam {
+export interface OptionsParam {
   return_history?: boolean;
   return_images?: boolean;
   return_image_links?: boolean;
@@ -7,13 +7,13 @@ interface OptionsParam {
   optional_callback?: string
 }
 
-interface PartnerParams {
+export interface PartnerParams {
   user_id: string | number;
   job_id: string | number;
   job_type: number;
 }
 
-interface IdInfo {
+export interface IdInfo {
   entered?: boolean | string;
   country?: string,
   id_type?: string,
@@ -25,13 +25,9 @@ interface IdInfo {
   phone_number?: string,
 }
 
-type TokenRequestParams = {
+export type TokenRequestParams = {
   user_id: string;
   job_id: string;
   product: string;
   callback_url: string;
-};
-
-export {
-  type PartnerParams, type IdInfo, type OptionsParam, type TokenRequestParams,
 };
