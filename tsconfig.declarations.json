@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipDefaultLibCheck": true,
+    "outFile": "./dist/types",
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+  }
+}
