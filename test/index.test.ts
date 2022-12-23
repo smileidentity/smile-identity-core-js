@@ -27,12 +27,12 @@ describe('smile-identity-core', () => {
     beforeAll(() => {
       jest.resetModules();
       global.window = {};
-      console.error = jest.fn();
+      console.warn = jest.fn();
       require('..'); // eslint-disable-line global-require
     });
 
     it('should throw an error when run in a browser', () => {
-      expect(console.error).toHaveBeenCalledWith('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
+      expect(console.warn).toHaveBeenCalledWith('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
     });
   });
 });
