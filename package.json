@@ -2,7 +2,7 @@
   "name": "smile-identity-core",
   "version": "3.0.0-pre",
   "description": "The official Smile Identity Node SDK",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "types": "./dist/types.d.ts",
   "scripts": {
     "prepublish": "tsc && tsc --project tsconfig.declarations.json",
