@@ -3,9 +3,10 @@
   "version": "3.0.0-pre",
   "description": "The official Smile Identity Node SDK",
   "main": "dist/index.js",
+  "types": "./types",
   "scripts": {
-    "build": "tsc",
-    "lint": "eslint $(git ls-files '*.js' '*.ts')",
+    "prepublishOnly": "babel src --out-dir ./dist/src --extensions '.ts' && babel index.ts --out-file ./dist/index.js && tsc",
+    "lint": "eslint $(git ls-files '*.js' '*.ts') && tsc --noEmit",
     "start": "node dist/index.js",
     "test": "jest --coverage"
   },
