@@ -12,7 +12,7 @@ import { PartnerParams } from './shared';
  */
 export const mapServerUri = (uriOrKey: string | number): string => {
   if (uriOrKey in sidServerMapping) {
-    return sidServerMapping[uriOrKey];
+    return sidServerMapping[uriOrKey as number];
   }
   return uriOrKey as string;
 };

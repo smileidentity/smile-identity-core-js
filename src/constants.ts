@@ -59,7 +59,7 @@ export const JOB_TYPE = {
   COMPARE_USER_INFO: 9,
 };
 
-export const sidServerMapping : { [k:string | number]: string } = {
+export const sidServerMapping : { [k:number]: string } = {
   0: 'testapi.smileidentity.com/v1',
   1: 'api.smileidentity.com/v1',
 };
