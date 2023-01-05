@@ -68,7 +68,6 @@ app.post('/', async (req, res) => {
 
 // NOTE: This can be used to process responses. Don't forget to add it as a
 // callback option in the `connection` config on L22.
-// eslint-disable-next-line no-unused-vars
-app.post('/callback', (_req, _res, _next) => { });
+app.post('/callback');
 
 app.listen(process.env.PORT || 4000);

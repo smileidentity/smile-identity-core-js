@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 /**
  * Generate a signature for the given input.
@@ -9,7 +9,7 @@ const crypto = require('crypto');
  * @param {string|number} timestamp - ISO 8601 timestamp or unix timestamp.
  * @returns {string} the calculated signature.
  */
-const generate_signature = (partnerID, apiKey, timestamp) => {
+const generate_signature = (partnerID: string, apiKey: string, timestamp: string | number) => {
   const isoTimestamp = typeof timestamp === 'number' ? new Date(timestamp).toISOString() : timestamp;
   // validates that the timestamp is a valid ISO 8601 timestamp.
   new Date(isoTimestamp).toISOString(); // eslint-disable-line no-new
@@ -21,7 +21,7 @@ const generate_signature = (partnerID, apiKey, timestamp) => {
 };
 
 /* A class to generate signatures for a given partner ID and API key. */
-class Signature {
+export default class Signature {
   /**
    * Instantiates a new Signature object.
    *
@@ -29,7 +29,11 @@ class Signature {
    * for your Smile account.
    * @param {string} apiKey - Smile API Key. Found in the Smile Dashboard.
    */
-  constructor(partnerID, apiKey) {
+  partnerID: string;
+
+  apiKey: string;
+
+  constructor(partnerID: string, apiKey: string) {
     this.partnerID = partnerID;
     this.apiKey = apiKey;
   }
@@ -45,16 +49,15 @@ class Signature {
    * }} - An object containing the signature and timestamp.
    * @throws {Error} - If the timestamp is invalid.
    */
-  generate_signature(timestamp = new Date().toISOString()) {
+  generate_signature(timestamp: (string | number) = new Date().toISOString()):
+  { signature: string, timestamp: number | string } {
     return {
       signature: generate_signature(this.partnerID, this.apiKey, timestamp),
       timestamp,
     };
   }
 
-  confirm_signature(timestamp, signature) {
+  confirm_signature(timestamp: string | number, signature: string) {
     return generate_signature(this.partnerID, this.apiKey, timestamp) === signature;
   }
 }
-
-module.exports = Signature;

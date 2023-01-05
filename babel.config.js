@@ -6,5 +6,8 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.jso
 const nodeVersionNumber = packageJson.engines.node.replace(/^>=v/, '');
 
 module.exports = {
-  presets: [['@babel/preset-env', { targets: { node: nodeVersionNumber } }]],
+  presets: [
+    ['@babel/preset-env', { targets: { node: nodeVersionNumber } }],
+    '@babel/preset-typescript',
+  ],
 };

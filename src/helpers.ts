@@ -1,5 +1,6 @@
-const packageJson = require('../package.json');
-const { sidServerMapping } = require('./constants');
+import * as packageJson from '../package.json';
+import { sidServerMapping } from './constants';
+import { PartnerParams } from './shared';
 
 /**
  * Converts a numeric key to a smile server URI, or
@@ -9,15 +10,15 @@ const { sidServerMapping } = require('./constants');
  * numeric key that represents it.
  * @returns {string} URI of smile server if in map, original input if URI.
  */
-const mapServerUri = (uriOrKey) => {
+export const mapServerUri = (uriOrKey: string | number): string => {
   if (uriOrKey in sidServerMapping) {
-    return sidServerMapping[uriOrKey];
+    return sidServerMapping[uriOrKey as number];
   }
-  return uriOrKey;
+  return uriOrKey as string;
 };
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */
-const sdkVersionInfo = {
+export const sdkVersionInfo: { source_sdk: string; source_sdk_version: string; } = {
   source_sdk: 'javascript',
   source_sdk_version: packageJson.version,
 };
@@ -32,7 +33,7 @@ const sdkVersionInfo = {
  * @throws {Error} if partnerParams is not an object or is missing required keys.
  * @returns {void}
  */
-const validatePartnerParams = (partnerParams) => {
+export const validatePartnerParams = (partnerParams: PartnerParams): void => {
   if (!partnerParams) {
     throw new Error('Please ensure that you send through partner params');
   }
@@ -42,14 +43,9 @@ const validatePartnerParams = (partnerParams) => {
   }
 
   ['user_id', 'job_id', 'job_type'].forEach((key) => {
-    if (!partnerParams[key]) {
+    const partnerKey = key as keyof PartnerParams;
+    if (!partnerParams[partnerKey]) {
       throw new Error(`Please make sure that ${key} is included in the partner params`);
     }
   });
-};
-
-module.exports = {
-  mapServerUri,
-  sdkVersionInfo,
-  validatePartnerParams,
 };

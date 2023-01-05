@@ -1,11 +1,11 @@
-const path = require('path');
-const keypair = require('keypair');
-const nock = require('nock');
-const packageJson = require('../package.json');
+import path from 'path';
+import keypair from 'keypair';
+import nock from 'nock';
+import packageJson from '../package.json';
 
-const {
+import {
   WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
-} = require('..');
+} from '..';
 
 const pair = keypair();
 const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');

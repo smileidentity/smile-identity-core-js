@@ -4,7 +4,7 @@
  * @readonly
  * @enum {number}
  */
-const IMAGE_TYPE = {
+export const IMAGE_TYPE = {
   /** SELFIE_IMAGE_FILE Selfie image in .png or .jpg file format */
   SELFIE_IMAGE_FILE: 0,
   /** ID_CARD_IMAGE_FILE ID card image in .png or .jpg file format */
@@ -29,7 +29,7 @@ const IMAGE_TYPE = {
  * @readonly
  * @enum {number}
  */
-const JOB_TYPE = {
+export const JOB_TYPE = {
   /** BIOMETRIC_KYC Verify the ID information of your users using facial biometrics */
   BIOMETRIC_KYC: 1,
   /** SMART_SELFIE_AUTHENTICATION Used to identify your existing users. */
@@ -59,9 +59,7 @@ const JOB_TYPE = {
   COMPARE_USER_INFO: 9,
 };
 
-const sidServerMapping = {
+export const sidServerMapping : { [k:number]: string } = {
   0: 'testapi.smileidentity.com/v1',
   1: 'api.smileidentity.com/v1',
 };
-
-module.exports = { IMAGE_TYPE, JOB_TYPE, sidServerMapping };
