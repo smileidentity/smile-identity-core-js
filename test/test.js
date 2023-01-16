@@ -4,6 +4,7 @@ const WebApi = SmileIdentity.WebApi;
 const Signature = SmileIdentity.Signature;
 const Utilities = SmileIdentity.Utilities;
 const IDApi = SmileIdentity.IDApi;
+const JOBTYPE = SmileIdentity.JOBTYPE
 
 const crypto = require('crypto');
 const https = require('https');
@@ -102,7 +103,7 @@ describe('WebApi', () => {
       let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 1
+          job_type: JOBTYPE.BIOMETRIC_KYC
         };
       let instance = new WebApi('001', '', Buffer.from(pair.public).toString('base64'), 0);
       instance.submit_job(partner_params, [{image_type_id: 0, image: 'path/to/image.jpg'}], {}, {}).catch((err) => {
@@ -133,7 +134,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 1
+          job_type: JOBTYPE.BIOMETRIC_KYC
         };
         delete partner_params[key];
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
@@ -149,7 +150,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 1
+          job_type: JOBTYPE.BIOMETRIC_KYC
         };
         partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
@@ -164,7 +165,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1
+        job_type: JOBTYPE.BIOMETRIC_KYC
       };
       instance.submit_job(partner_params, null, {}, {return_job_status: true}).catch((err) => {
         assert.equal(err.message, 'Please ensure that you send through image details');
@@ -177,7 +178,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1
+        job_type: JOBTYPE.BIOMETRIC_KYC
       };
       instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
         assert.equal(err.message, 'Image details needs to be an array');
@@ -190,7 +191,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1
+        job_type: JOBTYPE.BIOMETRIC_KYC
       };
       instance.submit_job(partner_params, [], {}, {return_job_status: true}).catch((err) => {
         assert.equal(err.message, 'You need to send through at least one selfie image');
@@ -203,7 +204,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1
+        job_type: JOBTYPE.BIOMETRIC_KYC
       };
       instance.submit_job(partner_params, [{image_type_id: 1, image: 'path/to/image'}], {}, {return_job_status: true}).catch((err) => {
         assert.equal(err.message, 'You need to send through at least one selfie image');
@@ -216,7 +217,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1
+        job_type: JOBTYPE.BIOMETRIC_KYC
       };
       ['country', 'id_type', 'id_number'].forEach((key) => {
         let id_info = {
@@ -238,7 +239,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 1
+        job_type: JOBTYPE.BIOMETRIC_KYC
       };
 
       instance.submit_job(partner_params, [{image_type_id: 0, image: 'path/to/image.jpg'}], {}, {return_job_status: true}).catch((err) => {
@@ -252,7 +253,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       ['return_job_status', 'return_images', 'return_history'].forEach((flag) => {
         let options = {};
@@ -269,7 +270,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {};
       let smile_job_id = '0000000111';
@@ -308,7 +309,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         signature: true
@@ -349,7 +350,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5
+        job_type: JOBTYPE.BASIC_KYC
       };
       let id_info = {
         first_name: 'John',
@@ -366,7 +367,7 @@ describe('WebApi', () => {
         "PartnerParams": {
             "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
             "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-            "job_type": 5
+            "job_type": JOBTYPE.BASIC_KYC
         },
         "ResultType": "ID Verification",
         "ResultText": "ID Number Validated",
@@ -409,7 +410,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5
+        job_type: JOBTYPE.BASIC_KYC
       };
       let id_info = {
         first_name: 'John',
@@ -427,7 +428,7 @@ describe('WebApi', () => {
         "PartnerParams": {
             "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
             "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-            "job_type": 5
+            "job_type": JOBTYPE.BASIC_KYC
         },
         "ResultType": "ID Verification",
         "ResultText": "ID Number Validated",
@@ -470,7 +471,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         signature: true
@@ -505,7 +506,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_job_status: true
@@ -556,7 +557,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_job_status: true,
@@ -617,7 +618,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_job_status: true
@@ -675,7 +676,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6
+          job_type: JOBTYPE.DOCUMENT_VERIFICATION
         };
 
         instance.submit_job(
@@ -697,7 +698,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6
+          job_type: JOBTYPE.DOCUMENT_VERIFICATION
         };
 
         instance.submit_job(
@@ -720,7 +721,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6
+          job_type: JOBTYPE.DOCUMENT_VERIFICATION
         };
 
         instance.submit_job(
@@ -743,7 +744,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6
+          job_type: JOBTYPE.DOCUMENT_VERIFICATION
         };
 
         nock('https://testapi.smileidentity.com')
@@ -781,7 +782,7 @@ describe('WebApi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 6
+          job_type: JOBTYPE.DOCUMENT_VERIFICATION
         };
 
         nock('https://testapi.smileidentity.com')
@@ -820,7 +821,7 @@ describe('WebApi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_images: true,
@@ -1027,7 +1028,7 @@ describe('Utilities', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_images: true,
@@ -1079,7 +1080,7 @@ describe('Utilities', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_images: true,
@@ -1128,7 +1129,7 @@ describe('Utilities', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       let options = {
         return_images: true,
@@ -1206,7 +1207,7 @@ describe('IDapi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 5
+          job_type: JOBTYPE.BASIC_KYC
         };
         delete partner_params[key];
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
@@ -1222,7 +1223,7 @@ describe('IDapi', () => {
         let partner_params = {
           user_id: '1',
           job_id: '1',
-          job_type: 5
+          job_type: JOBTYPE.BASIC_KYC
         };
         partner_params[key] = '';
         instance.submit_job(partner_params, {}, {}, {return_job_status: true}).catch((err) => {
@@ -1234,7 +1235,7 @@ describe('IDapi', () => {
 
     it('should ensure that the id_info is an object', (done) => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-      instance.submit_job({user_id: '1', job_id: '1', job_type: 5}, '').catch((err) => {
+      instance.submit_job({user_id: '1', job_id: '1', job_type: JOBTYPE.BASIC_KYC}, '').catch((err) => {
         assert.equal(err.message, 'ID Info needs to be an object')
         done();
       });
@@ -1242,7 +1243,7 @@ describe('IDapi', () => {
 
     it('should ensure that the id_info object is not empty or nil', (done) => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-      instance.submit_job({user_id: '1', job_id: '1', job_type: 5}, {}).catch((err) => {
+      instance.submit_job({user_id: '1', job_id: '1', job_type: JOBTYPE.BASIC_KYC}, {}).catch((err) => {
         assert.equal(err.message, 'Please make sure that id_info not empty or nil')
         done();
       });
@@ -1250,7 +1251,7 @@ describe('IDapi', () => {
 
     it('should ensure that the id_info object is not empty or nil', (done) => {
       let instance = new IDApi('001', Buffer.from(pair.public).toString('base64'), 0);
-      instance.submit_job({user_id: '1', job_id: '1', job_type: 5}, {id_number: ''}).catch((err) => {
+      instance.submit_job({user_id: '1', job_id: '1', job_type: JOBTYPE.BASIC_KYC}, {id_number: ''}).catch((err) => {
         assert.equal(err.message, 'Please provide an id_number in the id_info payload')
         done();
       });
@@ -1261,7 +1262,7 @@ describe('IDapi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 4
+        job_type: JOBTYPE.SMART_SELFIE_REGISTRATION
       };
       instance.submit_job(partner_params, null).catch((err) => {
         assert.equal(err.message, 'Please ensure that you are setting your job_type to 5 to query ID Api')
@@ -1274,7 +1275,7 @@ describe('IDapi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5
+        job_type: JOBTYPE.BASIC_KYC
       };
       let id_info = {
         first_name: 'John',
@@ -1291,7 +1292,7 @@ describe('IDapi', () => {
         "PartnerParams": {
             "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
             "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-            "job_type": 5
+            "job_type": JOBTYPE.BASIC_KYC
         },
         "ResultType": "ID Verification",
         "ResultText": "ID Number Validated",
@@ -1344,7 +1345,7 @@ describe('IDapi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5
+        job_type: JOBTYPE.BASIC_KYC
       };
       let id_info = {
         first_name: 'John',
@@ -1380,7 +1381,7 @@ describe('IDapi', () => {
       let partner_params = {
         user_id: '1',
         job_id: '1',
-        job_type: 5
+        job_type: JOBTYPE.BASIC_KYC
       };
       let id_info = {
         first_name: 'John',
@@ -1397,7 +1398,7 @@ describe('IDapi', () => {
         "PartnerParams": {
             "user_id": "dmKaJazQCziLc6Tw9lwcgzLo",
             "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
-            "job_type": 5
+            "job_type": JOBTYPE.BASIC_KYC
         },
         "ResultType": "ID Verification",
         "ResultText": "ID Number Validated",

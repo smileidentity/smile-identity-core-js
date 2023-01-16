@@ -8,6 +8,7 @@ const path = require('path');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
+const JOBTYPE = require('./constants/job-type');
 
 const url = require('url');
 
@@ -46,7 +47,7 @@ class WebApi {
         _private.partnerParams(partner_params);
         _private.idInfo(id_info);
 
-        if(parseInt(partner_params.job_type, 10) !== 5) {
+        if(parseInt(partner_params.job_type, 10) !== JOBTYPE.BASIC_KYC) {
           _private.images(image_details);
           _private.checkBoolean('return_job_status', options.return_job_status);
           _private.checkBoolean('return_history', options.return_history);
@@ -109,7 +110,7 @@ class WebApi {
         if (images.length === 0 ||
           !(
             images.some(hasSelfieImage) ||
-            (options.use_enrolled_image && parseInt(partner_params.job_type, 10) === 6)
+            (options.use_enrolled_image && parseInt(partner_params.job_type, 10) === JOBTYPE.DOCUMENT_VERIFICATION)
           )
         ) {
           throw new Error('You need to send through at least one selfie image');
@@ -372,14 +373,14 @@ class WebApi {
         _private.data.reject = reject;
         _private.validateInputs();
 
-        if (parseInt(_private.data.partner_params.job_type, 10) === 5) {
+        if (parseInt(_private.data.partner_params.job_type, 10) === JOBTYPE.BASIC_KYC) {
           _private.setupIDApiRequest();
         } else {
           _private.validateReturnData();
-          if (parseInt(_private.data.partner_params.job_type, 10) === 1) {
+          if (parseInt(_private.data.partner_params.job_type, 10) === JOBTYPE.BIOMETRIC_KYC) {
             _private.validateEnrollWithID();
           }
-          if (parseInt(_private.data.partner_params.job_type, 10) === 6) {
+          if (parseInt(_private.data.partner_params.job_type, 10) === JOBTYPE.DOCUMENT_VERIFICATION) {
             _private.validateDocumentVerification();
           }
           _private.setupRequests();
