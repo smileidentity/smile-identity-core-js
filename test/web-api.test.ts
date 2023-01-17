@@ -701,7 +701,7 @@ describe('WebApi', () => {
           expect(body.id_type).toEqual(id_info.id_type);
           expect(body.id_number).toEqual(id_info.id_number);
           expect(body.business_type).toEqual(id_info.business_type);
-          expect(body.partner_params.job_type).toEqual(JOB_TYPE.BUSINESS_VERIFICATION);
+          expect(body.partner_params).toEqual(partner_params);
           return true;
         })
         .reply(200, businessVerificationResp.success)
