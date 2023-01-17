@@ -694,7 +694,7 @@ describe('WebApi', () => {
         business_type: 'co',
       };
 
-      nock('https://testapi.smileidentity.com')
+      const scope = nock('https://testapi.smileidentity.com')
         .post('/v1/business_verification', (body) => {
           expect(body.partner_id).toEqual('001');
           expect(body.country).toEqual(id_info.country);
@@ -705,10 +705,10 @@ describe('WebApi', () => {
           return true;
         })
         .reply(200, businessVerificationResp.success)
-        .isDone();
 
       const resp = await instance.submit_job(partner_params, null, id_info, { signature: true });
       expect(resp.data).toEqual(businessVerificationResp.success);
+      expect(scope.isDone()).toBe(true);
     });
 
     it('report an error on unsuccessfull business verification', async () => {
@@ -725,21 +725,21 @@ describe('WebApi', () => {
         business_type: '',
       };
 
-      nock('https://testapi.smileidentity.com')
+      const scope = nock('https://testapi.smileidentity.com')
         .post('/v1/business_verification', (body) => {
           expect(body.partner_id).toEqual('001');
           expect(body.country).toEqual(id_info.country);
           expect(body.id_type).toEqual(id_info.id_type);
           expect(body.id_number).toEqual(id_info.id_number);
           expect(body.business_type).toEqual(id_info.business_type);
-          expect(body.partner_params.job_type).toEqual(JOB_TYPE.BUSINESS_VERIFICATION);
+          expect(body.partner_params).toEqual(partner_params);
           return true;
         })
         .reply(400, businessVerificationResp.unsupported_business_type)
-        .isDone();
 
       const promise = instance.submit_job(partner_params, null, id_info, { signature: true });
       await expect(promise).rejects.toThrow(new Error('Request failed with status code 400'));
+      expect(scope.isDone()).toBe(true);
     });
   });
 
