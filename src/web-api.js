@@ -8,6 +8,7 @@ const path = require('path');
 const Signature = require('./signature');
 const Utilities = require('./utilities');
 const IDApi = require('./id-api');
+const BusinessVerification = require('./business-verification');
 const JOBTYPE = require('./constants/job-type');
 
 const url = require('url');
@@ -47,7 +48,9 @@ class WebApi {
         _private.partnerParams(partner_params);
         _private.idInfo(id_info);
 
-        if(parseInt(partner_params.job_type, 10) !== JOBTYPE.BASIC_KYC) {
+        const job_type = parseInt(partner_params.job_type, 10);
+
+        if(job_type !== JOBTYPE.BASIC_KYC && job_type !== JOBTYPE.BUSINESS_VERIFICATION) {
           _private.images(image_details);
           _private.checkBoolean('return_job_status', options.return_job_status);
           _private.checkBoolean('return_history', options.return_history);
@@ -160,6 +163,12 @@ class WebApi {
         // calculate an outgoing signature
         return new Signature(_private.data.partner_id, _private.data.api_key).generate_signature(timestamp || _private.data.timestamp);
       },
+      calculateSecurityToken: function(timestamp) {
+        if (options && options.signature) {
+          return _private.determineSignature()
+        }
+        return _private.determineSecKey()
+      },
       configurePrepUploadJson: function() {
         var body =  {
           file_name: 'selfie.zip',
@@ -178,6 +187,20 @@ class WebApi {
         return JSON.stringify(body);
       },
       setupRequests: function() {
+        if (_private.data.partner_params.job_type === JOBTYPE.BUSINESS_VERIFICATION) {
+          const business_verification = new BusinessVerification();
+          const security_token = _private.calculateSecurityToken();
+          const body = {
+            partner_id: _private.data.partner_id,
+            partner_params: _private.data.partner_params,
+            ..._private.data.id_info,
+            ...security_token,
+          }
+
+          return business_verification.submit_job(_private.data.url, body)
+            .then(resp => _private.data.resolve(resp))
+            .catch(err => _private.data.reject(err));
+        }
         // make the first call to the upload lambda
         var json = '';
         var path = `/${_private.data.url.split('/')[1]}/upload`;

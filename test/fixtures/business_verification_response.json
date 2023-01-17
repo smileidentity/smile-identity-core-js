@@ -1,0 +1,104 @@
+{
+  "success": {
+     "signature": "---",
+     "timestamp": "2022-10-17T10:46:49.392Z",
+     "JSONVersion": "1.0.0",
+     "SmileJobID": "0000001927",
+     "PartnerParams": {
+       "user_id": "kyb_test_user_008",
+       "job_id": "DeXyJOGtaACFFfbZ2kxjuICE",
+       "job_type": 7
+     },
+     "ResultType": "Business Verification",
+     "ResultText": "Business Verified",
+     "ResultCode": "1012",
+     "IsFinalResult": "true",
+     "Actions": {
+       "Verify_Business": "Verified",
+       "Return_Business_Info": "Returned"
+     },
+     "company_information": {
+       "company_type": "PRIVATE_COMPANY_LIMITED_BY_SHARES",
+       "country": "Nigeria",
+       "address": "10, Workbox, Ojora Close, Victoria Island, Lagos",
+       "registration_number": "0000000",
+       "search_number": "0000000",
+       "authorized_shared_capital": "10000000",
+       "industry": "Technology Solutions Company",
+       "tax_id": "N/A",
+       "registration_date": "2016-01-28T16:06:22.003+00:00",
+       "phone": "08000000000",
+       "legal_name": "SMILE IDENTITY NIGERIA LIMITED",
+       "state": "LAGOS",
+       "email": "smile@smileidentity.com",
+       "status": "ACTIVE"
+     },
+     "fiduciaries": [
+       {
+         "name": "Company X",
+         "fiduciary_type": "SECRETARY_COMPANY",
+         "address": "10, Workbox, Ojora Close, Victoria Island, Lagos",
+         "registration_number": "000000",
+         "status": "N/A"
+       }
+     ],
+     "beneficial_owners": [
+       {
+         "shareholdings": "100000",
+         "address": "10, Workbox, Ojora Close, Victoria Island, Lagos",
+         "gender": "Male",
+         "nationality": "Nigerian",
+         "registration_number": "N/A",
+         "name": "Joe Bloggs",
+         "shareholder_type": "Individual",
+         "phone_number": "0123456789"
+       },
+       {
+         "shareholdings": "700000",
+         "address": "1234 Main Street Anytown Anystate 00000 USA",
+         "gender": "Not Applicable",
+         "nationality": "N/A",
+         "registration_number": "000000",
+         "name": "XYZ Widget Corporation",
+         "shareholder_type": "Corporate",
+         "phone_number": "0123456789"
+       }
+     ],
+     "proprietors": [],
+     "documents": {
+       "search_certificate": ""
+     },
+     "directors": [
+       {
+         "shareholdings": "100000",
+         "id_number": "A000000",
+         "address": "10, Workbox, Ojora Close, Victoria Island, Lagos",
+         "occupation": "CEO",
+         "gender": "MALE",
+         "nationality": "Nigerian",
+         "date_of_birth": "2000-09-20",
+         "name": "Joe Doe Leo",
+         "id_type": "Passport",
+         "phone_number": "0123456789"
+       },
+       {
+         "shareholdings": "100000",
+         "id_number": "A000000",
+         "address": "1234 Main Street Anytown Anystate 00000 USA",
+         "occupation": "COO",
+         "gender": "FEMALE",
+         "nationality": "American",
+         "date_of_birth": "2000-01-01",
+         "name": "Jane Doe",
+         "id_type": "Passport",
+         "phone_number": "0123456789"
+       }
+     ],
+     "success": true
+  },
+  "unsupported_business_type": {
+    "error": "Unsupported business type",
+    "code": "2413",
+    "success": false
+  }
+}

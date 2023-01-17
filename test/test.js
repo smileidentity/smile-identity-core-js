@@ -816,6 +816,139 @@ describe('WebApi', () => {
     });
   });
 
+  describe("business verification", () => {
+    it('ensures all required info is present on the id_info', () => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOBTYPE.BUSINESS_VERIFICATION
+      };
+      let id_info = {
+         country: 'NG',
+         id_type: 'BUSINESS_REGISTRATION',
+         id_number: 'A000000',
+         business_type: 'co'
+      }
+
+      const required_fields = ['country', 'id_type', 'id_number']
+      required_fields.forEach(field => {
+        instance.submit_job(partner_params, null, {...id_info, [field]: null}).catch(err => {
+          assert.equal(err.message, `Please make sure that ${field} is included in the id_info`);
+        });
+      });
+    });
+
+    it('ensures the correct business_type is provided on the id_info', () => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOBTYPE.BUSINESS_VERIFICATION
+      };
+      let id_info = {
+         country: 'NG',
+         id_type: 'BUSINESS_REGISTRATION',
+         id_number: 'A000000',
+         business_type: 'xxx'
+      }
+
+      instance.submit_job(partner_params, null, id_info).catch(err => {
+        assert.equal(err.message, 'Invalid business_type. Please provide business_type as one of (co,bn,it)');
+      });
+    });
+
+    it('ensures the correct id_type is provided on the id_info', () => {
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOBTYPE.BUSINESS_VERIFICATION
+      };
+      let id_info = {
+         country: 'NG',
+         id_type: 'xxx',
+         id_number: 'A000000',
+         business_type: 'co'
+      }
+
+      instance.submit_job(partner_params, null, id_info).catch(err => {
+        assert.equal(err.message, 'Invalid id_type. Please provide id_types as one of (BASIC_BUSINESS_REGISTRATION,BUSINESS_REGISTRATION,TAX_INFORMATION)');
+      });
+    });
+
+    it('successfully sends a business verification job', (done) => {
+      const business_verification_response = require("./fixtures/business_verification_response.json");
+
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOBTYPE.BUSINESS_VERIFICATION
+      };
+      let id_info = {
+         country: 'NG',
+         id_type: 'BUSINESS_REGISTRATION',
+         id_number: 'A000000',
+         business_type: 'co'
+      }
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/business_verification', (body) => {
+          assert.equal(body.partner_id, '001');
+          assert.equal(body.country, id_info.country);
+          assert.equal(body.id_type, id_info.id_type);
+          assert.equal(body.id_number, id_info.id_number);
+          assert.equal(body.business_type, id_info.business_type);
+          assert.equal(body.partner_params.job_type, JOBTYPE.BUSINESS_VERIFICATION);
+          return true;
+        })
+        .reply(200, business_verification_response.success)
+        .isDone();
+
+      instance.submit_job(partner_params, null, id_info, {signature: true}).then(resp => {
+          assert.deepEqual(resp, business_verification_response.success);
+          done();
+      })
+    });
+
+    it('report an error on unsuccessfull business verification', (done) => {
+      const business_verification_response = require("./fixtures/business_verification_response.json");
+
+      let instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      let partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOBTYPE.BUSINESS_VERIFICATION
+      };
+      let id_info = {
+         country: 'NG',
+         id_type: 'BUSINESS_REGISTRATION',
+         id_number: 'A000000',
+         business_type: ''
+      }
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/business_verification', (body) => {
+          assert.equal(body.partner_id, '001');
+          assert.equal(body.country, id_info.country);
+          assert.equal(body.id_type, id_info.id_type);
+          assert.equal(body.id_number, id_info.id_number);
+          assert.equal(body.business_type, id_info.business_type);
+          assert.equal(body.partner_params.job_type, JOBTYPE.BUSINESS_VERIFICATION);
+          return true;
+        })
+        .reply(400, business_verification_response.unsupported_business_type)
+        .isDone();
+
+      instance.submit_job(partner_params, null, id_info, {signature: true})
+        .catch(err => {
+          assert.equal(err.message, '2413:Unsupported business type');
+          done();
+        });
+    });
+  });
+
   describe('#get_job_status', () => {
     it("should call Utilities.new().get_job_status", (done) => {
       let partner_params = {
