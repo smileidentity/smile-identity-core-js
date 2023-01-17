@@ -23,6 +23,7 @@ export interface IdInfo {
   last_name?: string,
   dob?: string,
   phone_number?: string,
+  business_type?: string,
 }
 
 export type TokenRequestParams = {

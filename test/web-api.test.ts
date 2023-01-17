@@ -2,6 +2,7 @@ import path from 'path';
 import keypair from 'keypair';
 import nock from 'nock';
 import packageJson from '../package.json';
+import business_verification_response from './fixtures/business_verification_response.json';
 
 import {
   WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
@@ -675,6 +676,70 @@ describe('WebApi', () => {
 
         expect(response).toEqual(jobStatusResponse);
       });
+    });
+  });
+
+  describe('business_verification', () => {
+    it('successfully sends a business verification job', async () => {
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.BUSINESS_VERIFICATION,
+      };
+      const id_info = {
+        country: 'NG',
+        id_type: 'BUSINESS_REGISTRATION',
+        id_number: 'A000000',
+        business_type: 'co',
+      };
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/business_verification', (body) => {
+          expect(body.partner_id).toEqual('001');
+          expect(body.country).toEqual(id_info.country);
+          expect(body.id_type).toEqual(id_info.id_type);
+          expect(body.id_number).toEqual(id_info.id_number);
+          expect(body.business_type).toEqual(id_info.business_type);
+          expect(body.partner_params.job_type).toEqual(JOB_TYPE.BUSINESS_VERIFICATION);
+          return true;
+        })
+        .reply(200, business_verification_response.success)
+        .isDone();
+
+      const resp = await instance.submit_job(partner_params, null, id_info, { signature: true });
+      expect(resp.data).toEqual(business_verification_response.success);
+    });
+
+    it('report an error on unsuccessfull business verification', async () => {
+      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.BUSINESS_VERIFICATION,
+      };
+      const id_info = {
+        country: 'NG',
+        id_type: 'BUSINESS_REGISTRATION',
+        id_number: 'A000000',
+        business_type: '',
+      };
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/business_verification', (body) => {
+          expect(body.partner_id).toEqual('001');
+          expect(body.country).toEqual(id_info.country);
+          expect(body.id_type).toEqual(id_info.id_type);
+          expect(body.id_number).toEqual(id_info.id_number);
+          expect(body.business_type).toEqual(id_info.business_type);
+          expect(body.partner_params.job_type).toEqual(JOB_TYPE.BUSINESS_VERIFICATION);
+          return true;
+        })
+        .reply(400, business_verification_response.unsupported_business_type)
+        .isDone();
+
+      const promise = instance.submit_job(partner_params, null, id_info, { signature: true });
+      await expect(promise).rejects.toThrow(new Error('Request failed with status code 400'));
     });
   });
 
