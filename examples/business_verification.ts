@@ -20,7 +20,6 @@ const partner_params = {
   job_type: 1,
 };
 
-
 // Set fields required by the ID authority for a verification job.
 const id_info = {
   country: '<2-letter country code>',

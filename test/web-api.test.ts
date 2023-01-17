@@ -704,7 +704,7 @@ describe('WebApi', () => {
           expect(body.partner_params).toEqual(partner_params);
           return true;
         })
-        .reply(200, businessVerificationResp.success)
+        .reply(200, businessVerificationResp.success);
 
       const resp = await instance.submit_job(partner_params, null, id_info, { signature: true });
       expect(resp.data).toEqual(businessVerificationResp.success);
@@ -735,7 +735,7 @@ describe('WebApi', () => {
           expect(body.partner_params).toEqual(partner_params);
           return true;
         })
-        .reply(400, businessVerificationResp.unsupported_business_type)
+        .reply(400, businessVerificationResp.unsupported_business_type);
 
       const promise = instance.submit_job(partner_params, null, id_info, { signature: true });
       await expect(promise).rejects.toThrow(new Error('Request failed with status code 400'));
