@@ -26,7 +26,7 @@ const id_info = {
   id_type: '<id type>',
   id_number: '<valid id number>',
   entered: 'true', // must be a string
-  busines_type: '<valid business type>', // this is optional
+  busines_type: '<valid business type>', // this is optional except when country is NG
 };
 
 // Set the options for the job.
