@@ -615,24 +615,22 @@ export class WebApi {
         ...validateBooleans(options),
       };
 
-      if (!isBusinessVerification) {
-        data.idInfo = {
-          ...id_info,
-          entered: validateIdInfo(id_info, jobType),
-        };
-        data.images = image_details;
-        validateImages(image_details, options.use_enrolled_image, jobType);
-        validateReturnData(callbackUrl as string, data.return_job_status as boolean);
+      if (isBusinessVerification) {
+        return axios.post(`https://${this.url}/business_verification`, { ...data, ...id_info });
       }
+
+      data.idInfo = {
+        ...id_info,
+        entered: validateIdInfo(id_info, jobType),
+      };
+      data.images = image_details;
+      validateImages(image_details, options.use_enrolled_image, jobType);
+      validateReturnData(callbackUrl as string, data.return_job_status as boolean);
 
       if (jobType === 1) {
         validateEnrollWithId(image_details, (data.idInfo as IdInfo).entered);
       } else if (jobType === 6) {
         validateDocumentVerification(image_details);
-      }
-
-      if (isBusinessVerification) {
-        return axios.post(`https://${this.url}/business_verification`, { ...data, ...id_info });
       }
 
       return setupRequests(data);

@@ -14,16 +14,16 @@ export interface PartnerParams {
 }
 
 export interface IdInfo {
+  business_type?: string;
+  country?: string;
+  dob?: string;
   entered?: boolean | string;
-  country?: string,
-  id_type?: string,
-  id_number?: string,
-  first_name?: string,
-  middle_name?: string,
-  last_name?: string,
-  dob?: string,
-  phone_number?: string,
-  business_type?: string,
+  first_name?: string;
+  id_type?: string;
+  last_name?: string;
+  id_number?: string;
+  middle_name?: string;
+  phone_number?: string;
 }
 
 export type TokenRequestParams = {

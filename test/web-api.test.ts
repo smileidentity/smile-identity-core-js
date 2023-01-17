@@ -2,7 +2,7 @@ import path from 'path';
 import keypair from 'keypair';
 import nock from 'nock';
 import packageJson from '../package.json';
-import business_verification_response from './fixtures/business_verification_response.json';
+import businessVerificationResp from './fixtures/business_verification_response.json';
 
 import {
   WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
@@ -704,11 +704,11 @@ describe('WebApi', () => {
           expect(body.partner_params.job_type).toEqual(JOB_TYPE.BUSINESS_VERIFICATION);
           return true;
         })
-        .reply(200, business_verification_response.success)
+        .reply(200, businessVerificationResp.success)
         .isDone();
 
       const resp = await instance.submit_job(partner_params, null, id_info, { signature: true });
-      expect(resp.data).toEqual(business_verification_response.success);
+      expect(resp.data).toEqual(businessVerificationResp.success);
     });
 
     it('report an error on unsuccessfull business verification', async () => {
@@ -735,7 +735,7 @@ describe('WebApi', () => {
           expect(body.partner_params.job_type).toEqual(JOB_TYPE.BUSINESS_VERIFICATION);
           return true;
         })
-        .reply(400, business_verification_response.unsupported_business_type)
+        .reply(400, businessVerificationResp.unsupported_business_type)
         .isDone();
 
       const promise = instance.submit_job(partner_params, null, id_info, { signature: true });
