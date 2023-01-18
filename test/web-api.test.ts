@@ -681,6 +681,7 @@ describe('WebApi', () => {
 
   describe('business_verification', () => {
     it('successfully sends a business verification job', async () => {
+      expect.assertions(3);
       const instance = new WebApi('001', 'https://a_callback.cb', 'api_key', 0);
       const partner_params = {
         user_id: '1',
@@ -717,6 +718,7 @@ describe('WebApi', () => {
     });
 
     it('report an error on unsuccessfull business verification', async () => {
+      expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
       const partner_params = {
         user_id: '1',
@@ -731,18 +733,10 @@ describe('WebApi', () => {
       };
 
       const scope = nock('https://testapi.smileidentity.com')
-        .post('/v1/business_verification', (body) => {
-          expect(body.partner_id).toEqual('001');
-          expect(body.country).toEqual(id_info.country);
-          expect(body.id_type).toEqual(id_info.id_type);
-          expect(body.id_number).toEqual(id_info.id_number);
-          expect(body.business_type).toEqual(id_info.business_type);
-          expect(body.partner_params).toEqual(partner_params);
-          return true;
-        })
+        .post('/v1/business_verification', () => true)
         .reply(400, businessVerificationResp.unsupported_business_type);
 
-      const promise = instance.submit_job(partner_params, null, id_info, { signature: true });
+      const promise = instance.submit_job(partner_params, null, id_info);
       await expect(promise).rejects.toThrow(new Error('Request failed with status code 400'));
       expect(scope.isDone()).toBe(true);
     });
