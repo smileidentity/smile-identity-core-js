@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `BASIC_KYC`, `UPDATE_PHOTO` and `COMPARE_USER_INFO` to `JOB_TYPE`.
 - Define `sidServerMapping` in constants.
 - Add typescript support
+- Add support for running business verification jobs through `IDApi`.
 
 ### Changed
 - Allow `WebApi` to submit `consent_information` as part of `id_info`.

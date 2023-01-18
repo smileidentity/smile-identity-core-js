@@ -2,7 +2,6 @@ import path from 'path';
 import keypair from 'keypair';
 import nock from 'nock';
 import packageJson from '../package.json';
-import businessVerificationResp from './fixtures/business_verification_response.json';
 
 import {
   WebApi, Signature, IMAGE_TYPE, JOB_TYPE,
@@ -676,69 +675,6 @@ describe('WebApi', () => {
 
         expect(response).toEqual(jobStatusResponse);
       });
-    });
-  });
-
-  describe('business_verification', () => {
-    it('successfully sends a business verification job', async () => {
-      expect.assertions(3);
-      const instance = new WebApi('001', 'https://a_callback.cb', 'api_key', 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: JOB_TYPE.BUSINESS_VERIFICATION,
-      };
-      const id_info = {
-        country: 'NG',
-        id_type: 'BUSINESS_REGISTRATION',
-        id_number: 'A000000',
-        business_type: 'co',
-      };
-
-      const postMock = jest.fn(() => true);
-      const scope = nock('https://testapi.smileidentity.com')
-        .post('/v1/business_verification', postMock)
-        .reply(200, businessVerificationResp.success);
-
-      const resp = await instance.submit_job(partner_params, null, id_info);
-      expect(resp.data).toEqual(businessVerificationResp.success);
-      expect(scope.isDone()).toBe(true);
-      expect(postMock).toHaveBeenCalledWith({
-        api_key: 'api_key',
-        business_type: id_info.business_type,
-        callback_url: 'https://a_callback.cb',
-        country: id_info.country,
-        id_number: id_info.id_number,
-        id_type: id_info.id_type,
-        partner_id: '001',
-        timestamp: expect.any(String),
-        signature: expect.any(String),
-        partner_params,
-      });
-    });
-
-    it('report an error on unsuccessfull business verification', async () => {
-      expect.assertions(2);
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
-      const partner_params = {
-        user_id: '1',
-        job_id: '1',
-        job_type: JOB_TYPE.BUSINESS_VERIFICATION,
-      };
-      const id_info = {
-        country: 'NG',
-        id_type: 'BUSINESS_REGISTRATION',
-        id_number: 'A000000',
-        business_type: '',
-      };
-
-      const scope = nock('https://testapi.smileidentity.com')
-        .post('/v1/business_verification', () => true)
-        .reply(400, businessVerificationResp.unsupported_business_type);
-
-      const promise = instance.submit_job(partner_params, null, id_info);
-      await expect(promise).rejects.toThrow(new Error('Request failed with status code 400'));
-      expect(scope.isDone()).toBe(true);
     });
   });
 

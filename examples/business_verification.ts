@@ -1,6 +1,6 @@
 // Change to smile-identity-core if you're using this snippet in your project.
 /* eslint-disable import/no-relative-packages */
-import { WebApi } from '..';
+import { IDApi } from '..';
 
 // Initialize
 // Login to the Smile Identity Portal to view your partner id.
@@ -9,9 +9,8 @@ const partner_id = '<Your partner ID>';
 const api_key = '<Your API key>';
 // Use '0' for the sandbox server, use '1' for production server.
 const sid_server = '<0 or 1>';
-const default_callback = '<Put your default callback url here>';
 
-const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+const connection = new IDApi(partner_id, api_key, sid_server);
 
 // Create required tracking parameters
 const partner_params = {
@@ -29,15 +28,10 @@ const id_info = {
   busines_type: '<valid business type>', // this is optional except when country is NG
 };
 
-// Set the options for the job.
-const options = {
-  signature: true,
-};
-
 // Submit the job. This method returns a promise.
 (async () => {
   try {
-    const result = await connection.submit_job(partner_params, null, id_info, options);
+    const result = await connection.submit_job(partner_params, id_info);
     console.info(result);
   } catch (error) {
     console.error(error);
