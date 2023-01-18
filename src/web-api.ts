@@ -10,7 +10,6 @@ import { getWebToken } from './web-token';
 import {
   IdInfo, PartnerParams, OptionsParam, TokenRequestParams,
 } from './shared';
-import { JOB_TYPE } from './constants';
 
 type PayloadData = {
 
@@ -601,39 +600,24 @@ export class WebApi {
 
       const callbackUrl = (options && options.optional_callback) || this.default_callback;
       const jobType = parseInt(partner_params.job_type.toString(), 10);
-      let data : { [k:string]:unknown } = {
+      const data : { [k:string]:unknown } = {
         partner_id: this.partner_id,
         api_key: this.api_key,
+        url: this.url,
         callback_url: callbackUrl,
         timestamp: new Date().toISOString(),
+        images: image_details,
         partner_params: {
           ...partner_params,
           job_type: jobType,
         },
-      };
-
-      const signature = new Signature(this.partner_id, this.api_key);
-      const generatedSignature = signature.generate_signature(data.timestamp as string);
-      if (jobType === JOB_TYPE.BUSINESS_VERIFICATION) {
-        const body = {
-          ...data,
+        idInfo: {
           ...id_info,
-          ...generatedSignature,
-        };
-        return axios.post(`https://${this.url}/business_verification`, body);
-      }
-
-      data.idInfo = {
-        ...id_info,
-        entered: validateIdInfo(id_info, jobType),
-      };
-      data.images = image_details;
-
-      data = {
-        url: this.url,
-        ...data,
+          entered: validateIdInfo(id_info, jobType),
+        },
         ...validateBooleans(options),
       };
+
       validateImages(image_details, options.use_enrolled_image, jobType);
       validateReturnData(callbackUrl as string, data.return_job_status as boolean);
 
