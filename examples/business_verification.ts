@@ -25,7 +25,9 @@ const id_info = {
   id_type: '<id type>',
   id_number: '<valid id number>',
   entered: true,
-  busines_type: '<valid business type>', // this is optional except when country is NG
+  business_type: '<valid business type>', // this is optional except when country is NG
+  postal_address: '<valid postal address>', // this is optional, except when country is KE
+  postal_code: '<valid postal address>', // this is optional, except when country is KE
 };
 
 // Submit the job. This method returns a promise.
