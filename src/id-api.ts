@@ -78,7 +78,8 @@ export class IDApi {
           ...id_info,
           ...signature,
         };
-        return await axios.post(`https://${this.url}/business_verification`, body);
+        const response = await axios.post(`https://${this.url}/business_verification`, body);
+        return response.data;
       }
 
       const response = await axios.post(`https://${this.url}/id_verification`, configurePayload(data));
