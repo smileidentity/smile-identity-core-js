@@ -218,7 +218,7 @@ describe('IDapi', () => {
         .reply(200, businessVerificationResp.success);
 
       const resp = await instance.submit_job(partner_params, id_info);
-      expect(resp.data).toEqual(businessVerificationResp.success);
+      expect(resp).toEqual(businessVerificationResp.success);
       expect(scope.isDone()).toBe(true);
       expect(postMock).toHaveBeenCalledWith({
         api_key: 'api_key',
