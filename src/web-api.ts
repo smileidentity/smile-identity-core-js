@@ -601,22 +601,26 @@ export class WebApi {
 
       const callbackUrl = (options && options.optional_callback) || this.default_callback;
       const jobType = parseInt(partner_params.job_type.toString(), 10);
-      const isBusinessVerification = jobType === JOB_TYPE.BUSINESS_VERIFICATION;
-      const data : { [k:string]:unknown } = {
+      let data : { [k:string]:unknown } = {
         partner_id: this.partner_id,
         api_key: this.api_key,
-        url: this.url,
         callback_url: callbackUrl,
         timestamp: new Date().toISOString(),
         partner_params: {
           ...partner_params,
           job_type: jobType,
         },
-        ...validateBooleans(options),
       };
 
-      if (isBusinessVerification) {
-        return axios.post(`https://${this.url}/business_verification`, { ...data, ...id_info });
+      const signature = new Signature(this.partner_id, this.api_key);
+      const generatedSignature = signature.generate_signature(data.timestamp as string);
+      if (jobType === JOB_TYPE.BUSINESS_VERIFICATION) {
+        const body = {
+          ...data,
+          ...id_info,
+          ...generatedSignature,
+        };
+        return axios.post(`https://${this.url}/business_verification`, body);
       }
 
       data.idInfo = {
@@ -624,6 +628,12 @@ export class WebApi {
         entered: validateIdInfo(id_info, jobType),
       };
       data.images = image_details;
+
+      data = {
+        url: this.url,
+        ...data,
+        ...validateBooleans(options),
+      };
       validateImages(image_details, options.use_enrolled_image, jobType);
       validateReturnData(callbackUrl as string, data.return_job_status as boolean);
 

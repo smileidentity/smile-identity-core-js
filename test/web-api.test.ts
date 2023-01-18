@@ -681,7 +681,7 @@ describe('WebApi', () => {
 
   describe('business_verification', () => {
     it('successfully sends a business verification job', async () => {
-      const instance = new WebApi('001', 'https://a_callback.cb', Buffer.from(pair.public).toString('base64'), 0);
+      const instance = new WebApi('001', 'https://a_callback.cb', 'api_key', 0);
       const partner_params = {
         user_id: '1',
         job_id: '1',
@@ -694,21 +694,26 @@ describe('WebApi', () => {
         business_type: 'co',
       };
 
+      const postMock = jest.fn(() => true);
       const scope = nock('https://testapi.smileidentity.com')
-        .post('/v1/business_verification', (body) => {
-          expect(body.partner_id).toEqual('001');
-          expect(body.country).toEqual(id_info.country);
-          expect(body.id_type).toEqual(id_info.id_type);
-          expect(body.id_number).toEqual(id_info.id_number);
-          expect(body.business_type).toEqual(id_info.business_type);
-          expect(body.partner_params).toEqual(partner_params);
-          return true;
-        })
+        .post('/v1/business_verification', postMock)
         .reply(200, businessVerificationResp.success);
 
-      const resp = await instance.submit_job(partner_params, null, id_info, { signature: true });
+      const resp = await instance.submit_job(partner_params, null, id_info);
       expect(resp.data).toEqual(businessVerificationResp.success);
       expect(scope.isDone()).toBe(true);
+      expect(postMock).toHaveBeenCalledWith({
+        api_key: 'api_key',
+        business_type: id_info.business_type,
+        callback_url: 'https://a_callback.cb',
+        country: id_info.country,
+        id_number: id_info.id_number,
+        id_type: id_info.id_type,
+        partner_id: '001',
+        timestamp: expect.any(String),
+        signature: expect.any(String),
+        partner_params,
+      });
     });
 
     it('report an error on unsuccessfull business verification', async () => {
