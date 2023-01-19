@@ -595,8 +595,8 @@ export class WebApi {
       validatePartnerParams(partner_params);
 
       const jobType = parseInt(partner_params.job_type.toString(), 10);
-      const useIDApi = jobType === JOB_TYPE.BASIC_KYC || jobType === JOB_TYPE.BUSINESS_VERIFICATION;
-      if (useIDApi) {
+      const useIdApi = jobType === JOB_TYPE.BASIC_KYC || jobType === JOB_TYPE.BUSINESS_VERIFICATION;
+      if (useIdApi) {
         return new IDApi(this.partner_id, this.api_key, this.url)
           .submit_job(partner_params, id_info);
       }
