@@ -70,7 +70,7 @@ export class IDApi {
 
       if (jobType === JOB_TYPE.BUSINESS_VERIFICATION) {
         const signature = new Signature(this.partner_id, this.api_key)
-          .generate_signature(new Date().toISOString());
+          .generate_signature();
         const body = {
           api_key: this.api_key,
           partner_id: this.partner_id,
