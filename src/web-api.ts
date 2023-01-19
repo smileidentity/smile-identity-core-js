@@ -7,6 +7,7 @@ import { Utilities } from './utilities';
 import { IDApi } from './id-api';
 import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { getWebToken } from './web-token';
+import { JOB_TYPE } from './constants';
 import {
   IdInfo, PartnerParams, OptionsParam, TokenRequestParams,
 } from './shared';
@@ -593,13 +594,14 @@ export class WebApi {
     try {
       validatePartnerParams(partner_params);
 
-      if (parseInt(partner_params && partner_params.job_type.toString(), 10) === 5) {
+      const jobType = parseInt(partner_params.job_type.toString(), 10);
+      const useIDApi = jobType === JOB_TYPE.BASIC_KYC || jobType === JOB_TYPE.BUSINESS_VERIFICATION;
+      if (useIDApi) {
         return new IDApi(this.partner_id, this.api_key, this.url)
           .submit_job(partner_params, id_info);
       }
 
       const callbackUrl = (options && options.optional_callback) || this.default_callback;
-      const jobType = parseInt(partner_params.job_type.toString(), 10);
       const data : { [k:string]:unknown } = {
         partner_id: this.partner_id,
         api_key: this.api_key,
