@@ -16,7 +16,7 @@ const connection = new IDApi(partner_id, api_key, sid_server);
 const partner_params = {
   job_id: '<put your unique job ID here>',
   user_id: '<put your unique ID for the user here>',
-  job_type: 1,
+  job_type: 7,
 };
 
 // Set fields required by the ID authority for a verification job.
