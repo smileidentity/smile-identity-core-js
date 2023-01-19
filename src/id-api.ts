@@ -2,6 +2,7 @@ import axios from 'axios';
 import Signature from './signature';
 import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { IdInfo, PartnerParams } from './shared';
+import { JOB_TYPE } from './constants';
 
 const validateIdInfo = (idInfo: IdInfo) => {
   if (typeof idInfo !== 'object') {
@@ -51,8 +52,10 @@ export class IDApi {
     try {
       validatePartnerParams(partner_params);
 
-      if (parseInt(partner_params.job_type.toString(), 10) !== 5) {
-        throw new Error('Please ensure that you are setting your job_type to 5 to query ID Api');
+      const jobType = parseInt(partner_params.job_type.toString(), 10);
+
+      if (jobType !== JOB_TYPE.BASIC_KYC && jobType !== JOB_TYPE.BUSINESS_VERIFICATION) {
+        throw new Error(`Please ensure that you are setting your job_type to ${JOB_TYPE.BASIC_KYC} or ${JOB_TYPE.BUSINESS_VERIFICATION} to query ID Api`);
       }
 
       validateIdInfo(id_info);
@@ -64,6 +67,20 @@ export class IDApi {
         partner_params,
         sid_server: this.sid_server,
       };
+
+      if (jobType === JOB_TYPE.BUSINESS_VERIFICATION) {
+        const signature = new Signature(this.partner_id, this.api_key)
+          .generate_signature();
+        const body = {
+          api_key: this.api_key,
+          partner_id: this.partner_id,
+          partner_params,
+          ...id_info,
+          ...signature,
+        };
+        const response = await axios.post(`https://${this.url}/business_verification`, body);
+        return response.data;
+      }
 
       const response = await axios.post(`https://${this.url}/id_verification`, configurePayload(data));
       return response.data;
