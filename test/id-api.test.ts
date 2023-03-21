@@ -91,8 +91,8 @@ describe('IDapi', () => {
     });
 
     it('should be able to send a job', async () => {
-      expect.assertions(17);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 5 };
+      expect.assertions(18);
+      const partner_params = { user_id: '1', job_id: '1', job_type: 5, app_name: 'test_app' };
       const id_info = {
         first_name: 'John',
         last_name: 'Doe',
@@ -112,6 +112,7 @@ describe('IDapi', () => {
           user_id: 'dmKaJazQCziLc6Tw9lwcgzLo',
           job_id: 'DeXyJOGtaACFFfbZ2kxjuICE',
           job_type: 5,
+          app_name: 'test_app',
         },
         ResultType: 'ID Verification',
         ResultText: 'ID Number Validated',
@@ -138,6 +139,7 @@ describe('IDapi', () => {
         expect(body.partner_params.user_id).toEqual(partner_params.user_id);
         expect(body.partner_params.job_id).toEqual(partner_params.job_id);
         expect(body.partner_params.job_type).toEqual(partner_params.job_type);
+        expect(body.partner_params.app_name).toEqual(partner_params.app_name);
         expect(body.first_name).toEqual(id_info.first_name);
         expect(body.last_name).toEqual(id_info.last_name);
         expect(body.middle_name).toEqual(id_info.middle_name);

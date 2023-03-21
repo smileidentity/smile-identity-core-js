@@ -207,6 +207,47 @@ describe('WebApi', () => {
       }));
     });
 
+    it('should be able to send a job with optional partner params', async () => {
+      expect.assertions(2);
+      const instance = new WebApi('001', 'https://a_callback.cb', mockApiKey, 0);
+      const partner_params = {
+        job_id: '1',
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
+        user_id: '1',
+        app_name: 'test_app',
+      };
+      const options = {};
+      const smileJobId = '0000000111';
+      const postBody = jest.fn(() => true);
+      nock('https://testapi.smileidentity.com').post('/v1/upload', postBody).reply(200, {
+        upload_url: 'https://some_url.com',
+        smile_job_id: smileJobId,
+      });
+      // todo: find a way to unzip and test info.json
+      nock('https://some_url.com').put('/').reply(200);
+
+      const response = await instance.submit_job(partner_params, [{
+        image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+        image: 'base6image',
+      }], {}, options);
+      expect(response).toEqual({ success: true, smile_job_id: smileJobId });
+      expect(postBody).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        smile_client_id: '001',
+        signature: expect.any(String),
+        timestamp: expect.any(String),
+        file_name: 'selfie.zip',
+        partner_params: {
+          user_id: '1',
+          job_id: '1',
+          job_type: 2,
+          app_name: 'test_app',
+        },
+        callback_url: 'https://a_callback.cb',
+        source_sdk: 'javascript',
+        source_sdk_version: packageJson.version,
+      }));
+    });
+
     it('should be able to send a job with a signature', async () => {
       expect.assertions(2);
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
