@@ -11,6 +11,7 @@ export interface PartnerParams {
   user_id: string | number;
   job_id: string | number;
   job_type: number;
+  [key: string]: unknown
 }
 
 export interface IdInfo {
