@@ -92,7 +92,9 @@ describe('IDapi', () => {
 
     it('should be able to send a job', async () => {
       expect.assertions(18);
-      const partner_params = { user_id: '1', job_id: '1', job_type: 5, app_name: 'test_app' };
+      const partner_params = {
+        user_id: '1', job_id: '1', job_type: 5, app_name: 'test_app',
+      };
       const id_info = {
         first_name: 'John',
         last_name: 'Doe',
