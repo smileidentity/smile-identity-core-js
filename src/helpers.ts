@@ -5,7 +5,6 @@ import { PartnerParams } from './shared';
 /**
  * Converts a numeric key to a smile server URI, or
  * returns the original URI.
- *
  * @param {string|number} uriOrKey - The URI of a Smile ID server or a
  * numeric key that represents it.
  * @returns {string} URI of smile server if in map, original input if URI.
@@ -25,7 +24,6 @@ export const sdkVersionInfo: { source_sdk: string; source_sdk_version: string; }
 
 /**
  * Validates that partner params contains required fields.
- *
  * @param {object} partnerParams - required parameters for each job.
  * @param {string} partnerParams.user_id - your unique identifier for the user.
  * @param {string} partnerParams.job_id - your unique identifier for the job.
