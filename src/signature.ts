@@ -2,7 +2,6 @@ import crypto from 'crypto';
 
 /**
  * Generate a signature for the given input.
- *
  * @param {string} partnerID - Smile partner ID. This is a unique identifier
  * for your Smile account.
  * @param {string} apiKey - Smile API Key. Found in the Smile Dashboard.
@@ -24,7 +23,6 @@ const generate_signature = (partnerID: string, apiKey: string, timestamp: string
 export default class Signature {
   /**
    * Instantiates a new Signature object.
-   *
    * @param {string} partnerID - Smile Partner ID. This is a unique identifier
    * for your Smile account.
    * @param {string} apiKey - Smile API Key. Found in the Smile Dashboard.
@@ -40,7 +38,6 @@ export default class Signature {
 
   /**
    * Generates a signature for a given timestamp.
-   *
    * @param {string|number|undefined} timestamp - A valid ISO 8601 timestamp or unix time in
    * milliseconds. If undefined, the current time will be used.
    * @returns {{

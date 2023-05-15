@@ -5,7 +5,6 @@ import { TokenRequestParams } from './shared';
 
 /**
  * Gets an authorization token from Smile. Used in Hosted Web Integration.
- *
  * @param {string} partner_id - The partner ID.
  * @param {string} api_key - Your Smile API key.
  * @param {string} url - The URL to the Smile ID API.

@@ -30,7 +30,6 @@ type QueryPayload = {
 
 /**
  * Validates if the information required to submit a job is present.
- *
  * @param {{
  *  entered: boolean|string|undefined,
  *  country: string|undefined,
@@ -66,7 +65,6 @@ const validateIdInfo = (idInfo: IdInfo, jobType: number): string => {
 
 /**
  * Type checks boolean value, throws error if not a boolean or falsy, and returns coerced boolean.
- *
  * @param {string} key - The name of the boolean key.
  * @param {boolean|undefined|null} value - The boolean value.
  * @returns {boolean} - true if bool is true, false if bool is falsy.
@@ -84,7 +82,6 @@ const checkBoolean = (key: string, value: boolean | null): boolean => {
 
 /**
  * Coerces keys in an object to booleans. Throws error if any keys are not booleans.
- *
  * @param {object} options - The object to coerce.
  * @param {boolean|undefined|null} options.return_job_status - Whether to return job status.
  * @param {boolean|undefined|null} options.return_images - Whether to return images.
@@ -111,7 +108,6 @@ const validateBooleans = (options: OptionsParam): OptionsParam => {
 
 /**
  * Validates if the valid options were set to return data from the API.
- *
  * @param {string|undefined} callbackUrl - The callback URL.
  * @param {boolean} returnJobStatus - Whether to return job status.
  */
@@ -123,7 +119,6 @@ const validateReturnData = (callbackUrl: string | undefined, returnJobStatus?: b
 
 /**
  * Checks to see if an image is an ID card front image.
- *
  * @param {object} image - image object
  * @param {number} image.image_type_id - smile image type.
  * @param {string} image.image - base64 image or full path to file
@@ -136,7 +131,6 @@ const hasIdImage = ({ image_type_id }: {
 
 /**
  * Checks to see if an image is a selfie image.
- *
  * @param {object} image - image object
  * @param {number} image.image_type_id - smile image type.
  * @param {string} image.image - base64 image or full path to file
@@ -149,7 +143,6 @@ const hasSelfieImage = ({ image_type_id }: {
 
 /**
  * Checks to ensure required images for job type 1 are present.
- *
  * @param {Array<{
  *  image_type_id: number
  * }>} images - Array of images to be uploaded to smile.
@@ -168,7 +161,6 @@ const validateEnrollWithId = (images: Array<{
 
 /**
  * Checks to ensure if images contains an id card image.
- *
  * @param {Array<{
  *  image_type_id: number
  * }>} images - Array of images to be uploaded to smile.
@@ -187,7 +179,6 @@ const validateDocumentVerification = (images: Array<{
 /**
  * Checks to ensure if images is an array and contains a selfie image, or
  * if we can use an enrolled image instead.
- *
  * @param {Array<{
  * image_type_id: number
  * }>} images - Array of images to be uploaded to smile.
@@ -220,7 +211,6 @@ const validateImages = (images: Array<{
 
 /**
  * Differentiates between image files and base64 images based on the image_type_id.
- *
  * @param {Array<{
  *  image_type_id: number
  *  image: string
@@ -256,7 +246,6 @@ const configureImagePayload = (images: Array<{
 
 /**
  * Formats upload payload.
- *
  * @param {{
  *  api_key: string,
  *  callback_url: string,
@@ -290,7 +279,6 @@ const configurePrepUploadPayload = ({
 
 /**
  * Creates the json file sent as part of the zip file
- *
  * @param {object} data - data to be sent to smile.
  * @param {object} serverInformation - server information.
  * @returns {object} - formatted payload.
@@ -335,7 +323,6 @@ const configureInfoJson = (data: PayloadData, serverInformation: ServerInformati
 
 /**
  * Polls the smile server for the result of the job.
- *
  * @param {{
  *  api_key: string,
  *  partner_id: string,
@@ -395,7 +382,6 @@ Promise<object> => new Promise((resolve, reject) => {
 
 /**
  * Upload zip file to s3 using the signed link obtained from the upload lambda
- *
  * @param {object} data - data required to upload the zip file to s3.
  * @param {string} zipFile - the zip file to be uploaded in base64.
  * @param {string} signedUrl - the signed url to upload the zip file to.
@@ -429,7 +415,6 @@ const uploadFile = (
 
 /**
  * Creates a zip file containing the images and the json file.
- *
  * @param {Array<{
  *  image_type_id: number
  *  image: string
@@ -454,7 +439,6 @@ const zipUpFile = (images: Array<{
 
 /**
  * Make the first call to the upload lambda to get the url, then pack the zip, then upload the zip.
- *
  * @param {object} payload - data required to upload the zip file to s3.
  * @returns {Promise<object>} the job status response.
  */
@@ -478,7 +462,6 @@ const setupRequests = (payload: { [k: string]: unknown }): Promise<object> => ax
 export class WebApi {
   /**
    * Creates an instance of WebApi.
-   *
    * @param {string} partner_id - Your Smile Partner ID
    * @param {string} default_callback - The default callback url to use for all requests.
    * @param {string} api_key - Your Smile API Key
@@ -507,7 +490,6 @@ export class WebApi {
 
   /**
    * Get the status of an existing job.
-   *
    * @param {{
    *  user_id: string,
    *  job_id: string,
@@ -530,7 +512,6 @@ export class WebApi {
 
   /**
    * Get a authorization token for the hosted web integration.
-   *
    * @param {{
    *  callback_url: string,
    *  user_id: string,
@@ -557,7 +538,6 @@ export class WebApi {
 
   /**
    * Submit a job to Smile.
-   *
    * @param {{
    *  user_id: string,
    *  job_id: string,

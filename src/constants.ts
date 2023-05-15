@@ -1,6 +1,5 @@
 /**
  * The type of image submitted in the job request
- *
  * @readonly
  * @enum {number}
  */
@@ -25,7 +24,6 @@ export const IMAGE_TYPE = {
 
 /**
  * The type of verification job to be performed
- *
  * @readonly
  * @enum {number}
  */
