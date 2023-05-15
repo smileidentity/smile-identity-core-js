@@ -8,8 +8,15 @@ import crypto from 'crypto';
  * @param {string|number} timestamp - ISO 8601 timestamp or unix timestamp.
  * @returns {string} the calculated signature.
  */
-const generate_signature = (partnerID: string, apiKey: string, timestamp: string | number) => {
-  const isoTimestamp = typeof timestamp === 'number' ? new Date(timestamp).toISOString() : timestamp;
+const generate_signature = (
+  partnerID: string,
+  apiKey: string,
+  timestamp: string | number,
+) => {
+  const isoTimestamp =
+    typeof timestamp === 'number'
+      ? new Date(timestamp).toISOString()
+      : timestamp;
   // validates that the timestamp is a valid ISO 8601 timestamp.
   new Date(isoTimestamp).toISOString(); // eslint-disable-line no-new
   const hmac = crypto.createHmac('sha256', apiKey);
@@ -46,8 +53,10 @@ export default class Signature {
    * }} - An object containing the signature and timestamp.
    * @throws {Error} - If the timestamp is invalid.
    */
-  generate_signature(timestamp: (string | number) = new Date().toISOString()):
-  { signature: string, timestamp: number | string } {
+  generate_signature(timestamp: string | number = new Date().toISOString()): {
+    signature: string;
+    timestamp: number | string;
+  } {
     return {
       signature: generate_signature(this.partnerID, this.apiKey, timestamp),
       timestamp,
@@ -55,6 +64,8 @@ export default class Signature {
   }
 
   confirm_signature(timestamp: string | number, signature: string) {
-    return generate_signature(this.partnerID, this.apiKey, timestamp) === signature;
+    return (
+      generate_signature(this.partnerID, this.apiKey, timestamp) === signature
+    );
   }
 }

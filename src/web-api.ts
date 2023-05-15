@@ -9,11 +9,13 @@ import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { getWebToken } from './web-token';
 import { JOB_TYPE } from './constants';
 import {
-  IdInfo, PartnerParams, OptionsParam, TokenRequestParams,
+  IdInfo,
+  PartnerParams,
+  OptionsParam,
+  TokenRequestParams,
 } from './shared';
 
 type PayloadData = {
-
   [k: string]: string | number | Array<{ [k: string]: number | string }>;
 };
 
@@ -40,27 +42,36 @@ type QueryPayload = {
  * @returns {string} value representing if `entered` is true or false.
  */
 const validateIdInfo = (idInfo: IdInfo, jobType: number): string => {
-  const entered = idInfo.entered === undefined ? 'false' : idInfo.entered.toString();
+  const entered =
+    idInfo.entered === undefined ? 'false' : idInfo.entered.toString();
   if (!('entered' in idInfo) || entered === 'false') {
-    if (jobType === 6) { // NOTE: document verification does not check for `country` and `id_type`.
+    if (jobType === 6) {
+      // NOTE: document verification does not check for `country` and `id_type`.
       ['country', 'id_type'].forEach((key) => {
         const idKey = key as keyof IdInfo;
         if (!idInfo[idKey] || (idInfo[idKey] as string).length === 0) {
-          throw new Error(`Please make sure that ${key} is included in the id_info`);
+          throw new Error(
+            `Please make sure that ${key} is included in the id_info`,
+          );
         }
       });
     }
     return 'false';
-  } if ('entered' in idInfo && entered === 'true') {
+  }
+  if ('entered' in idInfo && entered === 'true') {
     ['country', 'id_type', 'id_number'].forEach((key) => {
       const idKey = key as keyof IdInfo;
       if (!idInfo[idKey] || (idInfo[idKey] as string).length === 0) {
-        throw new Error(`Please make sure that ${key} is included in the id_info`);
+        throw new Error(
+          `Please make sure that ${key} is included in the id_info`,
+        );
       }
     });
     return 'true';
   }
-  throw new Error('Please make sure that idInfo.entered is either true, false, or undefined');
+  throw new Error(
+    'Please make sure that idInfo.entered is either true, false, or undefined',
+  );
 };
 
 /**
@@ -97,8 +108,13 @@ const checkBoolean = (key: string, value: boolean | null): boolean => {
  * @throws {Error} - if any keys are not booleans.
  */
 const validateBooleans = (options: OptionsParam): OptionsParam => {
-  const obj: { [k:string]:boolean } = {};
-  const booleanKeys = ['return_job_status', 'return_history', 'return_images', 'use_enrolled_image'];
+  const obj: { [k: string]: boolean } = {};
+  const booleanKeys = [
+    'return_job_status',
+    'return_history',
+    'return_images',
+    'use_enrolled_image',
+  ];
   booleanKeys.forEach((key) => {
     const optionKey = key as keyof OptionsParam;
     obj[key] = checkBoolean(key, options[optionKey] as boolean);
@@ -111,9 +127,17 @@ const validateBooleans = (options: OptionsParam): OptionsParam => {
  * @param {string|undefined} callbackUrl - The callback URL.
  * @param {boolean} returnJobStatus - Whether to return job status.
  */
-const validateReturnData = (callbackUrl: string | undefined, returnJobStatus?: boolean) => {
-  if ((typeof callbackUrl !== 'string' || callbackUrl.length === 0) && !returnJobStatus) {
-    throw new Error('Please choose to either get your response via the callback or job status query');
+const validateReturnData = (
+  callbackUrl: string | undefined,
+  returnJobStatus?: boolean,
+) => {
+  if (
+    (typeof callbackUrl !== 'string' || callbackUrl.length === 0) &&
+    !returnJobStatus
+  ) {
+    throw new Error(
+      'Please choose to either get your response via the callback or job status query',
+    );
   }
 };
 
@@ -124,7 +148,9 @@ const validateReturnData = (callbackUrl: string | undefined, returnJobStatus?: b
  * @param {string} image.image - base64 image or full path to file
  * @returns {boolean} - true if image is a ID card front image, false otherwise.
  */
-const hasIdImage = ({ image_type_id }: {
+const hasIdImage = ({
+  image_type_id,
+}: {
   image_type_id: number;
   image: string;
 }): boolean => [1, 3].includes(image_type_id);
@@ -136,9 +162,11 @@ const hasIdImage = ({ image_type_id }: {
  * @param {string} image.image - base64 image or full path to file
  * @returns {boolean} - true if image is a ID card front image, false otherwise.
  */
-const hasSelfieImage = ({ image_type_id }: {
-  image_type_id: number,
-  image: string
+const hasSelfieImage = ({
+  image_type_id,
+}: {
+  image_type_id: number;
+  image: string;
 }) => [0, 2].includes(image_type_id);
 
 /**
@@ -150,12 +178,17 @@ const hasSelfieImage = ({ image_type_id }: {
  * @returns {void}
  * @throws {Error} - if images does not contain an image of the front of an id card.
  */
-const validateEnrollWithId = (images: Array<{
-  image_type_id: number;
-  image: string;
-}>, entered?: boolean | string): void => {
+const validateEnrollWithId = (
+  images: Array<{
+    image_type_id: number;
+    image: string;
+  }>,
+  entered?: boolean | string,
+): void => {
   if (!images.some(hasIdImage) && (!entered || entered.toString() !== 'true')) {
-    throw new Error('You are attempting to complete a job type 1 without providing an id card image or id info');
+    throw new Error(
+      'You are attempting to complete a job type 1 without providing an id card image or id info',
+    );
   }
 };
 
@@ -167,12 +200,16 @@ const validateEnrollWithId = (images: Array<{
  * @returns {void}
  * @throws {Error} - if images does not contain an image of the front of an id card.
  */
-const validateDocumentVerification = (images: Array<{
-  image_type_id: number;
-  image: string;
-}>): void => {
+const validateDocumentVerification = (
+  images: Array<{
+    image_type_id: number;
+    image: string;
+  }>,
+): void => {
   if (!images.some(hasIdImage)) {
-    throw new Error('You are attempting to complete a Document Verification job without providing an id card image');
+    throw new Error(
+      'You are attempting to complete a Document Verification job without providing an id card image',
+    );
   }
 };
 
@@ -187,10 +224,14 @@ const validateDocumentVerification = (images: Array<{
  * @returns {void}
  * @throws {Error} - if images does not contain a selfie image.
  */
-const validateImages = (images: Array<{
-  image_type_id: number,
-  image: string
-}>, useEnrolledImage: boolean | undefined, jobType: number): void => {
+const validateImages = (
+  images: Array<{
+    image_type_id: number;
+    image: string;
+  }>,
+  useEnrolledImage: boolean | undefined,
+  jobType: number,
+): void => {
   if (!images) {
     throw new Error('Please ensure that you send through image details');
   }
@@ -202,8 +243,8 @@ const validateImages = (images: Array<{
   // most job types require at least a selfie,
   // JT6 does not when `use_enrolled_image` flag is passed
   if (
-    (!images.some(hasSelfieImage) || images.length === 0)
-    && (!useEnrolledImage || jobType !== 6)
+    (!images.some(hasSelfieImage) || images.length === 0) &&
+    (!useEnrolledImage || jobType !== 6)
   ) {
     throw new Error('You need to send through at least one selfie image');
   }
@@ -221,28 +262,31 @@ const validateImages = (images: Array<{
  *  file_name: string,
  * }>} - Array of images with image split by file_name and base64.
  */
-const configureImagePayload = (images: Array<{
-  image_type_id: number;
-  image: string;
-}>): Array<{
+const configureImagePayload = (
+  images: Array<{
+    image_type_id: number;
+    image: string;
+  }>,
+): Array<{
   image_type_id: number;
   image: string;
   file_name: string;
-}> => images.map(({ image, image_type_id }) => {
-  const imageTypeId = parseInt(image_type_id.toString(), 10);
-  if ([0, 1].includes(image_type_id)) {
+}> =>
+  images.map(({ image, image_type_id }) => {
+    const imageTypeId = parseInt(image_type_id.toString(), 10);
+    if ([0, 1].includes(image_type_id)) {
+      return {
+        image_type_id: imageTypeId,
+        image: '',
+        file_name: path.basename(image),
+      };
+    }
     return {
       image_type_id: imageTypeId,
-      image: '',
-      file_name: path.basename(image),
+      image,
+      file_name: '',
     };
-  }
-  return {
-    image_type_id: imageTypeId,
-    image,
-    file_name: '',
-  };
-});
+  });
 
 /**
  * Formats upload payload.
@@ -265,15 +309,19 @@ const configurePrepUploadPayload = ({
   partner_params,
   timestamp,
   use_enrolled_image,
-}: { [k:string]:string | object }): object => ({
+}: {
+  [k: string]: string | object;
+}): object => ({
   callback_url,
   file_name: 'selfie.zip',
   model_parameters: {},
   partner_params,
   smile_client_id: partner_id,
   use_enrolled_image,
-  ...idInfo as object,
-  ...new Signature(partner_id as string, api_key as string).generate_signature(timestamp as string),
+  ...(idInfo as object),
+  ...new Signature(partner_id as string, api_key as string).generate_signature(
+    timestamp as string,
+  ),
   ...sdkVersionInfo,
 });
 
@@ -283,7 +331,10 @@ const configurePrepUploadPayload = ({
  * @param {object} serverInformation - server information.
  * @returns {object} - formatted payload.
  */
-const configureInfoJson = (data: PayloadData, serverInformation: ServerInformation) : object => ({
+const configureInfoJson = (
+  data: PayloadData,
+  serverInformation: ServerInformation,
+): object => ({
   package_information: {
     apiVersion: {
       buildNumber: 0,
@@ -300,7 +351,8 @@ const configureInfoJson = (data: PayloadData, serverInformation: ServerInformati
     file_name: 'selfie.zip',
     smile_client_id: data.partner_id,
     callback_url: data.callback_url,
-    userData: { // TO ASK what goes here
+    userData: {
+      // TO ASK what goes here
       isVerifiedProcess: false,
       name: '',
       fbUserID: '',
@@ -314,10 +366,12 @@ const configureInfoJson = (data: PayloadData, serverInformation: ServerInformati
     },
   },
   id_info: data.idInfo,
-  images: configureImagePayload(data.images as Array<{
-    image_type_id: number,
-    image: string
-  }>),
+  images: configureImagePayload(
+    data.images as Array<{
+      image_type_id: number;
+      image: string;
+    }>,
+  ),
   server_information: serverInformation,
 });
 
@@ -335,50 +389,59 @@ const configureInfoJson = (data: PayloadData, serverInformation: ServerInformati
  * @returns {Promise<object>} - the response from the smile server.
  * @throws {Error} - if the request fails or times out.
  */
-const queryJobStatus = ({
-  api_key,
-  partner_id,
-  partner_params,
-  url: sidUrl,
-  return_history,
-  return_images,
-}: QueryPayload, counter: number | undefined = 0):
-Promise<object> => new Promise((resolve, reject) => {
-  // call job status for the result of the job
-  const timeout = counter < 4 ? 2000 : 4000;
-  const updatedCounter = counter + 1;
+const queryJobStatus = (
+  {
+    api_key,
+    partner_id,
+    partner_params,
+    url: sidUrl,
+    return_history,
+    return_images,
+  }: QueryPayload,
+  counter: number | undefined = 0,
+): Promise<object> =>
+  new Promise((resolve, reject) => {
+    // call job status for the result of the job
+    const timeout = counter < 4 ? 2000 : 4000;
+    const updatedCounter = counter + 1;
 
-  const retryFunc = (currentCounter: number) => {
-    setTimeout(
-      () => {
-        queryJobStatus({
-          api_key,
-          partner_id,
-          partner_params,
-          url: sidUrl,
-          return_history,
-          return_images,
-        }, currentCounter).then(resolve).catch(reject);
-      },
-      timeout,
-    );
-  };
-  new Utilities(partner_id, api_key, sidUrl).get_job_status(
-    partner_params.user_id,
-    partner_params.job_id,
-    { return_history, return_images },
-  ).then((body) => {
-    if (!body.job_complete) {
-      if (updatedCounter > 21) {
-        reject(new Error('Timeout waiting for job status response.'));
-        return;
-      }
-      retryFunc(updatedCounter);
-    } else {
-      resolve(body);
-    }
-  }).catch(() => { retryFunc(updatedCounter); });
-});
+    const retryFunc = (currentCounter: number) => {
+      setTimeout(() => {
+        queryJobStatus(
+          {
+            api_key,
+            partner_id,
+            partner_params,
+            url: sidUrl,
+            return_history,
+            return_images,
+          },
+          currentCounter,
+        )
+          .then(resolve)
+          .catch(reject);
+      }, timeout);
+    };
+    new Utilities(partner_id, api_key, sidUrl)
+      .get_job_status(partner_params.user_id, partner_params.job_id, {
+        return_history,
+        return_images,
+      })
+      .then((body) => {
+        if (!body.job_complete) {
+          if (updatedCounter > 21) {
+            reject(new Error('Timeout waiting for job status response.'));
+            return;
+          }
+          retryFunc(updatedCounter);
+        } else {
+          resolve(body);
+        }
+      })
+      .catch(() => {
+        retryFunc(updatedCounter);
+      });
+  });
 
 /**
  * Upload zip file to s3 using the signed link obtained from the upload lambda
@@ -390,28 +453,31 @@ Promise<object> => new Promise((resolve, reject) => {
  * @throws {Error} - if the request fails or times out.
  */
 const uploadFile = (
-  data: { [k: string]: string | number | Array<object> | PartnerParams | boolean },
+  data: {
+    [k: string]: string | number | Array<object> | PartnerParams | boolean;
+  },
   zipFile: Uint8Array,
   signedUrl: string,
   smile_job_id: string,
-): Promise<object> => axios.put(
-  signedUrl,
-  zipFile,
-  {
-    headers: {
-      'Content-Type': 'application/zip',
-      'Content-Length': `${zipFile.length}`,
-    },
-  },
-).then((resp) => {
-  if (resp.status === 200) {
-    if (data.return_job_status) {
-      return queryJobStatus(data as QueryPayload);
-    }
-    return Promise.resolve({ success: true, smile_job_id });
-  }
-  return Promise.reject(new Error(`Zip upload status code: ${resp.status}`));
-});
+): Promise<object> =>
+  axios
+    .put(signedUrl, zipFile, {
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Length': `${zipFile.length}`,
+      },
+    })
+    .then((resp) => {
+      if (resp.status === 200) {
+        if (data.return_job_status) {
+          return queryJobStatus(data as QueryPayload);
+        }
+        return Promise.resolve({ success: true, smile_job_id });
+      }
+      return Promise.reject(
+        new Error(`Zip upload status code: ${resp.status}`),
+      );
+    });
 
 /**
  * Creates a zip file containing the images and the json file.
@@ -423,17 +489,22 @@ const uploadFile = (
  * @param {object} infoJson - metadata associated with the job.
  * @returns {Promise<Uint8Array>} - the zip file.
  */
-const zipUpFile = (images: Array<{
-  image_type_id: number;
-  image: string;
-  file_name: string;
-}>, infoJson: object): Promise<Uint8Array> => {
+const zipUpFile = (
+  images: Array<{
+    image_type_id: number;
+    image: string;
+    file_name: string;
+  }>,
+  infoJson: object,
+): Promise<Uint8Array> => {
   // create zip file in memory
   const zip = new JSzip();
   zip.file('info.json', JSON.stringify(infoJson));
-  images.filter((image) => [0, 1].includes(image.image_type_id)).forEach((image) => {
-    zip.file(path.basename(image.image), fs.readFileSync(image.image));
-  });
+  images
+    .filter((image) => [0, 1].includes(image.image_type_id))
+    .forEach((image) => {
+      zip.file(path.basename(image.image), fs.readFileSync(image.image));
+    });
   return zip.generateAsync({ type: 'uint8array' });
 };
 
@@ -442,22 +513,39 @@ const zipUpFile = (images: Array<{
  * @param {object} payload - data required to upload the zip file to s3.
  * @returns {Promise<object>} the job status response.
  */
-const setupRequests = (payload: { [k: string]: unknown }): Promise<object> => axios.post(
-  `https://${payload.url}/upload`,
-  configurePrepUploadPayload(payload as {
-    [k: string]: string | object;
-  }),
-).then(({ data }) => Promise.all([
-  zipUpFile(payload.images as Array<{
-    image_type_id: number;
-    image: string;
-    file_name: string;
-  }>, configureInfoJson(payload as PayloadData, data)),
-  Promise.resolve(data),
-])).then(([zipFile,
-  { upload_url, smile_job_id }]) => uploadFile(payload as {
-  [k: string]: string | number | object[];
-}, zipFile, upload_url, smile_job_id));
+const setupRequests = (payload: { [k: string]: unknown }): Promise<object> =>
+  axios
+    .post(
+      `https://${payload.url}/upload`,
+      configurePrepUploadPayload(
+        payload as {
+          [k: string]: string | object;
+        },
+      ),
+    )
+    .then(({ data }) =>
+      Promise.all([
+        zipUpFile(
+          payload.images as Array<{
+            image_type_id: number;
+            image: string;
+            file_name: string;
+          }>,
+          configureInfoJson(payload as PayloadData, data),
+        ),
+        Promise.resolve(data),
+      ]),
+    )
+    .then(([zipFile, { upload_url, smile_job_id }]) =>
+      uploadFile(
+        payload as {
+          [k: string]: string | number | object[];
+        },
+        zipFile,
+        upload_url,
+        smile_job_id,
+      ),
+    );
 
 export class WebApi {
   /**
@@ -503,11 +591,11 @@ export class WebApi {
    * @memberof WebApi
    */
   get_job_status(partner_params: PartnerParams, options: OptionsParam) {
-    return new Utilities(this.partner_id, this.api_key, this.url).get_job_status(
-      partner_params.user_id,
-      partner_params.job_id,
-      options,
-    );
+    return new Utilities(
+      this.partner_id,
+      this.api_key,
+      this.url,
+    ).get_job_status(partner_params.user_id, partner_params.job_id, options);
   }
 
   /**
@@ -567,22 +655,32 @@ export class WebApi {
    * @throws {Error} If any of the required parameters are missing or if the request fails.
    * @memberof WebApi
    */
-  submit_job(partner_params: PartnerParams, image_details: Array<{
-    image_type_id: number;
-    image: string;
-  }>, id_info: IdInfo, options: OptionsParam = {}): Promise<object> {
+  submit_job(
+    partner_params: PartnerParams,
+    image_details: Array<{
+      image_type_id: number;
+      image: string;
+    }>,
+    id_info: IdInfo,
+    options: OptionsParam = {},
+  ): Promise<object> {
     try {
       validatePartnerParams(partner_params);
 
       const jobType = parseInt(partner_params.job_type.toString(), 10);
-      const useIdApi = jobType === JOB_TYPE.BASIC_KYC || jobType === JOB_TYPE.BUSINESS_VERIFICATION;
+      const useIdApi =
+        jobType === JOB_TYPE.BASIC_KYC ||
+        jobType === JOB_TYPE.BUSINESS_VERIFICATION;
       if (useIdApi) {
-        return new IDApi(this.partner_id, this.api_key, this.url)
-          .submit_job(partner_params, id_info);
+        return new IDApi(this.partner_id, this.api_key, this.url).submit_job(
+          partner_params,
+          id_info,
+        );
       }
 
-      const callbackUrl = (options && options.optional_callback) || this.default_callback;
-      const data : { [k:string]:unknown } = {
+      const callbackUrl =
+        (options && options.optional_callback) || this.default_callback;
+      const data: { [k: string]: unknown } = {
         partner_id: this.partner_id,
         api_key: this.api_key,
         url: this.url,
@@ -601,7 +699,10 @@ export class WebApi {
       };
 
       validateImages(image_details, options.use_enrolled_image, jobType);
-      validateReturnData(callbackUrl as string, data.return_job_status as boolean);
+      validateReturnData(
+        callbackUrl as string,
+        data.return_job_status as boolean,
+      );
 
       if (jobType === 1) {
         validateEnrollWithId(image_details, (data.idInfo as IdInfo).entered);

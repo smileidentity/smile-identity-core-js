@@ -12,11 +12,17 @@ import { WebApi } from '..';
 const partner_id = '<Your partner ID>';
 // Copy your API key from the Smile Identity portal.
 const api_key = '<Your API key>';
+// sid_server should be a string with value '0' or '1'.
 // Use '0' for the sandbox server, use '1' for production server.
 const sid_server = '<0 or 1>';
 const default_callback = '<Put your default callback url here>';
 
-const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+const connection = new WebApi(
+  partner_id,
+  default_callback,
+  api_key,
+  sid_server,
+);
 
 // Create required tracking parameters
 const partner_params = {
@@ -28,7 +34,7 @@ const partner_params = {
 /**
  * Create image list.
  *
- * image_type_id Integer
+ * IMPORTANT: image_type_id should be an Integer
  * 0 - Selfie image jpg or png (if you have the full path of the selfie).
  * 2 - Selfie image jpg or png base64 encoded (if you have the base64image string of the selfie).
  * 4 - Liveness image jpg or png (if you have the full path of the liveness image).
@@ -43,7 +49,8 @@ const image_details = [
     image_type_id: '<0 | 2>',
     image: '<full path to selfie image or base64image string>',
   },
-  { // Not required if you don't require proof of life (note photo of photo check will still
+  {
+    // Not required if you don't require proof of life (note photo of photo check will still
     // be performed on the uploaded selfie)
     image_type_id: '<4 | 6>',
     image: '<full path to liveness image or base64 image string>',
@@ -52,12 +59,20 @@ const image_details = [
 
 // Set fields required by the ID authority for a verification job.
 const id_info = {
+  // Replace '<first name>' with the individual's first name
   first_name: '<first name>',
+  // Replace '<surname>' with the individual's last name
   last_name: '<surname>',
+  // REQUIRED: Replace '<ISO 3166 Alpha-2 (2-letter) country code>' with the
+  // country code. For example: 'US' for United States
   country: '<2-letter country code>',
+  // REQUIRED: Replace '<id type>' with the type of ID being used
   id_type: '<id type>',
+  // REQUIRED: Replace '<valid id number>' with the individual's valid ID number
   id_number: '<valid id number>',
-  dob: '<date of birth>', // yyyy-mm-dd
+  // Replace '<date of birth>' with the individual's date of birth in
+  // 'yyyy-mm-dd' format. For example: '1980-01-01'
+  dob: '<date of birth>',
   entered: 'true', // must be a string
 };
 
@@ -78,7 +93,12 @@ const options = {
 // Submit the job. This method returns a promise.
 (async () => {
   try {
-    const result = await connection.submit_job(partner_params, image_details, id_info, options);
+    const result = await connection.submit_job(
+      partner_params,
+      image_details,
+      id_info,
+      options,
+    );
     console.info(result);
   } catch (error) {
     console.error(error);
