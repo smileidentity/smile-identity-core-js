@@ -30,7 +30,9 @@ export const getWebToken = (
   token: string;
 }> => {
   if (!requestParams) {
-    return Promise.reject(new Error('Please ensure that you send through request params'));
+    return Promise.reject(
+      new Error('Please ensure that you send through request params'),
+    );
   }
 
   if (typeof requestParams !== 'object') {
@@ -39,12 +41,18 @@ export const getWebToken = (
   const callbackUrl = requestParams.callback_url || defaultCallback;
 
   if (typeof callbackUrl !== 'string' || callbackUrl.length === 0) {
-    return Promise.reject(new Error('Callback URL is required for this method'));
+    return Promise.reject(
+      new Error('Callback URL is required for this method'),
+    );
   }
 
-  const missingKey = ['user_id', 'job_id', 'product'].find((key) => !requestParams[key as keyof TokenRequestParams]);
+  const missingKey = ['user_id', 'job_id', 'product'].find(
+    (key) => !requestParams[key as keyof TokenRequestParams],
+  );
   if (missingKey) {
-    return Promise.reject(new Error(`${missingKey} is required to get a web token`));
+    return Promise.reject(
+      new Error(`${missingKey} is required to get a web token`),
+    );
   }
 
   const body = {
@@ -53,11 +61,10 @@ export const getWebToken = (
     product: requestParams.product,
     callback_url: callbackUrl,
     partner_id,
-    ...new Signature(
-      partner_id,
-      api_key,
-    ).generate_signature(),
+    ...new Signature(partner_id, api_key).generate_signature(),
   };
 
-  return axios.post(`https://${mapServerUri(url)}/token`, body).then((response) => response.data);
+  return axios
+    .post(`https://${mapServerUri(url)}/token`, body)
+    .then((response) => response.data);
 };

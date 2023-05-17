@@ -4,14 +4,14 @@ export interface OptionsParam {
   return_image_links?: boolean;
   return_job_status?: boolean;
   use_enrolled_image?: boolean;
-  optional_callback?: string
+  optional_callback?: string;
 }
 
 export interface PartnerParams {
   user_id: string | number;
   job_id: string | number;
   job_type: number;
-  [key: string]: unknown
+  [key: string]: unknown;
 }
 
 export interface IdInfo {

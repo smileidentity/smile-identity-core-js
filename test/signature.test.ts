@@ -32,7 +32,10 @@ describe('Signature', () => {
       expect.assertions(1);
       const timestamp = new Date().toISOString();
       const hmac = crypto.createHmac('sha256', mockApiKey);
-      hmac.update(timestamp, 'utf8').update('001', 'utf8').update('sid_request', 'utf8');
+      hmac
+        .update(timestamp, 'utf8')
+        .update('001', 'utf8')
+        .update('sid_request', 'utf8');
       const output = hmac.digest().toString('base64');
       const result = signer.generate_signature(timestamp);
       expect(result).toEqual({ signature: output, timestamp });
@@ -60,9 +63,15 @@ describe('Signature', () => {
     it(`should generate a signature for valid timestamp ${timestamp}`, () => {
       expect.assertions(1);
       const result = signer.generate_signature(timestamp);
-      const isoTimestamp = typeof timestamp === 'number' ? new Date(timestamp).toISOString() : timestamp;
+      const isoTimestamp =
+        typeof timestamp === 'number'
+          ? new Date(timestamp).toISOString()
+          : timestamp;
       const hmac = crypto.createHmac('sha256', mockApiKey);
-      hmac.update(isoTimestamp, 'utf8').update('001', 'utf8').update('sid_request', 'utf8');
+      hmac
+        .update(isoTimestamp, 'utf8')
+        .update('001', 'utf8')
+        .update('sid_request', 'utf8');
       const output = hmac.digest().toString('base64');
       expect(result).toEqual({ signature: output, timestamp });
     });
@@ -91,7 +100,10 @@ describe('Signature', () => {
       expect.assertions(1);
       const timestamp = new Date().toISOString();
       const hmac = crypto.createHmac('sha256', mockApiKey);
-      hmac.update(timestamp, 'utf8').update('001', 'utf8').update('sid_request', 'utf8');
+      hmac
+        .update(timestamp, 'utf8')
+        .update('001', 'utf8')
+        .update('sid_request', 'utf8');
       const output = hmac.digest().toString('base64');
       expect(signer.confirm_signature(timestamp, output)).toEqual(true);
     });

@@ -11,7 +11,12 @@ const default_callback = '<Put your default callback url here>';
 const api_key = '<Your API key>'; // copy your API key from the Smile Identity portal
 const sid_server = '<0 or 1>'; // Use '0' for the sandbox server, use '1' for production server
 
-const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+const connection = new WebApi(
+  partner_id,
+  default_callback,
+  api_key,
+  sid_server,
+);
 
 // Create required tracking parameters
 const partner_params = {
@@ -35,7 +40,8 @@ const image_details = [
     image_type_id: '<0 | 2>',
     image: '<full path to selfie image or base64image string>',
   },
-  { // Not required if you don't require proof of life (note photo of photo
+  {
+    // Not required if you don't require proof of life (note photo of photo
     // check will still be performed on the uploaded selfie).
     image_type_id: '<4 | 6>',
     image: '<full path to liveness image or base64 image string>',
@@ -59,7 +65,12 @@ const options = {
 // Submit the job. This method returns a promise.
 (async () => {
   try {
-    const result = await connection.submit_job(partner_params, image_details, {}, options);
+    const result = await connection.submit_job(
+      partner_params,
+      image_details,
+      {},
+      options,
+    );
     console.info(result);
   } catch (error) {
     console.error(error);

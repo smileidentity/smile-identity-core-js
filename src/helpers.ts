@@ -17,7 +17,10 @@ export const mapServerUri = (uriOrKey: string | number): string => {
 };
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */
-export const sdkVersionInfo: { source_sdk: string; source_sdk_version: string; } = {
+export const sdkVersionInfo: {
+  source_sdk: string;
+  source_sdk_version: string;
+} = {
   source_sdk: 'javascript',
   source_sdk_version: packageJson.version,
 };
@@ -43,7 +46,9 @@ export const validatePartnerParams = (partnerParams: PartnerParams): void => {
   ['user_id', 'job_id', 'job_type'].forEach((key) => {
     const partnerKey = key as keyof PartnerParams;
     if (!partnerParams[partnerKey]) {
-      throw new Error(`Please make sure that ${key} is included in the partner params`);
+      throw new Error(
+        `Please make sure that ${key} is included in the partner params`,
+      );
     }
   });
 };

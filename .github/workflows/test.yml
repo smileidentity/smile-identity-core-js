@@ -34,5 +34,7 @@ jobs:
       with:
         node-version-file: '.nvmrc'
     - run: npm ci
-    - name: Lint
-      run: npm run lint
+      - name: Lint
+        run: |
+          npm run lint
+          git diff --exit-code
