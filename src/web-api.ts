@@ -167,7 +167,7 @@ const hasSelfieImage = ({
 }: {
   image_type_id: number;
   image: string;
-}) => [0, 2].includes(image_type_id);
+}): boolean => [0, 2].includes(image_type_id);
 
 /**
  * Checks to ensure required images for job type 1 are present.
