@@ -5,7 +5,6 @@ import { PartnerParams } from './shared';
 /**
  * Converts a numeric key to a smile server URI, or
  * returns the original URI.
- *
  * @param {string|number} uriOrKey - The URI of a Smile ID server or a
  * numeric key that represents it.
  * @returns {string} URI of smile server if in map, original input if URI.
@@ -18,14 +17,16 @@ export const mapServerUri = (uriOrKey: string | number): string => {
 };
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */
-export const sdkVersionInfo: { source_sdk: string; source_sdk_version: string; } = {
+export const sdkVersionInfo: {
+  source_sdk: string;
+  source_sdk_version: string;
+} = {
   source_sdk: 'javascript',
   source_sdk_version: packageJson.version,
 };
 
 /**
  * Validates that partner params contains required fields.
- *
  * @param {object} partnerParams - required parameters for each job.
  * @param {string} partnerParams.user_id - your unique identifier for the user.
  * @param {string} partnerParams.job_id - your unique identifier for the job.
@@ -45,7 +46,9 @@ export const validatePartnerParams = (partnerParams: PartnerParams): void => {
   ['user_id', 'job_id', 'job_type'].forEach((key) => {
     const partnerKey = key as keyof PartnerParams;
     if (!partnerParams[partnerKey]) {
-      throw new Error(`Please make sure that ${key} is included in the partner params`);
+      throw new Error(
+        `Please make sure that ${key} is included in the partner params`,
+      );
     }
   });
 };

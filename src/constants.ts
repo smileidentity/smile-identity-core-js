@@ -1,6 +1,5 @@
 /**
  * The type of image submitted in the job request
- *
  * @readonly
  * @enum {number}
  */
@@ -25,7 +24,6 @@ export const IMAGE_TYPE = {
 
 /**
  * The type of verification job to be performed
- *
  * @readonly
  * @enum {number}
  */
@@ -59,7 +57,7 @@ export const JOB_TYPE = {
   COMPARE_USER_INFO: 9,
 };
 
-export const sidServerMapping : { [k:number]: string } = {
+export const sidServerMapping: { [k: number]: string } = {
   0: 'testapi.smileidentity.com/v1',
   1: 'api.smileidentity.com/v1',
 };

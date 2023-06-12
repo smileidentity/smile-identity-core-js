@@ -18,7 +18,7 @@ The `WebApi` class has the following public methods:
 
 The `IDApi` class has the following public method:
 
-- `submit_job` - handles submission of [Enhanced KYC](https://docs.smileidentity.com/products/identity-lookup) and [Basic KYC](https://docs.smileidentity.com/products/id-verification).
+- `submit_job` - handles submission of [Enhanced KYC](https://docs.smileidentity.com/products/identity-lookup), [Basic KYC](https://docs.smileidentity.com/products/id-verification) and [Business Verification](https://docs.smileidentity.com/products/for-businesses-kyb/business-verification).
 
 The `Signature` class has the following public methods:
 

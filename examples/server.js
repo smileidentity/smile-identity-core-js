@@ -18,9 +18,7 @@ app.use(express_static('public'));
 
 app.post('/', async (req, res) => {
   try {
-    const {
-      PARTNER_ID, API_KEY, SID_SERVER, CALLBACK_URL,
-    } = process.env;
+    const { PARTNER_ID, API_KEY, SID_SERVER, CALLBACK_URL } = process.env;
     const connection = new SIDWebAPI(
       PARTNER_ID,
       CALLBACK_URL, // change call back URL as desired
@@ -29,7 +27,8 @@ app.post('/', async (req, res) => {
     );
 
     const getJobType = (images) => {
-      const hasIDImage = images.filter((image) => image.image_type_id === 3).length > 0;
+      const hasIDImage =
+        images.filter((image) => image.image_type_id === 3).length > 0;
 
       return hasIDImage ? 1 : 4;
     };

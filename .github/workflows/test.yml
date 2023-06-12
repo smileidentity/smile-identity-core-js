@@ -5,9 +5,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
   workflow_call:
 
@@ -18,21 +18,23 @@ jobs:
       matrix:
         node-version: [14.x, 16.x, 18.x]
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - name: Test
-      run: npm test
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - name: Test
+        run: npm test
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version-file: '.nvmrc'
-    - run: npm ci
-    - name: Lint
-      run: npm run lint
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - run: npm ci
+      - name: Lint
+        run: |
+          npm run lint
+          git diff --exit-code

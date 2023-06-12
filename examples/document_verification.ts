@@ -16,7 +16,12 @@ const api_key = '<Your API key>';
 const sid_server = '<0 or 1>';
 const default_callback = '<Put your default callback url here>';
 
-const connection = new WebApi(partner_id, default_callback, api_key, sid_server);
+const connection = new WebApi(
+  partner_id,
+  default_callback,
+  api_key,
+  sid_server,
+);
 
 // Create required tracking parameters.
 const partner_params = {
@@ -49,7 +54,8 @@ const image_details = [
     image_type_id: '<0 | 2>',
     image: '<full path to selfie image or base64image string>',
   },
-  { // Not required if you don't require proof of life (note photo of photo check
+  {
+    // Not required if you don't require proof of life (note photo of photo check
     // will still be performed on the uploaded selfie)
     image_type_id: '<4 | 6>',
     image: '<full path to liveness image or base64 image string>',
@@ -58,7 +64,8 @@ const image_details = [
     image_type_id: '<1 | 3>',
     image: '<full path to front of id document image or base64image string>',
   },
-  { // Optional, only use if you're uploading the back of the id document image
+  {
+    // Optional, only use if you're uploading the back of the id document image
     image_type_id: '<5 | 7>',
     image: '<full path to back of id document image or base64image string>',
   },
@@ -87,7 +94,12 @@ const options = {
 // Submit the job. This method returns a promise.
 (async () => {
   try {
-    const result = await connection.submit_job(partner_params, image_details, id_info, options);
+    const result = await connection.submit_job(
+      partner_params,
+      image_details,
+      id_info,
+      options,
+    );
     console.info(result);
   } catch (error) {
     console.error(error);

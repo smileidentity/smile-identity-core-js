@@ -10,23 +10,29 @@ module.exports = {
     'airbnb-typescript/base',
     'plugin:jest/recommended',
     'plugin:jsdoc/recommended',
+    'prettier',
+    'plugin:prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 13,
     project: './tsconfig.eslint.json',
   },
-  plugins: ['jest', 'jsdoc', '@typescript-eslint'],
+  plugins: ['jest', 'jsdoc', '@typescript-eslint', 'prettier'],
   ignorePatterns: ['coverage/**/*', 'dist/**/*'],
   rules: {
     camelcase: 0,
     'compat/compat': 0,
     'no-restricted-imports': 'off',
     'import/prefer-default-export': 'off',
-    'no-console': ['error', {
-      allow: ['warn', 'error', 'info'],
-    }],
-    '@typescript-eslint/naming-convention': [ // TODO:remove custom convention in future versions
+    'no-console': [
+      'error',
+      {
+        allow: ['warn', 'error', 'info'],
+      },
+    ],
+    '@typescript-eslint/naming-convention': [
+      // TODO:remove custom convention in future versions
       'warn',
       {
         selector: 'variable',

@@ -27,7 +27,9 @@ describe('Utilities', () => {
       const options = { return_images: true, return_history: true };
 
       const timestamp = new Date().toISOString();
-      const { signature } = new Signature('001', mockApiKey).generate_signature(timestamp);
+      const { signature } = new Signature('001', mockApiKey).generate_signature(
+        timestamp,
+      );
 
       const jobStatusResponse = {
         job_complete: true,
@@ -39,15 +41,17 @@ describe('Utilities', () => {
         signature,
         timestamp,
       };
-      const scope = nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
-        expect(body.job_id).toEqual(partnerParams.job_id);
-        expect(body.user_id).toEqual(partnerParams.user_id);
-        expect(body.timestamp).not.toEqual(undefined);
-        expect(body.signature).not.toEqual(undefined);
-        expect(body.image_links).toEqual(true);
-        expect(body.history).toEqual(true);
-        return true;
-      }).reply(200, jobStatusResponse);
+      const scope = nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status', (body) => {
+          expect(body.job_id).toEqual(partnerParams.job_id);
+          expect(body.user_id).toEqual(partnerParams.user_id);
+          expect(body.timestamp).not.toEqual(undefined);
+          expect(body.signature).not.toEqual(undefined);
+          expect(body.image_links).toEqual(true);
+          expect(body.history).toEqual(true);
+          return true;
+        })
+        .reply(200, jobStatusResponse);
 
       const utilities = new Utilities('001', mockApiKey, 0);
       const jobStatus = await utilities.get_job_status(
@@ -65,17 +69,23 @@ describe('Utilities', () => {
       const partnerParams = { user_id: '1', job_id: '1', job_type: 4 };
       const options = { return_images: true, return_history: true };
 
-      const scope = nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
-        expect(body.job_id).toEqual(partnerParams.job_id);
-        expect(body.user_id).toEqual(partnerParams.user_id);
-        expect(body.timestamp).not.toEqual(undefined);
-        expect(body.signature).not.toEqual(undefined);
-        expect(body.image_links).toEqual(true);
-        expect(body.history).toEqual(true);
-        return true;
-      }).replyWithError({ code: '2204', error: 'unauthorized' });
+      const scope = nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status', (body) => {
+          expect(body.job_id).toEqual(partnerParams.job_id);
+          expect(body.user_id).toEqual(partnerParams.user_id);
+          expect(body.timestamp).not.toEqual(undefined);
+          expect(body.signature).not.toEqual(undefined);
+          expect(body.image_links).toEqual(true);
+          expect(body.history).toEqual(true);
+          return true;
+        })
+        .replyWithError({ code: '2204', error: 'unauthorized' });
 
-      const utilities = new Utilities('001', Buffer.from(pair.public).toString('base64'), 0);
+      const utilities = new Utilities(
+        '001',
+        Buffer.from(pair.public).toString('base64'),
+        0,
+      );
       const jobStatus = utilities.get_job_status(
         partnerParams.user_id,
         partnerParams.job_id,
@@ -92,7 +102,9 @@ describe('Utilities', () => {
 
       const timestamp = new Date().toISOString();
       const returned_timestamp = new Date('2022-11-29').toISOString();
-      const { signature } = new Signature('001', mockApiKey).generate_signature(timestamp);
+      const { signature } = new Signature('001', mockApiKey).generate_signature(
+        timestamp,
+      );
 
       const jobStatusResponse = {
         job_complete: true,
@@ -104,15 +116,17 @@ describe('Utilities', () => {
         signature,
         timestamp: returned_timestamp,
       };
-      const scope = nock('https://testapi.smileidentity.com').post('/v1/job_status', (body) => {
-        expect(body.job_id).toEqual(partnerParams.job_id);
-        expect(body.user_id).toEqual(partnerParams.user_id);
-        expect(body.timestamp).not.toEqual(undefined);
-        expect(body.signature).not.toEqual(undefined);
-        expect(body.image_links).toEqual(true);
-        expect(body.history).toEqual(true);
-        return true;
-      }).reply(200, jobStatusResponse);
+      const scope = nock('https://testapi.smileidentity.com')
+        .post('/v1/job_status', (body) => {
+          expect(body.job_id).toEqual(partnerParams.job_id);
+          expect(body.user_id).toEqual(partnerParams.user_id);
+          expect(body.timestamp).not.toEqual(undefined);
+          expect(body.signature).not.toEqual(undefined);
+          expect(body.image_links).toEqual(true);
+          expect(body.history).toEqual(true);
+          return true;
+        })
+        .reply(200, jobStatusResponse);
 
       const utilities = new Utilities('001', mockApiKey, 0);
       const jobStatus = utilities.get_job_status(
@@ -120,7 +134,9 @@ describe('Utilities', () => {
         partnerParams.job_id,
         options,
       );
-      await expect(jobStatus).rejects.toThrow(new Error('Unable to confirm validity of the job_status response'));
+      await expect(jobStatus).rejects.toThrow(
+        new Error('Unable to confirm validity of the job_status response'),
+      );
       expect(scope.isDone()).toEqual(true);
     });
   });

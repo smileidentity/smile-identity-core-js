@@ -32,7 +32,9 @@ describe('smile-identity-core', () => {
     });
 
     it('should throw an error when run in a browser', () => {
-      expect(console.warn).toHaveBeenCalledWith('This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.');
+      expect(console.warn).toHaveBeenCalledWith(
+        'This is a server-side library meant for a node.js (or compatible) runtime, and is not meant to work in the browser.',
+      );
     });
   });
 });
