@@ -6,8 +6,8 @@ import { JOB_TYPE } from './constants';
 
 /**
  * Validates the provided id info
- * @param   {IdInfo}  idInfo  id info
- * @returns  {void}
+ * @param {IdInfo} idInfo Contains info needed for the verification job
+ * @returns {void}
  * @throws {Error} - If the id info is invalid.
  */
 const validateIdInfo = (idInfo: IdInfo): void => {
