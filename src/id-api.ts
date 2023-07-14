@@ -4,7 +4,13 @@ import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { IdInfo, PartnerParams } from './shared';
 import { JOB_TYPE } from './constants';
 
-const validateIdInfo = (idInfo: IdInfo) => {
+/**
+ * Validates the provided id info
+ * @param {IdInfo} idInfo Contains info needed for the verification job
+ * @returns {void}
+ * @throws {Error} - If the id info is invalid.
+ */
+const validateIdInfo = (idInfo: IdInfo): void => {
   if (typeof idInfo !== 'object') {
     throw new Error('ID Info needs to be an object');
   }
@@ -60,6 +66,15 @@ export class IDApi {
     this.url = mapServerUri(sid_server);
   }
 
+  /**
+   * Submit a job to Smile.
+   * @param {PartnerParams} partner_params - the user_id, job_id, and job_type of the job to submit.
+   * Can additionally include optional parameters that Smile will return in the
+   * job status.
+   * @param {IdInfo} id_info - ID information required to create a job.
+   * @returns {Promise<object>} A promise that resolves to the job status.
+   * @throws {Error} If any of the required parameters are missing or if the request fails.
+   */
   async submit_job(
     partner_params: PartnerParams,
     id_info: IdInfo,

@@ -12,7 +12,7 @@ const generate_signature = (
   partnerID: string,
   apiKey: string,
   timestamp: string | number,
-) => {
+): string => {
   const isoTimestamp =
     typeof timestamp === 'number'
       ? new Date(timestamp).toISOString()
@@ -63,7 +63,7 @@ export default class Signature {
     };
   }
 
-  confirm_signature(timestamp: string | number, signature: string) {
+  confirm_signature(timestamp: string | number, signature: string): boolean {
     return (
       generate_signature(this.partnerID, this.apiKey, timestamp) === signature
     );
