@@ -12,7 +12,8 @@
   },
   "author": "Chris DeLauder <chris@smileidentity.com>",
   "contributors": [
-    "Barnabas A nsoh <barnabas@smileidentity.com>"
+    "Barnabas A nsoh <barnabas@smileidentity.com>",
+    "Juma Allan <juma@smileidentity.com>"
   ],
   "license": "MIT",
   "dependencies": {
