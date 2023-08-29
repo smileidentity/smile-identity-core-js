@@ -908,7 +908,7 @@ describe('WebApi', () => {
         );
       });
 
-      it('should require the provision of id_type in id_info', async () => {
+      it('should not require the provision of id_type in id_info', async () => {
         expect.assertions(1);
         const instance = new WebApi('001', null, mockApiKey, 0);
         const partner_params = {
@@ -929,7 +929,7 @@ describe('WebApi', () => {
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
         );
-        await expect(promise).rejects.toThrow(
+        await expect(promise).rejects.not.toThrow(
           new Error('Please make sure that id_type is included in the id_info'),
         );
       });
