@@ -1,6 +1,6 @@
 {
   "name": "smile-identity-core",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "The official Smile Identity Node SDK",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +12,8 @@
   },
   "author": "Chris DeLauder <chris@smileidentity.com>",
   "contributors": [
-    "Barnabas A nsoh <barnabas@smileidentity.com>"
+    "Barnabas A nsoh <barnabas@smileidentity.com>",
+    "Juma Allan <juma@smileidentity.com>"
   ],
   "license": "MIT",
   "dependencies": {

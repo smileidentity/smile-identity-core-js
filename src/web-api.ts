@@ -47,14 +47,11 @@ const validateIdInfo = (idInfo: IdInfo, jobType: number): string => {
   if (!('entered' in idInfo) || entered === 'false') {
     if (jobType === 6) {
       // NOTE: document verification does not check for `country` and `id_type`.
-      ['country', 'id_type'].forEach((key) => {
-        const idKey = key as keyof IdInfo;
-        if (!idInfo[idKey] || (idInfo[idKey] as string).length === 0) {
-          throw new Error(
-            `Please make sure that ${key} is included in the id_info`,
-          );
-        }
-      });
+      if (!idInfo.country || idInfo?.country?.length === 0) {
+        throw new Error(
+          'Please make sure that country is included in the id_info',
+        );
+      }
     }
     return 'false';
   }

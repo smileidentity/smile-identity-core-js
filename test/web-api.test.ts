@@ -908,32 +908,6 @@ describe('WebApi', () => {
         );
       });
 
-      it('should require the provision of id_type in id_info', async () => {
-        expect.assertions(1);
-        const instance = new WebApi('001', null, mockApiKey, 0);
-        const partner_params = {
-          user_id: '1',
-          job_id: '1',
-          job_type: JOB_TYPE.DOCUMENT_VERIFICATION,
-        };
-
-        const promise = instance.submit_job(
-          partner_params,
-          [
-            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
-            {
-              image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE,
-              image: fixturePath,
-            },
-          ],
-          { country: 'NG' },
-          { return_job_status: true, use_enrolled_image: true },
-        );
-        await expect(promise).rejects.toThrow(
-          new Error('Please make sure that id_type is included in the id_info'),
-        );
-      });
-
       it('should send the `use_enrolled_image` field to the callback_url when option is provided', async () => {
         expect.assertions(9);
         const instance = new WebApi(
@@ -975,7 +949,7 @@ describe('WebApi', () => {
               image: fixturePath,
             },
           ],
-          { country: 'NG', id_type: 'NIN' },
+          { country: 'NG' },
           { return_job_status: false, use_enrolled_image: true },
         );
         expect(response).toEqual({ success: true, smile_job_id });
