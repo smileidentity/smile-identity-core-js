@@ -929,8 +929,8 @@ describe('WebApi', () => {
           { country: 'NG' },
           { return_job_status: true, use_enrolled_image: true },
         );
-        await expect(promise).rejects.not.toThrow(
-          new Error('Please make sure that id_type is included in the id_info'),
+        await expect(promise).resolves.toEqual(
+          expect.objectContaining({ success: true }),
         );
       });
 
