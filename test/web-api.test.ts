@@ -1069,6 +1069,271 @@ describe('WebApi', () => {
         expect(response).toEqual(jobStatusResponse);
       });
     });
+
+    describe('documentVerification - JT11', () => {
+      it('should require the provision of ID Card images', async () => {
+        expect.assertions(1);
+        const instance = new WebApi('001', null, mockApiKey, 0);
+        const partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION,
+        };
+
+        const promise = instance.submit_job(
+          partner_params,
+          [{ image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath }],
+          { country: 'NG', id_type: 'NIN' },
+          { return_job_status: true, use_enrolled_image: true },
+        );
+        await expect(promise).rejects.toThrow(
+          new Error(
+            'You are attempting to complete a Document Verification job without providing an id card image',
+          ),
+        );
+      });
+
+      it('should require the provision of country and id_type in id_info', async () => {
+        expect.assertions(1);
+        const instance = new WebApi('001', null, mockApiKey, 0);
+        const partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION,
+        };
+
+        const promise = instance.submit_job(
+          partner_params,
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            {
+              image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE,
+              image: fixturePath,
+            },
+          ],
+          {},
+          { return_job_status: true, use_enrolled_image: true },
+        );
+        await expect(promise).rejects.toThrow(
+          new Error('Please make sure that country is included in the id_info'),
+        );
+      });
+
+      it('should send the `use_enrolled_image` field to the callback_url when option is provided', async () => {
+        expect.assertions(9);
+        const instance = new WebApi(
+          '001',
+          'https://fake-callback-url.com',
+          mockApiKey,
+          0,
+        );
+        const partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION,
+        };
+        const smile_job_id = '0000000111';
+        const postScope = nock('https://testapi.smileidentity.com')
+          .post('/v1/upload', (body) => {
+            expect(body.use_enrolled_image).toBe(true);
+            expect(body.smile_client_id).toBe('001');
+            expect(body.partner_params).toStrictEqual(partner_params);
+            expect(body.file_name).toBe('selfie.zip');
+            expect(typeof body.signature).toBe('string');
+            expect(typeof body.timestamp).toBe('string');
+            return true;
+          })
+          .reply(200, { upload_url: 'https://some_url.com', smile_job_id });
+
+        // todo: find a way to unzip and test info.json
+        const putScope = nock('https://some_url.com')
+          .put('/')
+          .once()
+          .reply(200);
+
+        const response = await instance.submit_job(
+          partner_params,
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            {
+              image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE,
+              image: fixturePath,
+            },
+          ],
+          { id_type: 'PASSPORT', country: 'NG' },
+          { return_job_status: false, use_enrolled_image: true },
+        );
+        expect(response).toEqual({ success: true, smile_job_id });
+        expect(postScope.isDone()).toBe(true);
+        expect(putScope.isDone()).toBe(true);
+      });
+
+      it('should send the `use_enrolled_image` field when option is provided', async () => {
+        expect.assertions(7);
+        const { signature, timestamp } = new Signature(
+          '001',
+          mockApiKey,
+        ).generate_signature();
+        const instance = new WebApi('001', '', mockApiKey, 0);
+        const partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION,
+        };
+        const jobStatusResponse = {
+          job_success: true,
+          job_complete: true,
+          result: {
+            ResultCode: '0810',
+            ResultText: 'Awesome!',
+          },
+          ...new Signature('001', mockApiKey).generate_signature(timestamp),
+        };
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload', (body) => {
+            expect(body.use_enrolled_image).toBe(true);
+            expect(body.smile_client_id).toBe('001');
+            expect(body.partner_params).toStrictEqual(partner_params);
+            expect(body.file_name).toBe('selfie.zip');
+            expect(typeof body.signature).toBe('string');
+            expect(typeof body.timestamp).toBe('string');
+            return true;
+          })
+          .reply(200, { upload_url: 'https://some_url.com' });
+
+        // todo: find a way to unzip and test info.json
+        nock('https://some_url.com')
+          .put('/') // todo: find a way to unzip and test info.json
+          .reply(200);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
+
+        const response = await instance.submit_job(
+          partner_params,
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            {
+              image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE,
+              image: fixturePath,
+            },
+          ],
+          { country: 'NG', id_type: 'NIN' },
+          { return_job_status: true, use_enrolled_image: true, signature },
+        );
+        expect(response).toEqual(jobStatusResponse);
+        // expect(postScope.isDone()).toBe(true);
+        // expect(putScope.isDone()).toBe(true);
+      });
+
+      it('should submit enhanced docv job succesfully', async () => {
+        expect.assertions(1);
+        const instance = new WebApi('001', 'default', mockApiKey, 0);
+        const partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION,
+        };
+
+        const timestamp = new Date().toISOString();
+
+        const jobStatusResponse = {
+          job_success: true,
+          job_complete: true,
+          result: {
+            ResultCode: '0810',
+            ResultText: 'Awesome!',
+          },
+          ...new Signature('001', mockApiKey).generate_signature(timestamp),
+        };
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, { ...jobStatusResponse, job_complete: true });
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload')
+          .reply(200, {
+            upload_url: 'https://some_url.com',
+          });
+        // todo: find a way to unzip and test info.json
+        nock('https://some_url.com').put('/').reply(200);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
+        const response = await instance.submit_job(
+          partner_params,
+          [
+            { image_type_id: IMAGE_TYPE.SELFIE_IMAGE_FILE, image: fixturePath },
+            {
+              image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE,
+              image: fixturePath,
+            },
+          ],
+          { country: 'NG', id_type: 'NIN' },
+          { return_job_status: true, use_enrolled_image: false },
+        );
+
+        expect(response).toEqual(jobStatusResponse);
+      });
+
+      it('should not require a selfie image when `use_enrolled_image` option is selected', async () => {
+        expect.assertions(1);
+        const instance = new WebApi('001', 'default', mockApiKey, 0);
+        const partner_params = {
+          user_id: '1',
+          job_id: '1',
+          job_type: JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION,
+        };
+
+        const timestamp = new Date().toISOString();
+
+        const jobStatusResponse = {
+          job_success: true,
+          job_complete: true,
+          result: {
+            ResultCode: '0810',
+            ResultText: 'Awesome!',
+          },
+          ...new Signature('001', mockApiKey).generate_signature(timestamp),
+        };
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, { ...jobStatusResponse, job_complete: true });
+
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload')
+          .reply(200, {
+            upload_url: 'https://some_url.com',
+          });
+        // todo: find a way to unzip and test info.json
+        nock('https://some_url.com').put('/').reply(200);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, jobStatusResponse);
+        const response = await instance.submit_job(
+          partner_params,
+          [
+            {
+              image_type_id: IMAGE_TYPE.ID_CARD_IMAGE_FILE,
+              image: fixturePath,
+            },
+          ],
+          { country: 'NG', id_type: 'PASSPORT' },
+          { return_job_status: true, use_enrolled_image: true },
+        );
+
+        expect(response).toEqual(jobStatusResponse);
+      });
+    });
   });
 
   describe('#get_job_status', () => {
