@@ -15,7 +15,7 @@ describe('smile-identity-core', () => {
     expect(smileIdentityCore.JOB_TYPE).toBeInstanceOf(Object);
     expect(Object.keys(smileIdentityCore)).toHaveLength(6);
     expect(Object.keys(smileIdentityCore.IMAGE_TYPE)).toHaveLength(8);
-    expect(Object.keys(smileIdentityCore.JOB_TYPE)).toHaveLength(9);
+    expect(Object.keys(smileIdentityCore.JOB_TYPE)).toHaveLength(10);
   });
 
   it('should run in node and not in the browser', () => {

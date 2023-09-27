@@ -30,12 +30,6 @@ const partner_params = {
   job_type: 11,
 };
 
-// The ID Document Information
-const id_info = {
-    country: '<2-letter country code>', // The country where ID document was issued
-    id_type: '<id type>', // The ID document type
-};
-
 /**
  * Create image list.
  *
