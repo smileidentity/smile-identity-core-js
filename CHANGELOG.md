@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [3.0.2] - 2023-09-29
 
-### changed 
+### Added
 
 - Added Enhanced Document Verification to the SmileIdentityCore class.
 
