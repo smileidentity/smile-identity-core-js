@@ -85,10 +85,6 @@ const options = {
   // Set to true to return results of all jobs you have ran for the user in addition to current job
   // result. You must set return_job_status to true to use this flag.
   return_history: '<true | false>',
-  // Set to true to receive selfie and liveness images you uploaded. You must set return_job_status
-  // to true to use this flag.
-  return_image_links: '<true | false>',
-  signature: true,
 };
 
 // Submit the job. This method returns a promise.
@@ -100,7 +96,6 @@ const options = {
       id_info,
       options,
     );
-    console.info(result);
     return result;
   } catch (error) {
     console.error(error);
