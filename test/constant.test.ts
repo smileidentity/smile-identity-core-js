@@ -11,5 +11,6 @@ describe('Constant', () => {
     expect(JOB_TYPE.BUSINESS_VERIFICATION).toEqual(7);
     expect(JOB_TYPE.UPDATE_PHOTO).toEqual(8);
     expect(JOB_TYPE.COMPARE_USER_INFO).toEqual(9);
+    expect(JOB_TYPE.ENHANCED_DOCUMENT_VERIFICATION).toEqual(11);
   });
 });

@@ -52,6 +52,16 @@ const validateIdInfo = (idInfo: IdInfo, jobType: number): string => {
           'Please make sure that country is included in the id_info',
         );
       }
+    } else if (jobType === 11) {
+      // NOTE: enhanced document verification check for `country` and `id_type`.
+      ['country', 'id_type'].forEach((key) => {
+        const idKey = key as keyof IdInfo;
+        if (!idInfo[idKey] || (idInfo[idKey] as string).length === 0) {
+          throw new Error(
+            `Please make sure that ${key} is included in the id_info`,
+          );
+        }
+      });
     }
     return 'false';
   }
@@ -238,10 +248,12 @@ const validateImages = (
   }
 
   // most job types require at least a selfie,
-  // JT6 does not when `use_enrolled_image` flag is passed
+  // JT6 and JT11 does not when `use_enrolled_image` flag is passed
+
+  const isDocV = jobType === 6 || jobType === 11;
   if (
     (!images.some(hasSelfieImage) || images.length === 0) &&
-    (!useEnrolledImage || jobType !== 6)
+    (!useEnrolledImage || !isDocV)
   ) {
     throw new Error('You need to send through at least one selfie image');
   }
@@ -703,7 +715,7 @@ export class WebApi {
 
       if (jobType === 1) {
         validateEnrollWithId(image_details, (data.idInfo as IdInfo).entered);
-      } else if (jobType === 6) {
+      } else if (jobType === 6 || jobType === 11) {
         validateDocumentVerification(image_details);
       }
 

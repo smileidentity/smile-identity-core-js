@@ -55,6 +55,8 @@ export const JOB_TYPE = {
   UPDATE_PHOTO: 8,
   /** Compares document verification to an id check */
   COMPARE_USER_INFO: 9,
+  /** ENHANCED_DOCUMENT_VERIFICATION Verifies user selfie with info retrieved from the ID issuing authority. */
+  ENHANCED_DOCUMENT_VERIFICATION: 11,
 };
 
 export const sidServerMapping: { [k: number]: string } = {
