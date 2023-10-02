@@ -101,6 +101,7 @@ const options = {
       options,
     );
     console.info(result);
+    return result;
   } catch (error) {
     console.error(error);
   }
