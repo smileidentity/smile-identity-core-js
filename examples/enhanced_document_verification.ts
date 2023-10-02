@@ -96,7 +96,7 @@ const options = {
       id_info,
       options,
     );
-    return result;
+    console.info(result);
   } catch (error) {
     console.error(error);
   }
