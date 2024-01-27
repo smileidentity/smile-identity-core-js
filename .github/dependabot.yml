@@ -3,11 +3,15 @@ updates:
 - package-ecosystem: npm
   directory: /
   schedule:
-    interval: weekly
+    interval: monthly
+    day: tuesday
+    time: '15:00'
 - package-ecosystem: github-actions
   directory: /
   schedule:
-    cron: 0 16 18 * *
+    interval: monthly
+    day: tuesday
+    time: '15:00'
   groups:
     github-actions:
       patterns:
