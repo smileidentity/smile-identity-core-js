@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosResponse, AxiosInstance } from 'axios';
 import Signature from './signature';
 import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { IdInfo, PartnerParams, SignatureInfo } from './shared';
