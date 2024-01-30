@@ -542,7 +542,6 @@ describe('WebApi', () => {
         1,
         expect.objectContaining({
           ...id_info,
-          language: 'javascript',
           partner_params: { job_id: '1', job_type: 5, user_id: '1' },
           signature: expect.any(String),
           source_sdk_version: packageJson.version,

@@ -33,3 +33,8 @@ export type TokenRequestParams = {
   product: string;
   callback_url: string;
 };
+
+export interface SignatureInfo {
+  signature: string;
+  timestamp: number | string;
+}
