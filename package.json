@@ -70,6 +70,6 @@
   },
   "homepage": "https://github.com/smileidentity/smile-identity-core-js#readme",
   "engines": {
-    "node": ">=v14.0.0, <v21.0.0"
+    "node": ">=v14.0.0"
   }
 }
