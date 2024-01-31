@@ -221,8 +221,8 @@ export class IDApi {
               ) {
                 return resolve(response.data);
               }
-              //retry again
-              setTimeout(() => {
+              // retry again
+              return setTimeout(() => {
                 pollEndpoint(retries - 1)
                   .then(resolve)
                   .catch(reject);
