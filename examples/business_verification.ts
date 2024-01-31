@@ -35,6 +35,15 @@ const id_info = {
   try {
     const result = await connection.submit_job(partner_params, id_info);
     console.info(result);
+
+    // submit Asyncjob is an alternative to submit_job that returns a promise
+    const async_result = await connection.submitAsyncjob(
+      partner_params,
+      id_info,
+      '<your callback url>',
+    );
+
+    console.info(async_result);
   } catch (error) {
     console.error(error);
   }
