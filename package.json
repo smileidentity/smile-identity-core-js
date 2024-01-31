@@ -10,10 +10,12 @@
     "start": "node dist/index.js",
     "test": "jest --coverage"
   },
-  "author": "Chris DeLauder <chris@smileidentity.com>",
+  "author": "Chris DeLauder <chris@usesmileid.com>",
   "contributors": [
-    "Barnabas A nsoh <barnabas@smileidentity.com>",
-    "Juma Allan <juma@smileidentity.com>"
+    "Barnabas A Nsoh <barnabas@usesmileid.com>",
+    "Juma Allan <juma@usesmileid.com>",
+    "Michael D'Angelo <michael@usesmileid.com>",
+    "Solomon Nsubuga <solomon@usesmileid.com>"
   ],
   "license": "MIT",
   "dependencies": {
@@ -67,6 +69,6 @@
   },
   "homepage": "https://github.com/smileidentity/smile-identity-core-js#readme",
   "engines": {
-    "node": ">=v12.0.0"
+    "node": ">=v14.0.0, <v21.0.0"
   }
 }
