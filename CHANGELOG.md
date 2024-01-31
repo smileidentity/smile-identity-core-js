@@ -12,6 +12,10 @@ and this project adheres to
 
 - Added support for Node 20.
 
+### Removed
+
+- Officially removed support for Node 12. Node 12 compatibility broke with the introduction of TypeScript support in version 3.0.0.
+
 ## [3.1.0] - 2024-01-31
 
 ### Added
