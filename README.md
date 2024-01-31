@@ -1,43 +1,39 @@
 # Smile Identity Node.js Server Side SDK
 
-Smile Identity provides the best solutions for real time Digital KYC, Identity Verification, User Onboarding, and User Authentication across Africa. Our server side libraries make it easy to integrate us on the server-side. Since the library is server-side, you will be required to pass the images (if required) to the library.
+Smile Identity provides the best solutions for real-time Digital KYC, KYB, Identity Verification, User Onboarding, and User Authentication across Africa. Our server-side libraries make it easy to integrate with our services. Since the library is server-side, you will need to pass the images (if required) to the library.
 
-If you haven’t already, [sign up for a free Smile Identity account](https://www.smileidentity.com/schedule-a-demo/), which comes with Sandbox access.
+If you haven’t already, [sign up for a free Smile Identity account](https://www.usesmileid.com/schedule-a-demo/), which comes with Sandbox access.
 
 Please see [CHANGELOG.md](CHANGELOG.md) for release versions and changes.
 
 ## Features
 
-The library exposes four classes; the `WebApi` class, the `IDApi` class, the `Signature` class, and the `Utilities` class.
+The library exposes four classes: the `WebApi` class, the `IDApi` class, the `Signature` class, and the `Utilities` class.
 
-The `WebApi` class has the following public methods:
+- The `WebApi` class provides public methods:
+  - `submit_job` - Handles the submission of Smile Identity products that require an image, such as [Biometric KYC](https://docs.usesmileid.com/products/biometric-kyc), [Document Verification](https://docs.usesmileid.com/products/document-verification), and [SmartSelfie™ Authentication](https://docs.usesmileid.com/products/biometric-authentication).
+  - `get_job_status` - Retrieves information & results of a job. Learn more about job status in the [Smile Identity documentation](https://docs.usesmileid.com/further-reading/job-status).
+  - `get_web_token` - Generates a web token for use with the [Hosted Web Integration](https://docs.usesmileid.com/web-mobile-web/web-integration-beta).
 
-- `submit_job` - handles submission of any of Smile Identity products that requires an image i.e. [Biometric KYC](https://docs.smileidentity.com/products/biometric-kyc), [Document Verification](https://docs.smileidentity.com/products/document-verification) and [SmartSelfieTM Authentication](https://docs.smileidentity.com/products/biometric-authentication).
-- `get_job_status` - retrieve information & results of a job. Read more on job status in the [Smile Identity documentation](https://docs.smileidentity.com/further-reading/job-status).
-- `get_web_token` - handles generation of web token, if you are using the [Hosted Web Integration](https://docs.smileidentity.com/web-mobile-web/web-integration-beta).
+- The `IDApi` class provides a public method:
+  - `submit_job` - Handles the submission of [Enhanced KYC](https://docs.usesmileid.com/products/identity-lookup), [Basic KYC](https://docs.usesmileid.com/products/id-verification), and [Business Verification](https://docs.usesmileid.com/products/for-businesses-kyb/business-verification).
 
-The `IDApi` class has the following public method:
+- The `Signature` class offers public methods:
+  - `generate_signature` - Generates a signature to be passed as a parameter when making requests to the Smile Identity server.
+  - `confirm_signature` - Confirms the authenticity of a response from the Smile Identity server by verifying the incoming signature.
 
-- `submit_job` - handles submission of [Enhanced KYC](https://docs.smileidentity.com/products/identity-lookup), [Basic KYC](https://docs.smileidentity.com/products/id-verification) and [Business Verification](https://docs.smileidentity.com/products/for-businesses-kyb/business-verification).
+- The `Utilities` Class provides access to Smile Identity's general utility functions. It includes:
+  - `get_job_status` - Retrieves information & results of a job. More details on job status can be found in the [Smile Identity documentation](https://docs.usesmileid.com/further-reading/job-status).
 
-The `Signature` class has the following public methods:
-
-- `generate_signature` - generate a signature which is then passed as a signature param when making requests to the Smile Identity server.
-- `confirm_signature` - ensure a response is truly from the Smile Identity server by confirming the incoming signature.
-
-The `Utilities` Class allows you as the Partner to have access to our general Utility functions to gain access to your data. It has the following public methods:
-
-- `get_job_status` - retrieve information & results of a job. Read more on job status in the [Smile Identity documentation](https://docs.smileidentity.com/further-reading/job-status).
-
-For examples of how to use these classes, please see the [examples](/examples/) directory of this repository.
+For examples of how to use these classes, please see the [examples](/examples/) directory in this repository.
 
 ## Installation
 
-**Note** This package **requires node 12.x or higher**.
+**Note:** This package **requires Node.js version 14.x or higher**.
 
 View the package on [npm](https://www.npmjs.com/package/smile-identity-core).
 
-This package can be added to your project as:
+To add this package to your project, run:
 
 ```shell
 npm install --save smile-identity-core
@@ -45,17 +41,17 @@ npm install --save smile-identity-core
 
 ## Documentation
 
-This package requires specific input parameters, for more detail on these parameters please refer to our [documentation for Web API](https://docs.smileidentity.com/server-to-server/javascript).
+This package requires specific input parameters. For more details on these parameters, please refer to our [Web API documentation](https://docs.usesmileid.com/server-to-server/javascript).
 
-Please note that you will have to be a Smile Identity Partner to be able to query our services. You can sign up on the [Portal](https://portal.smileidentity.com/signup).
+Note that querying our services requires Smile Identity Partner status, obtainable by signing up on the [Portal](https://portal.usesmileid.com/signup).
 
 ## Getting Help
 
-For usage questions, the best resource is [our official documentation](https://docs.smileidentity.com). However, if you require further assistance, you can file a [support ticket via our portal](https://portal.smileidentity.com/partner/support/tickets) or visit the [contact us page](https://portal.smileidentity.com/partner/support/tickets) on our website.
+For usage questions, consult [our official documentation](https://docs.usesmileid.com). If you require further assistance, you can file a [support ticket via our portal](https://portal.usesmileid.com/partner/support/tickets) or visit our [contact us page](https://www.usesmileid.com/contact-us).
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub [here](https://github.com/smileidentity/smile-identity-core-js).
+Bug reports and pull requests are welcome on GitHub at [this repository](https://github.com/smileidentity/smile-identity-core-js).
 
 ## License
 
