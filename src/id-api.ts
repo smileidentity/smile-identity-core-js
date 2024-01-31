@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, AxiosInstance } from 'axios';
+import axios, { AxiosResponse, AxiosInstance, AxiosError } from 'axios';
 import Signature from './signature';
 import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
 import { IdInfo, PartnerParams, SignatureInfo } from './shared';
@@ -214,14 +214,21 @@ export class IDApi {
           this.axiosInstance
             .post('/job_status', data)
             .then((response: AxiosResponse) => {
-              if (response.data.job_complete || retries === 0) {
+              if (
+                response.data.job_complete ||
+                retries <= 0 ||
+                response.status !== 200
+              ) {
                 return resolve(response.data);
               }
-              // throw an error to force a retry in the catch
-              // block
-              throw new Error('Force a retry...');
+              //retry again
+              setTimeout(() => {
+                pollEndpoint(retries - 1)
+                  .then(resolve)
+                  .catch(reject);
+              }, timeout);
             })
-            .catch(() => {
+            .catch((error: AxiosError) => {
               if (retries > 0) {
                 setTimeout(() => {
                   pollEndpoint(retries - 1)
@@ -230,9 +237,7 @@ export class IDApi {
                 }, timeout);
               } else {
                 // Max retries reached, reject with the error
-                reject(
-                  new Error('Max retries reached. unable to poll job status.'),
-                );
+                reject(error);
               }
             });
         });
