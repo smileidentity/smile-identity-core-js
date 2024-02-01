@@ -47,7 +47,7 @@ Note that querying our services requires Smile Identity Partner status, obtainab
 
 ## Getting Help
 
-For usage questions, consult [our official documentation](https://docs.usesmileid.com). If you require further assistance, you can file a [support ticket via our portal](https://portal.usesmileid.com/partner/support/tickets) or visit our [contact us page](https://www.usesmileid.com/contact-us).
+For usage questions, consult [our official documentation](https://docs.usesmileid.com). If you require further assistance, you can file a [support ticket via our portal](https://portal.usesmileid.com/partner/support/tickets) or visit our [contact us page](https://usesmileid.com/contact-us).
 
 ## Contributing
 
