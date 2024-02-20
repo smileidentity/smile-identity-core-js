@@ -1,4 +1,4 @@
-// See https://docs.smileidentity.com/server-to-server/javascript/products/smartselfie-tm-authentication for
+// See https://docs.usesmileid.com/server-to-server/javascript/products/smartselfie-tm-authentication for
 //  how to setup and retrieve configuration values for the WebApi class.
 
 // Change to smile-identity-core if you're using this snippet in your project.

@@ -1,5 +1,5 @@
 /**
- * See https://docs.smileidentity.com/server-to-server/javascript/products/document-verification
+ * See https://docs.usesmileid.com/server-to-server/javascript/products/document-verification
  * for how to setup and retrieve configuration values for the WebApi class.
  */
 
@@ -47,7 +47,7 @@ const partner_params = {
  *     string of the selfie).
  *
  * You may use the recommended web sdk to capture the images, read more
- * here https://docs.smileidentity.com/web-mobile-web/javascript-sdk-beta
+ * here https://docs.usesmileid.com/web-mobile-web/javascript-sdk-beta
  */
 const image_details = [
   {
