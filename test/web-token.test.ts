@@ -125,14 +125,12 @@ describe('web-token', () => {
           expect(body.product).toEqual(requestParams.product);
           return true;
         })
-        .replyWithError({
-          status: 400,
-        });
+        .replyWithError('2204:unauthorized');
 
       const promise = getWebToken(
         '001',
         mockApiKey,
-        0,
+        '0',
         requestParams,
         'https://a_callback.cb',
       );
