@@ -624,7 +624,7 @@ describe('WebApi', () => {
     });
 
     it('should raise an error when a network call fails', async () => {
-      expect.assertions(4);
+      expect.assertions(2);
       const instance = new WebApi(
         '001',
         'https://a_callback.cb',
@@ -639,10 +639,7 @@ describe('WebApi', () => {
 
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload')
-        .replyWithError({
-          code: '2204',
-          error: 'unauthorized',
-        })
+        .replyWithError('2204:unauthorized')
         .isDone();
 
       // todo: find a way to unzip and test info.json
@@ -671,11 +668,7 @@ describe('WebApi', () => {
       // make sure this test fails if the job goes through
       expect(response).toBeUndefined();
 
-      // todo: figure out how to get nook to act like an error response would in real life
-      // err.message in this case should be '2204:unauthorized'
-      expect(error.message).toBeUndefined();
-      expect(error.code).toBe('2204');
-      expect(error.error).toBe('unauthorized');
+      expect(error.message).toBe('2204:unauthorized');
     });
 
     it('should return a response from job_status if that flag is set to true', async () => {
