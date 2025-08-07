@@ -149,9 +149,7 @@ describe('web-token', () => {
       // make sure this test fails if the job goes through
       expect(response).toBeUndefined();
 
-      // todo: figure out how to get nook to act like an error response would in real life
-      // err.message in this case should be '2204:unauthorized'
-      expect(error.message).toBeUndefined();
+      expect(error.message).toBe('2204:unauthorized');
       expect(scope.isDone()).toEqual(true);
     });
   });

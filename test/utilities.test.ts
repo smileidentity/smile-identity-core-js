@@ -79,7 +79,7 @@ describe('Utilities', () => {
           expect(body.history).toEqual(true);
           return true;
         })
-        .replyWithError({ code: '2204', error: 'unauthorized' });
+        .replyWithError('2204:unauthorized');
 
       const utilities = new Utilities(
         '001',
