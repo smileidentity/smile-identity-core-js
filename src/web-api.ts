@@ -512,7 +512,8 @@ const zipUpFile = (
   images
     .filter((image) => [0, 1].includes(image.image_type_id))
     .forEach((image) => {
-      zip.file(path.basename(image.image), fs.readFileSync(image.image));
+      const fileBuffer = fs.readFileSync(image.image);
+      zip.file(path.basename(image.image), new Uint8Array(fileBuffer));
     });
   return zip.generateAsync({ type: 'uint8array' });
 };
