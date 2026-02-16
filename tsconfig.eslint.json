@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["**/*.ts", "**/*.js", "examples", ".eslintrc.js", "babel.config.js"],
+  "include": ["**/*.ts", "**/*.js", "examples", "babel.config.js"],
   "exclude": ["dist"],
   "compilerOptions": {
     "noEmit": true,
-    "skipDefaultLibCheck": true,
+    "skipDefaultLibCheck": true
   }
 }

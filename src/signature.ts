@@ -18,7 +18,7 @@ const generate_signature = (
       ? new Date(timestamp).toISOString()
       : timestamp;
   // validates that the timestamp is a valid ISO 8601 timestamp.
-  new Date(isoTimestamp).toISOString(); // eslint-disable-line no-new
+  new Date(isoTimestamp).toISOString();
   const hmac = crypto.createHmac('sha256', apiKey);
   hmac.update(isoTimestamp, 'utf8');
   hmac.update(partnerID, 'utf8');
