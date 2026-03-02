@@ -4,7 +4,6 @@
  */
 
 // Change to smile-identity-core if you're using this snippet in your project.
-/* eslint-disable import/no-relative-packages */
 import { WebApi } from '..';
 
 // Initialize

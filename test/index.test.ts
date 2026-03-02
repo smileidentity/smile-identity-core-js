@@ -28,7 +28,7 @@ describe('smile-identity-core', () => {
       jest.resetModules();
       global.window = {};
       console.warn = jest.fn();
-      require('..'); // eslint-disable-line global-require
+      require('..');
     });
 
     it('should throw an error when run in a browser', () => {
