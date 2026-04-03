@@ -1,0 +1,42 @@
+version: 2
+triggerPaths:
+  - 'package.json'
+  - 'package-lock.json'
+issueRules:
+  malware: true
+  didYouMean: true
+  installScripts: true
+  obfuscatedFile: true
+  troll: true
+  shellScriptOverride: true
+  gptMalware: true
+  manifestConfusion: true
+  gitDependency: true
+  httpDependency: true
+  gitHubDependency: true
+  networkAccess: true
+  shellAccess: true
+  envVars: true
+  highEntropyStrings: true
+  unstableOwnership: true
+  gptSecurity: true
+  hasNativeCode: true
+  telemetry: true
+  invalidPackageJSON: true
+  unresolvedRequire: true
+  deprecated: true
+  unmaintained: true
+  trivialPackage: false
+  minifiedFile: false
+  dynamicRequire: false
+  debugAccess: false
+  filesystemAccess: false
+  usesEval: false
+  floatingDependency: false
+  unpopularPackage: false
+  gptAnomaly: false
+githubApp:
+  enabled: true
+  pullRequestAlertsEnabled: true
+  dependencyOverviewEnabled: true
+  projectReportsEnabled: true
