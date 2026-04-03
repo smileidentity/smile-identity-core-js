@@ -10,7 +10,7 @@
     "start": "node dist/index.js",
     "test": "jest --coverage",
     "watch": "tsc --watch",
-    "preinstall": "[ \"$npm_config_global\" = \"true\" ] || [ \"$ALLOW_INSTALL\" = \"1\" ] || [ \"$CI\" = \"true\" ] || (echo \"Use npm ci\" && exit 1)"
+    "preinstall": "[ \"$npm_config_global\" = \"true\" ] || [ \"$INIT_CWD\" != \"$PWD\" ] || [ \"$ALLOW_INSTALL\" = \"1\" ] || [ \"$CI\" = \"true\" ] || [ \"$npm_command\" = \"ci\" ] || (echo \"Use npm ci\" && exit 1)"
   },
   "author": "Chris DeLauder <chris@usesmileid.com>",
   "contributors": [
