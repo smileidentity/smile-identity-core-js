@@ -13,9 +13,10 @@ jobs:
     name: Semgrep Security Scan
     runs-on: ubuntu-latest
     continue-on-error: true
+    container:
+      image: returntocorp/semgrep
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
       - name: Run Semgrep
-        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
-        with:
-          config: p/security-audit
+        run: semgrep scan --config p/security-audit
