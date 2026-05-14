@@ -292,7 +292,7 @@ describe('IDapi', () => {
 
   describe('#submitAsyncjob', () => {
     it('should be able to send an asynchronous ID verification job', async () => {
-      expect.assertions(4);
+      expect.assertions(11);
       const instance = new IDApi(
         '001',
         Buffer.from(pair.public).toString('base64'),
@@ -314,6 +314,13 @@ describe('IDapi', () => {
         .post('/v1/async_id_verification', (body) => {
           expect(body.callback_url).toEqual(callbackUrl);
           expect(body.partner_params).toEqual(partner_params);
+          expect(body.partner_id).toEqual('001');
+          expect(body.country).toEqual(id_info.country);
+          expect(body.id_type).toEqual(id_info.id_type);
+          expect(body.id_number).toEqual(id_info.id_number);
+          expect(typeof body.signature).toBe('string');
+          expect(body.timestamp).toBeDefined();
+          expect(body.source_sdk).toEqual('javascript');
           return true;
         })
         .reply(200, { success: true });
