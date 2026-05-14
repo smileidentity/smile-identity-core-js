@@ -290,6 +290,77 @@ describe('IDapi', () => {
     });
   });
 
+  describe('#submitAsyncjob', () => {
+    it('should be able to send an asynchronous ID verification job', async () => {
+      expect.assertions(4);
+      const instance = new IDApi(
+        '001',
+        Buffer.from(pair.public).toString('base64'),
+        0,
+      );
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.BASIC_KYC,
+      };
+      const id_info = {
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+      };
+      const callbackUrl = 'https://a_callback.com';
+
+      const scope = nock('https://testapi.smileidentity.com')
+        .post('/v1/async_id_verification', (body) => {
+          expect(body.callback_url).toEqual(callbackUrl);
+          expect(body.partner_params).toEqual(partner_params);
+          return true;
+        })
+        .reply(200, { success: true });
+
+      const resp = await instance.submitAsyncjob<{ success: boolean }>(
+        partner_params,
+        id_info,
+        callbackUrl,
+      );
+
+      expect(resp).toEqual({ success: true });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('should reject when an asynchronous request fails', async () => {
+      expect.assertions(2);
+      const instance = new IDApi(
+        '001',
+        Buffer.from(pair.public).toString('base64'),
+        0,
+      );
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.BASIC_KYC,
+      };
+      const id_info = {
+        country: 'NG',
+        id_type: 'BVN',
+        id_number: '00000000000',
+      };
+
+      const scope = nock('https://testapi.smileidentity.com')
+        .post('/v1/async_id_verification')
+        .replyWithError('async request failed');
+
+      await expect(
+        instance.submitAsyncjob(
+          partner_params,
+          id_info,
+          'https://callback.url',
+        ),
+      ).rejects.toThrow(/async request failed/);
+      expect(scope.isDone()).toBe(true);
+    });
+  });
+
   describe('business_verification', () => {
     it('successfully sends a business verification job', async () => {
       expect.assertions(3);
