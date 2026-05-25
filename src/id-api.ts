@@ -1,6 +1,10 @@
 import axios, { AxiosResponse, AxiosInstance, AxiosError } from 'axios';
 import Signature from './signature.js';
-import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers.js';
+import {
+  mapServerUri,
+  sdkVersionInfo,
+  validatePartnerParams,
+} from './helpers.js';
 import { IdInfo, PartnerParams, SignatureInfo } from './shared.js';
 import { JOB_TYPE } from './constants.js';
 

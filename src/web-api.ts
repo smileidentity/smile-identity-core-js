@@ -5,7 +5,11 @@ import JSzip from 'jszip';
 import Signature from './signature.js';
 import { Utilities } from './utilities.js';
 import { IDApi } from './id-api.js';
-import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers.js';
+import {
+  mapServerUri,
+  sdkVersionInfo,
+  validatePartnerParams,
+} from './helpers.js';
 import { getWebToken } from './web-token.js';
 import { JOB_TYPE } from './constants.js';
 import {
