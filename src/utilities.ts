@@ -1,8 +1,8 @@
 import axios from 'axios';
-import Signature from './signature';
-import { OptionsParam } from './shared';
+import Signature from './signature.js';
+import { OptionsParam } from './shared.js';
 
-import { mapServerUri } from './helpers';
+import { mapServerUri } from './helpers.js';
 
 export const get_job_status = (
   partnerId: string,

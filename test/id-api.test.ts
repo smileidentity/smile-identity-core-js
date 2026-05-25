@@ -2,7 +2,7 @@ import keypair from 'keypair';
 import nock from 'nock';
 import * as packageJson from '../package.json';
 import businessVerificationResp from './fixtures/business_verification_response.json';
-import { sdkVersionInfo } from '../src/helpers';
+import { sdkVersionInfo } from '../src/helpers.js';
 import { IDApi, Signature, JOB_TYPE } from '..';
 
 const pair = keypair();

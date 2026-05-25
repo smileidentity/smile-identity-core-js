@@ -2,18 +2,18 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import JSzip from 'jszip';
-import Signature from './signature';
-import { Utilities } from './utilities';
-import { IDApi } from './id-api';
-import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
-import { getWebToken } from './web-token';
-import { JOB_TYPE } from './constants';
+import Signature from './signature.js';
+import { Utilities } from './utilities.js';
+import { IDApi } from './id-api.js';
+import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers.js';
+import { getWebToken } from './web-token.js';
+import { JOB_TYPE } from './constants.js';
 import {
   IdInfo,
   PartnerParams,
   OptionsParam,
   TokenRequestParams,
-} from './shared';
+} from './shared.js';
 
 type PayloadData = {
   [k: string]: string | number | Array<{ [k: string]: number | string }>;

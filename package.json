@@ -4,6 +4,7 @@
   "description": "The official Smile Identity Node SDK",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "type": "commonjs",
   "scripts": {
     "prepublish": "tsc",
     "lint": "eslint $(git ls-files '*.js' '*.ts') --fix",
