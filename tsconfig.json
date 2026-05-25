@@ -8,6 +8,7 @@
     "rootDir": "./",
     "declaration": true,
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "allowJs": true,
     "outDir": "./dist",
