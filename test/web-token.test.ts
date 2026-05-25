@@ -152,6 +152,70 @@ describe('web-token', () => {
     });
   });
 
+  describe('URL sanitization', () => {
+    const requestParams = {
+      user_id: '1',
+      job_id: '1',
+      product: 'ekyc_smartselfie',
+    };
+    const tokenResponse = { token: '42' };
+    const defaultCallback = 'https://a.callback.url/';
+
+    it('should strip https:// and trailing slashes from the URL', async () => {
+      expect.assertions(1);
+      const dirtyUrl = 'https://testapi.smileidentity.com/v1/';
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/token')
+        .reply(200, tokenResponse);
+
+      const response = await getWebToken(
+        '001',
+        mockApiKey,
+        dirtyUrl,
+        requestParams,
+        defaultCallback,
+      );
+      expect(response.token).toEqual(tokenResponse.token);
+    });
+
+    it('should strip http:// from the URL', async () => {
+      expect.assertions(1);
+      const dirtyUrl = 'http://testapi.smileidentity.com/v1';
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/token')
+        .reply(200, tokenResponse);
+
+      const response = await getWebToken(
+        '001',
+        mockApiKey,
+        dirtyUrl,
+        requestParams,
+        defaultCallback,
+      );
+      expect(response.token).toEqual(tokenResponse.token);
+    });
+
+    it('should strip multiple trailing slashes from the URL', async () => {
+      expect.assertions(1);
+      const dirtyUrl = 'testapi.smileidentity.com/v1///';
+
+      nock('https://testapi.smileidentity.com')
+        .post('/v1/token')
+        .reply(200, tokenResponse);
+
+      const response = await getWebToken(
+        '001',
+        mockApiKey,
+        dirtyUrl,
+        requestParams,
+        defaultCallback,
+      );
+      expect(response.token).toEqual(tokenResponse.token);
+    });
+  });
+
   describe('handle callback url', () => {
     it('should ensure that a callback URL exists', async () => {
       const promise = getWebToken('001', mockApiKey, 0, {});
