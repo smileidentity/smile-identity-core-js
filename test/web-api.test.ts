@@ -4,6 +4,7 @@ import nock from 'nock';
 import packageJson from '../package.json';
 
 import { WebApi, Signature, IMAGE_TYPE, JOB_TYPE } from '..';
+import JSZip from 'jszip';
 
 const pair = keypair();
 const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');
@@ -285,7 +286,7 @@ describe('WebApi', () => {
     });
 
     it('should be able to send a job', async () => {
-      expect.assertions(2);
+      expect.assertions(4);
       const instance = new WebApi(
         '001',
         'https://a_callback.cb',
@@ -300,14 +301,20 @@ describe('WebApi', () => {
       const options = {};
       const smileJobId = '0000000111';
       const postBody = jest.fn(() => true);
+      let capturedZipBuffer;
+
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload', postBody)
         .reply(200, {
           upload_url: 'https://some_url.com',
           smile_job_id: smileJobId,
         });
-      // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').reply(200);
+      nock('https://some_url.com')
+        .put('/')
+        .reply(200, function (uri, requestBody) {
+          capturedZipBuffer = Buffer.from(requestBody as string, 'hex');
+          return '';
+        });
 
       const response = await instance.submit_job(
         partner_params,
@@ -320,6 +327,11 @@ describe('WebApi', () => {
         {},
         options,
       );
+
+      expect(capturedZipBuffer).toBeDefined();
+      const zip = await JSZip.loadAsync(capturedZipBuffer!);
+      const infoJson = JSON.parse(await zip.file('info.json')!.async('string'));
+
       expect(response).toEqual({ success: true, smile_job_id: smileJobId });
       expect(postBody).toHaveBeenNthCalledWith(
         1,
@@ -338,10 +350,30 @@ describe('WebApi', () => {
           source_sdk_version: packageJson.version,
         }),
       );
+
+      expect(infoJson).toEqual(
+        expect.objectContaining({
+          misc_information: expect.objectContaining({
+            partner_params: expect.objectContaining({
+              job_id: partner_params.job_id,
+              user_id: partner_params.user_id,
+              job_type: 2,
+            }),
+          }),
+          id_info: expect.objectContaining({
+            entered: 'false',
+          }),
+          images: expect.arrayContaining([
+            expect.objectContaining({
+              image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+            }),
+          ]),
+        }),
+      );
     });
 
     it('should be able to send a job with optional partner params', async () => {
-      expect.assertions(2);
+      expect.assertions(4);
       const instance = new WebApi(
         '001',
         'https://a_callback.cb',
@@ -357,14 +389,21 @@ describe('WebApi', () => {
       const options = {};
       const smileJobId = '0000000111';
       const postBody = jest.fn(() => true);
+      let capturedZipBuffer;
+
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload', postBody)
         .reply(200, {
           upload_url: 'https://some_url.com',
           smile_job_id: smileJobId,
         });
-      // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').reply(200);
+
+      nock('https://some_url.com')
+        .put('/')
+        .reply(200, function (uri, requestBody) {
+          capturedZipBuffer = Buffer.from(requestBody as string, 'hex');
+          return '';
+        });
 
       const response = await instance.submit_job(
         partner_params,
@@ -377,6 +416,11 @@ describe('WebApi', () => {
         {},
         options,
       );
+
+      expect(capturedZipBuffer).toBeDefined();
+      const zip = await JSZip.loadAsync(capturedZipBuffer!);
+      const infoJson = JSON.parse(await zip.file('info.json')!.async('string'));
+
       expect(response).toEqual({ success: true, smile_job_id: smileJobId });
       expect(postBody).toHaveBeenNthCalledWith(
         1,
@@ -396,10 +440,31 @@ describe('WebApi', () => {
           source_sdk_version: packageJson.version,
         }),
       );
+
+      expect(infoJson).toEqual(
+        expect.objectContaining({
+          misc_information: expect.objectContaining({
+            partner_params: expect.objectContaining({
+              job_id: partner_params.job_id,
+              user_id: partner_params.user_id,
+              job_type: 2,
+              app_name: partner_params.app_name, // key assertion — proves optional params flow into zip
+            }),
+          }),
+          id_info: expect.objectContaining({
+            entered: 'false',
+          }),
+          images: expect.arrayContaining([
+            expect.objectContaining({
+              image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+            }),
+          ]),
+        }),
+      );
     });
 
     it('should be able to send a job with a signature', async () => {
-      expect.assertions(2);
+      expect.assertions(4);
       const instance = new WebApi('001', 'https://a_callback.cb', '1234', 0);
       const partner_params = {
         job_id: '1',
@@ -411,6 +476,8 @@ describe('WebApi', () => {
       };
       const smileJobId = '0000000111';
       const postBody = jest.fn(() => true);
+      let capturedZipBuffer;
+
       nock('https://testapi.smileidentity.com')
         .post('/v1/upload', postBody)
         .reply(200, {
@@ -418,8 +485,14 @@ describe('WebApi', () => {
           smile_job_id: smileJobId,
         })
         .isDone();
-      // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').reply(200).isDone();
+
+      nock('https://some_url.com')
+        .put('/')
+        .reply(200, function (uri, requestBody) {
+          capturedZipBuffer = Buffer.from(requestBody as string, 'hex');
+          return '';
+        })
+        .isDone();
 
       const response = await instance.submit_job(
         partner_params,
@@ -432,6 +505,11 @@ describe('WebApi', () => {
         {},
         options,
       );
+
+      expect(capturedZipBuffer).toBeDefined();
+      const zip = await JSZip.loadAsync(capturedZipBuffer!);
+      const infoJson = JSON.parse(await zip.file('info.json')!.async('string'));
+
       expect(response).toEqual({ success: true, smile_job_id: smileJobId });
       expect(postBody).toHaveBeenNthCalledWith(
         1,
@@ -448,6 +526,26 @@ describe('WebApi', () => {
           callback_url: 'https://a_callback.cb',
           source_sdk: 'javascript',
           source_sdk_version: packageJson.version,
+        }),
+      );
+
+      expect(infoJson).toEqual(
+        expect.objectContaining({
+          misc_information: expect.objectContaining({
+            partner_params: expect.objectContaining({
+              job_id: partner_params.job_id,
+              user_id: partner_params.user_id,
+              job_type: 2,
+            }),
+          }),
+          id_info: expect.objectContaining({
+            entered: 'false',
+          }),
+          images: expect.arrayContaining([
+            expect.objectContaining({
+              image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+            }),
+          ]),
         }),
       );
     });
@@ -641,9 +739,6 @@ describe('WebApi', () => {
         .post('/v1/upload')
         .replyWithError('2204:unauthorized')
         .isDone();
-
-      // todo: find a way to unzip and test info.json
-      nock('https://some_url.com').put('/').reply(200).isDone();
 
       const promise = instance.submit_job(
         partner_params,
