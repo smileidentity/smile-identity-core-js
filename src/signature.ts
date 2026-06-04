@@ -64,8 +64,14 @@ export default class Signature {
   }
 
   confirm_signature(timestamp: string | number, signature: string): boolean {
-    return (
-      generate_signature(this.partnerID, this.apiKey, timestamp) === signature
-    );
+    const expected = generate_signature(this.partnerID, this.apiKey, timestamp);
+    const expectedBuffer = Buffer.from(expected, 'base64');
+    const actualBuffer = Buffer.from(signature, 'base64');
+
+    if (expectedBuffer.length !== actualBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
   }
 }

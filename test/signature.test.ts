@@ -96,7 +96,7 @@ describe('Signature', () => {
   });
 
   describe('#confirm_signature', () => {
-    it('should confirm an incoming signature', () => {
+    it('should confirm a valid incoming signature', () => {
       expect.assertions(1);
       const timestamp = new Date().toISOString();
       const hmac = crypto.createHmac('sha256', mockApiKey);
@@ -106,6 +106,13 @@ describe('Signature', () => {
         .update('sid_request', 'utf8');
       const output = hmac.digest().toString('base64');
       expect(signer.confirm_signature(timestamp, output)).toEqual(true);
+    });
+
+    it('should reject a signature that does not match', () => {
+      expect.assertions(1);
+      const timestamp = new Date().toISOString();
+      const fakeSignature = crypto.randomBytes(32).toString('base64');
+      expect(signer.confirm_signature(timestamp, fakeSignature)).toEqual(false);
     });
   });
 });
