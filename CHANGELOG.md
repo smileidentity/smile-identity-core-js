@@ -16,6 +16,14 @@ and this project adheres to
 
 - Officially removed support for Node 12. Node 12 compatibility broke with the introduction of TypeScript support in version 3.0.0.
 
+### Fixed
+
+- Strip duplicate HTTP schemes from `serverUri` so values like `https://https://...` are normalized before requests are made. (#509)
+
+### Security
+
+- Use `crypto.timingSafeEqual` for incoming signature comparison to guard against timing attacks. (#534)
+
 ## [3.1.0] - 2024-01-31
 
 ### Added
