@@ -1,7 +1,7 @@
 import axios from 'axios';
-import Signature from './signature';
-import { mapServerUri } from './helpers';
-import { TokenRequestParams } from './shared';
+import Signature from './signature.js';
+import { mapServerUri } from './helpers.js';
+import { TokenRequestParams } from './shared.js';
 
 /**
  * Gets an authorization token from Smile. Used in Hosted Web Integration.

@@ -2,7 +2,7 @@ import {
   mapServerUri,
   sdkVersionInfo,
   validatePartnerParams,
-} from '../src/helpers';
+} from '../src/helpers.js';
 
 describe('helpers', () => {
   it('mapServerUri', () => {

@@ -1,8 +1,8 @@
-import { IDApi } from './src/id-api';
-import Signature from './src/signature';
-import { Utilities } from './src/utilities';
-import { WebApi } from './src/web-api';
-import { JOB_TYPE, IMAGE_TYPE } from './src/constants';
+import { IDApi } from './src/id-api.js';
+import Signature from './src/signature.js';
+import { Utilities } from './src/utilities.js';
+import { WebApi } from './src/web-api.js';
+import { JOB_TYPE, IMAGE_TYPE } from './src/constants.js';
 
 if (
   (typeof process === 'undefined' &&
