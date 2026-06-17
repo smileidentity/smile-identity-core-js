@@ -1,8 +1,12 @@
 import axios, { AxiosResponse, AxiosInstance, AxiosError } from 'axios';
-import Signature from './signature';
-import { mapServerUri, sdkVersionInfo, validatePartnerParams } from './helpers';
-import { IdInfo, PartnerParams, SignatureInfo } from './shared';
-import { JOB_TYPE } from './constants';
+import Signature from './signature.js';
+import {
+  mapServerUri,
+  sdkVersionInfo,
+  validatePartnerParams,
+} from './helpers.js';
+import { IdInfo, PartnerParams, SignatureInfo } from './shared.js';
+import { JOB_TYPE } from './constants.js';
 
 interface VerificationRequest extends IdInfo, SignatureInfo {
   partner_id: string;
