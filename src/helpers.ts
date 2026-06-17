@@ -1,6 +1,6 @@
 import * as packageJson from '../package.json';
-import { sidServerMapping } from './constants';
-import { PartnerParams } from './shared';
+import { sidServerMapping } from './constants.js';
+import { PartnerParams } from './shared.js';
 
 /**
  * Converts a numeric key to a smile server URI, or

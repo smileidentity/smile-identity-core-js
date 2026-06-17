@@ -1,7 +1,7 @@
 import keypair from 'keypair';
 import nock, { disableNetConnect, cleanAll, enableNetConnect } from 'nock';
 
-import { getWebToken } from '../src/web-token';
+import { getWebToken } from '../src/web-token.js';
 
 const pair = keypair();
 
