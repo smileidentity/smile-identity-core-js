@@ -8,21 +8,26 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-06-17
+
 ### Added
 
 - Added support for Node 20.
 
 ### Removed
 
-- Officially removed support for Node 12. Node 12 compatibility broke with the introduction of TypeScript support in version 3.0.0.
+- Officially removed support for Node 12. Node 12 compatibility broke with the
+  introduction of TypeScript support in version 3.0.0.
 
 ### Fixed
 
-- Strip duplicate HTTP schemes from `serverUri` so values like `https://https://...` are normalized before requests are made. (#509)
+- Strip duplicate HTTP schemes from `serverUri` so values like
+  `https://https://...` are normalized before requests are made. (#509)
 
 ### Security
 
-- Use `crypto.timingSafeEqual` for incoming signature comparison to guard against timing attacks. (#534)
+- Use `crypto.timingSafeEqual` for incoming signature comparison to guard
+  against timing attacks. (#534)
 
 ## [3.1.0] - 2024-01-31
 
@@ -40,7 +45,8 @@ and this project adheres to
 
 ### Changed
 
-- Updated `WebApi` to remove the `id_type` as a required field for DocV Job Type.
+- Updated `WebApi` to remove the `id_type` as a required field for DocV Job
+  Type.
 
 ## [3.0.0]
 
@@ -55,7 +61,8 @@ and this project adheres to
 ### Changed
 
 - Allowed `WebApi` to submit `consent_information` as part of `id_info`.
-- Refactored `get_web_token` code, moved from `WebApi` class into `web-token` file. Improved test coverage.
+- Refactored `get_web_token` code, moved from `WebApi` class into `web-token`
+  file. Improved test coverage.
 - Refactored `Utilities` class.
 - Refactored `WebApi` class. Eliminated `_private`.
 - Switched to using Jest for tests.
@@ -72,16 +79,20 @@ and this project adheres to
 
 ### Changed
 
-- Removed `options` argument from `IDApi.submit_job`. This argument is no longer used now that `sec_key` is no longer supported.
+- Removed `options` argument from `IDApi.submit_job`. This argument is no longer
+  used now that `sec_key` is no longer supported.
 - Improved test coverage.
 - Linted the codebase.
 - Updated documentation in README.md to reflect other Smile SDK docs.
-- Created `src/helpers.js`. Refactored common code into a separate file and increased test coverage.
+- Created `src/helpers.js`. Refactored common code into a separate file and
+  increased test coverage.
 - Refactored IDApi class.
 
 ### Removed
 
-- Removed `sec_key` based authentication. Functions `Signature.generate_sec_key` and `Signature.confirm_sec_key` should be replaced with `Signature.generate_signature` and `Signature.confirm_signature` respectively.
+- Removed `sec_key` based authentication. Functions `Signature.generate_sec_key`
+  and `Signature.confirm_sec_key` should be replaced with
+  `Signature.generate_signature` and `Signature.confirm_signature` respectively.
 - Dropped support for Node 10.
 
 ## [1.0.1] - 2019-11-02
@@ -100,9 +111,12 @@ and this project adheres to
 
 ### Changed
 
-- Amended the success response when job status is false to be a JSON String containing {"success":true,"smile_job_id":"job_id"}
+- Amended the success response when job status is false to be a JSON String
+  containing {"success":true,"smile_job_id":"job_id"}
 
 ### Removed
 
-- Removed the id_info validations for Web API (only validate the id_number, id_type, and country).
-- Changed the way that we import the classes from the modules (not backward compatible) e.g., `require("smile-identity-core").WebAPI`.
+- Removed the id_info validations for Web API (only validate the id_number,
+  id_type, and country).
+- Changed the way that we import the classes from the modules (not backward
+  compatible) e.g., `require("smile-identity-core").WebAPI`.
