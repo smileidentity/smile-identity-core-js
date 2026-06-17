@@ -1,0 +1,38 @@
+# When package.json's version lands on main, create a matching vX.Y.Z git tag.
+# Releasing is still manual: trigger the "Publish Node.js Package" workflow afterwards.
+name: Tag on version bump
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+permissions:
+  contents: write
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Read version from package.json
+        id: pkg
+        run:
+          echo "version=$(node -p "require('./package.json').version")" >>
+          "$GITHUB_OUTPUT"
+      - name: Create and push tag
+        env:
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?(\+[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::package.json version '${VERSION}' is not valid semver"
+            exit 1
+          fi
+          tag="v${VERSION}"
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            echo "::error::Tag ${tag} already exists; bump the version in package.json"
+            exit 1
+          fi
+          git tag "${tag}"
+          git push origin "${tag}"
+          echo "Created and pushed ${tag}"
