@@ -18,8 +18,15 @@ export const mapServerUri = (uriOrKey: string | number): string => {
       ? sidServerMapping[uriOrKey as number]
       : String(uriOrKey);
 
-  const cleanUri = rawUri.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
-  return `https://${cleanUri}`;
+  const lower = rawUri.toLowerCase();
+  const withoutScheme = lower.startsWith('https://')
+    ? rawUri.slice(8)
+    : lower.startsWith('http://')
+      ? rawUri.slice(7)
+      : rawUri;
+  let end = withoutScheme.length;
+  while (end > 0 && withoutScheme[end - 1] === '/') end--;
+  return `https://${withoutScheme.slice(0, end)}`;
 };
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */
