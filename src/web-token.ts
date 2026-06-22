@@ -64,13 +64,7 @@ export const getWebToken = (
     ...new Signature(partner_id, api_key).generate_signature(),
   };
 
-  const rawUrl = mapServerUri(url);
+  const baseUrl = mapServerUri(url);
 
-  // 1. Strip any existing http:// or https:// (case-insensitive)
-  // 2. Strip any trailing slashes to prevent double-slashes in the path
-  const cleanUrl = rawUrl.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
-
-  return axios
-    .post(`https://${cleanUrl}/token`, body)
-    .then((response) => response.data);
+  return axios.post(`${baseUrl}/token`, body).then((response) => response.data);
 };

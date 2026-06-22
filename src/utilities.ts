@@ -13,7 +13,7 @@ export const get_job_status = (
   { return_history, return_images }: OptionsParam,
 ) =>
   axios
-    .post(`https://${url}/job_status`, {
+    .post(`${url}/job_status`, {
       user_id: userId,
       job_id: jobId,
       partner_id: partnerId,

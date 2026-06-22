@@ -3,17 +3,23 @@ import { sidServerMapping } from './constants.js';
 import { PartnerParams } from './shared.js';
 
 /**
- * Converts a numeric key to a smile server URI, or
- * returns the original URI.
+ * Converts a numeric key to a Smile server URI and normalizes it to HTTPS.
  * @param {string|number} uriOrKey - The URI of a Smile ID server or a
  * numeric key that represents it.
- * @returns {string} URI of smile server if in map, original input if URI.
+ * @returns {string} Normalized HTTPS URI.
  */
 export const mapServerUri = (uriOrKey: string | number): string => {
-  if (uriOrKey in sidServerMapping) {
-    return sidServerMapping[uriOrKey as number];
+  if (uriOrKey === null || uriOrKey === undefined) {
+    return uriOrKey as unknown as string;
   }
-  return uriOrKey as string;
+
+  const rawUri =
+    uriOrKey in sidServerMapping
+      ? sidServerMapping[uriOrKey as number]
+      : String(uriOrKey);
+
+  const cleanUri = rawUri.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+  return `https://${cleanUri}`;
 };
 
 /** @type {{source_sdk: string, source_sdk_version: string}} */

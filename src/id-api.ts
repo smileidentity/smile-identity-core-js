@@ -51,7 +51,7 @@ export class IDApi {
     const url = mapServerUri(sid_server);
 
     this.axiosInstance = axios.create({
-      baseURL: `https://${url}`,
+      baseURL: url,
     });
   }
 
