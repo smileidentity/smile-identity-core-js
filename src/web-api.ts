@@ -530,7 +530,7 @@ const zipUpFile = (
 const setupRequests = (payload: { [k: string]: unknown }): Promise<object> =>
   axios
     .post(
-      `https://${payload.url}/upload`,
+      `${payload.url}/upload`,
       configurePrepUploadPayload(
         payload as {
           [k: string]: string | object;

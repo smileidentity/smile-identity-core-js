@@ -60,6 +60,6 @@ export const JOB_TYPE = {
 };
 
 export const sidServerMapping: { [k: number]: string } = {
-  0: 'testapi.smileidentity.com/v1',
-  1: 'api.smileidentity.com/v1',
+  0: 'https://testapi.smileidentity.com/v1',
+  1: 'https://api.smileidentity.com/v1',
 };

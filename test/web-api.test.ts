@@ -36,7 +36,7 @@ describe('WebApi', () => {
       expect(instance.partner_id).toEqual('001');
       expect(instance.api_key).toEqual(mockApiKey);
       expect(instance.default_callback).toEqual('https://a_callback.com');
-      expect(instance.url).toEqual('testapi.smileidentity.com/v1');
+      expect(instance.url).toEqual('https://testapi.smileidentity.com/v1');
     });
   });
 
