@@ -8,6 +8,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-06-23
+
+### Changed
+
+- `sidServerMapping` values now include the `https://` scheme, and
+  `mapServerUri` centralizes all URL normalization so callers no longer need to
+  prepend the scheme themselves. (#542) building on (#509)
+
+- Replaced polynomial regular expressions in `mapServerUri` with linear string
+  operations (`startsWith` / `while` loop) to eliminate potential ReDoS exposure
+  on uncontrolled input. (#542)
+
 ## [3.2.0] - 2026-06-17
 
 ### Added
