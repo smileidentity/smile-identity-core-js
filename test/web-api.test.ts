@@ -1,12 +1,13 @@
 import path from 'path';
-import keypair from 'keypair';
 import nock from 'nock';
+
+import { publicKey } from './fixtures/api-key.js';
 import packageJson from '../package.json';
 
 import { WebApi, Signature, IMAGE_TYPE, JOB_TYPE } from '..';
 import JSZip from 'jszip';
 
-const pair = keypair();
+const pair = { public: publicKey };
 const fixturePath = path.join(__dirname, 'fixtures', '1pixel.jpg');
 const mockApiKey = Buffer.from(pair.public).toString('base64');
 

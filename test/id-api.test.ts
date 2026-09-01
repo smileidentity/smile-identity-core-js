@@ -1,11 +1,12 @@
-import keypair from 'keypair';
 import nock from 'nock';
+
+import { publicKey } from './fixtures/api-key.js';
 import * as packageJson from '../package.json';
 import businessVerificationResp from './fixtures/business_verification_response.json';
 import { sdkVersionInfo } from '../src/helpers.js';
 import { IDApi, Signature, JOB_TYPE } from '..';
 
-const pair = keypair();
+const pair = { public: publicKey };
 
 describe('IDapi', () => {
   beforeAll(() => {
