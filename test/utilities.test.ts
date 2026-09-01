@@ -1,9 +1,10 @@
-import keypair from 'keypair';
 import nock from 'nock';
+
+import { publicKey } from './fixtures/api-key.js';
 
 import { Utilities, Signature } from '..';
 
-const pair = keypair();
+const pair = { public: publicKey };
 const mockApiKey = Buffer.from(pair.public).toString('base64');
 
 describe('Utilities', () => {

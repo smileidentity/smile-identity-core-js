@@ -1,9 +1,10 @@
-import keypair from 'keypair';
 import nock, { disableNetConnect, cleanAll, enableNetConnect } from 'nock';
+
+import { publicKey } from './fixtures/api-key.js';
 
 import { getWebToken } from '../src/web-token.js';
 
-const pair = keypair();
+const pair = { public: publicKey };
 
 const mockApiKey = Buffer.from(pair.public).toString('base64');
 
