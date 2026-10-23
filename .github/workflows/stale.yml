@@ -1,0 +1,14 @@
+name: Flag stale PRs
+
+on:
+  schedule:
+    - cron: "30 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    uses: smileidentity/central-workflows/.github/workflows/stale.yml@e04941c6757ab31f0e5de5195a264530e8c373d0 # v1
