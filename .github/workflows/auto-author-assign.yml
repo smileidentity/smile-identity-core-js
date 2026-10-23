@@ -1,0 +1,12 @@
+name: Auto author assign
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  assign:
+    uses: smileidentity/central-workflows/.github/workflows/auto-author-assign.yml@e04941c6757ab31f0e5de5195a264530e8c373d0 # v1
