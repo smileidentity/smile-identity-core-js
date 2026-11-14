@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- `WebApi.submit_job` with `return_job_status` no longer polls job status for
+  ever when every poll fails. Failed polls now count towards the existing limit
+  of 22 polls, and the last error is returned once it is reached. On an HTTP
+  429, the poller waits for the `Retry-After` header when it is a whole number
+  of seconds longer than the usual delay, up to 60 seconds. A 4xx other than 408
+  and 429 is returned at once, without polling again.
+
 ## [3.2.1] - 2026-06-23
 
 ### Changed
