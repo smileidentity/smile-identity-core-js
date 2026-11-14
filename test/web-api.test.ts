@@ -947,6 +947,100 @@ describe('WebApi', () => {
       expect(response.job_complete).toBe(true);
     });
 
+    describe('when job_status polls fail', () => {
+      const partner_params = {
+        user_id: '1',
+        job_id: '1',
+        job_type: JOB_TYPE.SMART_SELFIE_AUTHENTICATION,
+      };
+      const completeResponse = () => ({
+        job_success: true,
+        job_complete: true,
+        ...new Signature('001', mockApiKey).generate_signature(
+          new Date().toISOString(),
+        ),
+      });
+      let setTimeoutSpy: jest.SpyInstance;
+
+      beforeEach(() => {
+        // run poll delays at once, but keep a record of how long each was
+        setTimeoutSpy = jest
+          .spyOn(global, 'setTimeout')
+          .mockImplementation((fn: () => void) => {
+            fn();
+            return 0 as unknown as NodeJS.Timeout;
+          });
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/upload')
+          .reply(200, { upload_url: 'https://some_url.com' });
+        nock('https://some_url.com').put('/').reply(200);
+      });
+
+      afterEach(() => {
+        setTimeoutSpy.mockRestore();
+      });
+
+      const submit = () =>
+        new WebApi('001', 'https://a_callback.cb', mockApiKey, 0).submit_job(
+          partner_params,
+          [
+            {
+              image_type_id: IMAGE_TYPE.SELFIE_IMAGE_BASE64,
+              image: 'base6image',
+            },
+          ],
+          {},
+          { return_job_status: true },
+        );
+
+      it.each([429, 500])(
+        'should stop polling and reject when every poll in the budget returns %i',
+        async (status) => {
+          expect.assertions(1);
+          nock('https://testapi.smileidentity.com')
+            .post('/v1/job_status')
+            .times(22)
+            .reply(status, {});
+          nock('https://testapi.smileidentity.com')
+            .post('/v1/job_status')
+            .reply(200, completeResponse());
+
+          await expect(submit()).rejects.toMatchObject({
+            response: { status },
+          });
+        },
+      );
+
+      it.each([
+        ['10', 10000],
+        ['120', 60000],
+        ['1', 2000],
+        ['1.5', 2000],
+        ['-5', 2000],
+        ['Wed, 21 Oct 2015 07:28:00 GMT', 2000],
+        [undefined, 2000],
+      ])(
+        'should wait for Retry-After %s on a 429 before polling again',
+        async (retryAfter, expectedDelay) => {
+          expect.assertions(2);
+          nock('https://testapi.smileidentity.com')
+            .post('/v1/job_status')
+            .reply(429, {}, retryAfter ? { 'Retry-After': retryAfter } : {});
+          nock('https://testapi.smileidentity.com')
+            .post('/v1/job_status')
+            .reply(200, completeResponse());
+
+          const response = await submit();
+
+          expect(response.job_complete).toBe(true);
+          expect(setTimeoutSpy).toHaveBeenCalledWith(
+            expect.any(Function),
+            expectedDelay,
+          );
+        },
+      );
+    });
+
     describe('documentVerification - JT6', () => {
       it('should require the provision of ID Card images', async () => {
         expect.assertions(1);
