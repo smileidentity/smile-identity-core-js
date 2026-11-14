@@ -1014,6 +1014,38 @@ describe('WebApi', () => {
         },
       );
 
+      it.each([400, 401, 403, 404])(
+        'should reject at once without polling again when a poll returns %i',
+        async (status) => {
+          expect.assertions(2);
+          nock('https://testapi.smileidentity.com')
+            .post('/v1/job_status')
+            .reply(status, {});
+          const ok = nock('https://testapi.smileidentity.com')
+            .post('/v1/job_status')
+            .reply(200, completeResponse());
+
+          await expect(submit()).rejects.toMatchObject({
+            response: { status },
+          });
+          expect(ok.isDone()).toBe(false);
+        },
+      );
+
+      it('should poll again after a 408', async () => {
+        expect.assertions(1);
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(408, {});
+        nock('https://testapi.smileidentity.com')
+          .post('/v1/job_status')
+          .reply(200, completeResponse());
+
+        const response = await submit();
+
+        expect(response.job_complete).toBe(true);
+      });
+
       it.each([
         ['10', 10000],
         ['120', 60000],

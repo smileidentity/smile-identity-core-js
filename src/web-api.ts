@@ -452,14 +452,18 @@ const queryJobStatus = (
         }
       })
       .catch((err) => {
-        if (updatedCounter > 21) {
+        // a 4xx other than 408 and 429 can never succeed, so do not poll again
+        const status = err?.response?.status;
+        const permanent =
+          status >= 400 && status < 500 && status !== 408 && status !== 429;
+        if (permanent || updatedCounter > 21) {
           reject(err);
           return;
         }
         // on a 429, wait for a whole-second Retry-After (at most 60s) when it is longer than the usual delay
         const retryAfter = err?.response?.headers?.['retry-after'];
         const wait =
-          err?.response?.status === 429 && /^\d+$/.test(retryAfter)
+          status === 429 && /^\d+$/.test(retryAfter)
             ? Math.min(Number(retryAfter), 60) * 1000
             : 0;
         retryFunc(updatedCounter, Math.max(timeout, wait));
