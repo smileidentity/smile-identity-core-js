@@ -996,18 +996,21 @@ describe('WebApi', () => {
       it.each([429, 500])(
         'should stop polling and reject when every poll in the budget returns %i',
         async (status) => {
-          expect.assertions(1);
-          nock('https://testapi.smileidentity.com')
+          expect.assertions(3);
+          const failing = nock('https://testapi.smileidentity.com')
             .post('/v1/job_status')
             .times(22)
             .reply(status, {});
-          nock('https://testapi.smileidentity.com')
+          const ok = nock('https://testapi.smileidentity.com')
             .post('/v1/job_status')
             .reply(200, completeResponse());
 
           await expect(submit()).rejects.toMatchObject({
             response: { status },
           });
+          // exactly 22 polls: neither one short of nor one over the budget
+          expect(failing.isDone()).toBe(true);
+          expect(ok.isDone()).toBe(false);
         },
       );
 
